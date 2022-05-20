@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Мої абонементи</string>
+    <string name="title">Абонементи</string>
+    <string name="btn_new">Новий</string>
+    <string name="label_name">Назва</string>
+    <string name="label_lesson_number">Кількість занять</string>
+    <string name="label_start_date">Дата старту </string>
+    <string name="label_end_date">Дата кінця </string>
+    <string name="btn_save">Зберегти</string>
+</resources>

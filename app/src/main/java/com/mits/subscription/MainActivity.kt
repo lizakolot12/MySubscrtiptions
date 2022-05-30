@@ -13,22 +13,23 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color.Companion.LightGray
-import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.mits.subscription.ui.creating.CreatingScreen
 import com.mits.subscription.ui.creating.CreatingViewModel
+import com.mits.subscription.ui.detail.DetailScreen
+import com.mits.subscription.ui.detail.DetailViewModel
 import com.mits.subscription.ui.list.ListScreen
 import com.mits.subscription.ui.list.ListViewModel
-import com.mits.subscription.ui.theme.Purple40
-import com.mits.subscription.ui.theme.PurpleGrey80
 import com.mits.subscription.ui.theme.SubscriptionTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -49,6 +50,9 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Main(activity: ComponentActivity) {
     val navController = rememberNavController()
+    val currentRoute = navController
+        .currentBackStackEntryFlow
+        .collectAsState(initial = navController.currentBackStackEntry)
     Scaffold(
         topBar = {
             TopAppBar(
@@ -66,44 +70,50 @@ fun Main(activity: ComponentActivity) {
                     IconButton(onClick = {
                         navController.navigateUp()
                     }) {
-                        Icon(Icons.Rounded.ArrowBack, "", tint = Purple40)
+                        Icon(Icons.Rounded.ArrowBack, "", tint = White)
                     }
 
                 },
-                backgroundColor = PurpleGrey80,
             )
-
-
         },
-        containerColor = LightGray,
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                containerColor = Red,
-                icon = { Icon(Icons.Filled.Add, "", tint = White) },
-                text = { Text(text = stringResource(R.string.btn_new), color = White) },
-                onClick = {
-                    navController.navigate("create")
-                }
-            )
+            if (currentRoute.value?.destination?.route.equals(Navigation.LIST.route)) {
+                ExtendedFloatingActionButton(
+                    icon = { Icon(Icons.Filled.Add, "", tint = White) },
+                    text = { Text(text = stringResource(R.string.btn_new), color = White) },
+                    onClick = {
+                        navController.navigate(Navigation.NEW.route)
+                    },
+                )
+            }
         }
     ) {
         // Screen content
-        NavHost(navController = navController, startDestination = "list") {
+        NavHost(navController = navController, startDestination = Navigation.LIST.route) {
 
-            composable("list") {
+            composable(Navigation.LIST.route) {
                 val listViewModel: ListViewModel by activity.viewModels()
                 ListScreen(navController, listViewModel)
 
             }
 
-            composable("create") {
+            composable(Navigation.NEW.route) {
                 val createViewModel: CreatingViewModel by activity.viewModels()
-                CreatingScreen(navController, createViewModel, activity)
+                createViewModel.init()
+                CreatingScreen(navController, createViewModel)
+            }
+
+            composable(
+                Navigation.DETAIL.route + "/{subscriptionId}",
+                arguments = listOf(navArgument("subscriptionId") { type = NavType.LongType })
+            ) { it ->
+                val detailViewModel: DetailViewModel by activity.viewModels()
+                detailViewModel.init(it.arguments?.getLong("subscriptionId"))
+                DetailScreen(navController, detailViewModel)
             }
         }
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable

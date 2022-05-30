@@ -24,4 +24,5 @@ interface SubscriptionDao {
 
     @Update
     suspend fun updateSubscription(subscriptionEntity: SubscriptionEntity)
+
 }

@@ -7,4 +7,8 @@
     <string name="label_start_date">Дата старту </string>
     <string name="label_end_date">Дата кінця </string>
     <string name="btn_save">Зберегти</string>
+    <string name="name_error">Не вказана назва</string>
+    <string name="creating_error">Виникла помилка при створенні запису</string>
+    <string name="delete">Видалити</string>
+    <string name="visited_lessons">Відвідані заняття</string>
 </resources>

@@ -53,10 +53,10 @@ fun ListScreen(navController: NavController, listViewModel: ListViewModel) {
                     .padding(16.dp)
                     .pointerInput(Unit) {
                         detectTapGestures(
-                            onPress = { navController.navigate("detail/${item.id}") },
+                           // onPress = { navController.navigate("detail/${item.id}") },
                             onDoubleTap = { /* Called on Double Tap */ },
                             onLongPress = { expanded.value = true },
-                            onTap = { /* Called on Tap */ }
+                            onTap = { navController.navigate("detail/${item.id}") }
                         )
                     },
                 horizontalArrangement = Arrangement.SpaceBetween,

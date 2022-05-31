@@ -5,15 +5,20 @@ import android.util.Log
 import android.widget.DatePicker
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.TextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -29,7 +34,7 @@ fun CreatingScreen(
     navController: NavController,
     createViewModel: CreatingViewModel
 ) {
-   // val uiState by createViewModel.uiState.collectAsState()
+    // val uiState by createViewModel.uiState.collectAsState()
     val uiState = remember {
         createViewModel.uiState
     }
@@ -46,13 +51,14 @@ fun CreatingScreenState(
 ) {
 
     if (state.value.isLoading) {
-        Log.e("TEST", "must be loading")
-        CircularProgressIndicator(
-            modifier = Modifier
-        )
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            CircularProgressIndicator()
+        }
     }
     if (state.value.finished) {
-        Log.e("TEST", "must be pop " + state.value.finished)
         navController.navigateUp()
     }
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -78,13 +84,17 @@ fun CreatingScreenState(
                 color = Red
             )
         }
-        val number = remember { mutableStateOf(TextFieldValue()) }
+        val number = remember { mutableStateOf("") }
         TextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
             value = number.value,
-            onValueChange = { number.value = it },
+            keyboardOptions = KeyboardOptions.Default
+                .copy(keyboardType = KeyboardType.Number),
+            onValueChange = {
+                number.value = it.digits()
+            },
             label = { Text(stringResource(id = R.string.label_lesson_number)) }
         )
         val choseStartDate = remember { mutableStateOf(false) }
@@ -97,7 +107,10 @@ fun CreatingScreenState(
         ) {
             Row() {
                 Text(stringResource(id = R.string.label_start_date))
-                Text(text = parseCalendar(startDate.value), modifier = Modifier.padding(horizontal = 8.dp))
+                Text(
+                    text = parseCalendar(startDate.value),
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
             }
 
         }
@@ -119,7 +132,10 @@ fun CreatingScreenState(
             ) {
             Row() {
                 Text(stringResource(id = R.string.label_end_date))
-                Text(text = parseCalendar(endDate.value), modifier = Modifier.padding(horizontal = 8.dp))
+                Text(
+                    text = parseCalendar(endDate.value),
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
             }
 
         }
@@ -135,7 +151,7 @@ fun CreatingScreenState(
                         startDate.value.time,
                         endDate.value.time,
                         Integer.valueOf(
-                            number.value.text.ifBlank { "0" }
+                            number.value.ifBlank { "0" }
                         ), ""
                     )
                 )
@@ -152,8 +168,10 @@ fun CreatingScreenState(
     }
 }
 
+private fun String.digits() = filter { it.isDigit() }
+
 @Composable
-fun ShowDatePicker(date: MutableState<Calendar>, opening:MutableState<Boolean>) {
+fun ShowDatePicker(date: MutableState<Calendar>, opening: MutableState<Boolean>) {
     val context = LocalContext.current
     val calendarInit = Calendar.getInstance()
 
@@ -176,7 +194,7 @@ fun ShowDatePicker(date: MutableState<Calendar>, opening:MutableState<Boolean>) 
 }
 
 @Composable
-fun ShowDatePicker(initial:Calendar, onChanged:(m: Calendar) -> Unit) {
+fun ShowDatePicker(initial: Calendar, onChanged: (m: Calendar) -> Unit) {
     val context = LocalContext.current
 
     val yearInit = initial.get(Calendar.YEAR)
@@ -191,6 +209,7 @@ fun ShowDatePicker(initial:Calendar, onChanged:(m: Calendar) -> Unit) {
             onChanged.invoke(calendar)
         }, yearInit, monthInit, dayInit
     )
+
     datePickerDialog.show()
 
 }

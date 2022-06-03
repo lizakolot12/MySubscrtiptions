@@ -53,7 +53,7 @@ fun ListScreen(navController: NavController, listViewModel: ListViewModel) {
                     .padding(16.dp)
                     .pointerInput(Unit) {
                         detectTapGestures(
-                           // onPress = { navController.navigate("detail/${item.id}") },
+                            // onPress = { navController.navigate("detail/${item.id}") },
                             onDoubleTap = { /* Called on Double Tap */ },
                             onLongPress = { expanded.value = true },
                             onTap = { navController.navigate("detail/${item.id}") }
@@ -65,7 +65,12 @@ fun ListScreen(navController: NavController, listViewModel: ListViewModel) {
                     Box(
                         Modifier.weight(1f)
                     ) {
+                        val lesNum = item.lessons?.size ?: 0
                         Text(
+
+                            color = if ((item.lessonNumbers - lesNum) < 2) {
+                                Color.Red
+                            } else Color.Green,
                             text = "" + item.lessons?.size + " з " + item.lessonNumbers,
                         )
                     }

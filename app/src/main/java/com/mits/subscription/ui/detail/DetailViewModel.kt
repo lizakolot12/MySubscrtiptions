@@ -134,6 +134,19 @@ class DetailViewModel
                     && viewModelState.value?.wasChanged?:false
     }
 
+    fun changeLessonDate(item: Lesson, newCalendar: Calendar) {
+        val subscription = uiState.value?.subscription
+        val array = subscription?.lessons?.toMutableList()
+        array?.forEach {
+            if (item.lId == it.lId) {
+                item.date = newCalendar.time
+            }
+        }
+        subscription?.lessons = array
+        acceptNewSubscription(subscription)
+        checkSaveAvailability()
+    }
+
     class DetailState(var subscription: Subscription?) {
         var nameError: Int? = null
         var beginRestrictionEndDate: Calendar? = null

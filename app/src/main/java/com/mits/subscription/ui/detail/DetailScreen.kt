@@ -192,7 +192,7 @@ fun Detail(
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
-                 /*   modifier = Modifier.fillMaxHeight(0.7f)*/
+                    /*   modifier = Modifier.fillMaxHeight(0.7f)*/
                 ) {
 
                     itemsIndexed(items = uiState.value?.subscription?.lessons ?: emptyList(),
@@ -256,9 +256,9 @@ fun LessonRow(item: Lesson, detailViewModel: DetailViewModel) {
             .padding(16.dp)
             .pointerInput(Unit) {
                 detectTapGestures(
-                    onPress = { },
+                    onPress = { expanded.value = true },
                     onDoubleTap = { /* Called on Double Tap */ },
-                    onLongPress = { expanded.value = true },
+                    onLongPress = { },
                     onTap = { /* Called on Tap */ }
                 )
             },
@@ -274,6 +274,14 @@ fun LessonRow(item: Lesson, detailViewModel: DetailViewModel) {
                     .weight(1f)
             )
         })
+    if (expanded.value) {
+        val start = Calendar.getInstance()
+        start.time= item.date
+        ShowDatePicker(start, onChanged = { newCalendar ->
+            detailViewModel.changeLessonDate(item, newCalendar)
+            expanded.value = false
+        })
+    }
 }
 
 

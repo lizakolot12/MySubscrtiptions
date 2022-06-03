@@ -11,6 +11,8 @@ import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import com.mits.subscription.R
@@ -61,9 +63,12 @@ fun ListScreen(navController: NavController, listViewModel: ListViewModel) {
                     },
                 horizontalArrangement = Arrangement.SpaceBetween,
                 content = {
-                    Text(text = item.name, Modifier.weight(3f))
+                    Text(text = item.name,
+                        //Modifier.weight(4f)
+                        )
+                    Spacer(modifier = Modifier.weight(1f))
                     Box(
-                        Modifier.weight(1f)
+                     //   Modifier.weight(1f)
                     ) {
                         val lesNum = item.lessons?.size ?: 0
                         Text(
@@ -74,13 +79,6 @@ fun ListScreen(navController: NavController, listViewModel: ListViewModel) {
                             text = "" + item.lessons?.size + " з " + item.lessonNumbers,
                         )
                     }
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_baseline_check_24),
-                        contentDescription = "Відмітити заняття",
-                        Modifier
-                            .clickable(true, onClick = { listViewModel.addVisitedLesson(item) })
-                            .weight(1f)
-                    )
                     ContextMenu(listViewModel, item, expanded)
                 })
         })
@@ -96,20 +94,47 @@ fun ContextMenu(
 ) {
     DropdownMenu(
         expanded = expanded.value,
-        onDismissRequest = { expanded.value = false }
+        onDismissRequest = { expanded.value = false },
+        modifier = Modifier.fillMaxWidth(0.7f)
     ) {
         DropdownMenuItem(onClick = {
             listViewModel.delete(subscription)
             expanded.value = false
         }) {
-            Text(stringResource(id = R.string.delete))
+
+            Text(
+                stringResource(id = R.string.delete),
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Icon(
+                Icons.Filled.Delete,
+                contentDescription = stringResource(id = R.string.description_add_lesson),
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
         }
-        DropdownMenuItem(onClick = { /* Handle settings! */ }) {
-            Text("Settings")
+
+        DropdownMenuItem(
+            onClick = {
+                listViewModel.addVisitedLesson(subscription)
+                expanded.value = false
+            },
+        ) {
+            Text(
+                stringResource(id = R.string.description_add_lesson),
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Icon(
+                imageVector = Icons.Default.Check, contentDescription = null,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+
+
         }
         Divider()
         DropdownMenuItem(onClick = { /* Handle send feedback! */ }) {
-            Text("Send Feedback")
+            Text("text")
+            Spacer(modifier = Modifier.weight(1f))
+            Icon(imageVector = Icons.Default.Check, contentDescription = null) // <-- Icon
         }
     }
 }

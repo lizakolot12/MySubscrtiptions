@@ -35,7 +35,8 @@ class DetailViewModel
         val array = subscription?.lessons?.toMutableList()
         array?.remove(lesson)
         subscription?.lessons = array
-        viewModelState.value = DetailState(subscription)
+        acceptNewSubscription(subscription)
+        checkSaveAvailability()
     }
 
     fun save() {
@@ -59,15 +60,21 @@ class DetailViewModel
         }
         val subscription = uiState.value?.subscription
         subscription?.name = name
-        viewModelState.value = DetailState(subscription)
+        acceptNewSubscription(subscription)
         checkSaveAvailability()
+    }
+    private fun acceptNewSubscription(subscription: Subscription?){
+        val newState = DetailState(subscription)
+        newState.wasChanged = true
+        viewModelState.value = newState
     }
 
     fun acceptNumber(numStr: String) {
         try {
             val subscription = uiState.value?.subscription
             subscription?.lessonNumbers = numStr.toInt()
-            viewModelState.value = DetailState(subscription)
+            acceptNewSubscription(subscription)
+            checkSaveAvailability()
         } catch (ex: Exception) {
             val subscription = uiState.value?.subscription
             val newState = DetailState(subscription)
@@ -83,10 +90,12 @@ class DetailViewModel
             if ((subscription?.endDate ?: Date()) < (subscription?.startDate ?: Date())) {
                 subscription?.endDate = subscription?.startDate
             }
-            viewModelState.value = DetailState(subscription)
+            acceptNewSubscription(subscription)
+            checkSaveAvailability()
         } catch (ex: Exception) {
             val subscription = uiState.value?.subscription
             val newState = DetailState(subscription)
+            newState.wasChanged = true
             newState.generalError = ex.message
             viewModelState.value = newState
         }
@@ -96,20 +105,33 @@ class DetailViewModel
         try {
             val subscription = uiState.value?.subscription
             subscription?.endDate = calendar.time
-            viewModelState.value = DetailState(subscription)
+            acceptNewSubscription(subscription)
+            checkSaveAvailability()
         } catch (ex: Exception) {
             val subscription = uiState.value?.subscription
             val newState = DetailState(subscription)
+            newState.wasChanged = true
             newState.generalError = ex.message
             viewModelState.value = newState
         }
     }
 
+    fun addVisitedLesson() {
+        viewModelScope.launch {
+            val subscription = uiState.value?.subscription
+            val array = subscription?.lessons?.toMutableList()
+            array?.add(Lesson(-1, "", Date()))
+            subscription?.lessons = array
+            acceptNewSubscription(subscription)
+            checkSaveAvailability()
+        }
+    }
     private fun checkSaveAvailability() {
         viewModelState.value?.savingAvailable =
             viewModelState.value?.nameError == null &&
                     viewModelState.value?.generalError == null
                     && !(viewModelState.value?.isLoading ?: false)
+                    && viewModelState.value?.wasChanged?:false
     }
 
     class DetailState(var subscription: Subscription?) {
@@ -119,5 +141,6 @@ class DetailViewModel
         var finished: Boolean = false
         var generalError: String? = null
         var isLoading: Boolean = false
+        var wasChanged = false
     }
 }

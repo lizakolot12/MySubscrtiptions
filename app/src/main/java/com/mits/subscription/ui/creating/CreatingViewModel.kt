@@ -46,21 +46,13 @@ class CreatingViewModel
         val copy = CreatingState()
         copy.isLoading = true
         viewModelState.value= copy
-        Log.e("TEST", "is loading must be true")
         viewModelScope.launch {
             repository.createSubscription(subscription)
-            delay(3000)
-            Log.e("TEST", "changing")
             val copy2 = CreatingState()
             copy2.isLoading = false
             copy2.finished = true
 
             viewModelState.value= copy2
-           /* viewModelState.update{ it ->
-                it.finished = true
-                it.isLoading = false
-                it
-            }*/
         }
     }
 

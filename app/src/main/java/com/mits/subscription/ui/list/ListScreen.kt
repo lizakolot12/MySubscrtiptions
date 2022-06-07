@@ -1,6 +1,5 @@
 package com.mits.subscription.ui.list
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,30 +9,35 @@ import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
-import com.mits.subscription.R
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.Alignment
-
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.mits.subscription.Navigation
+import com.mits.subscription.R
 import com.mits.subscription.model.Subscription
 
 @Composable
 fun ListScreen(navController: NavController, listViewModel: ListViewModel) {
+    Image(
+        painterResource(id = R.drawable.background), contentDescription = "Фон",
+        Modifier.fillMaxSize(), contentScale = ContentScale.FillHeight,
+        alpha = 0.9f
+    )
 
     val subscriptions by listViewModel.subscriptions.observeAsState(listOf())
     LazyColumn(
@@ -50,6 +54,7 @@ fun ListScreen(navController: NavController, listViewModel: ListViewModel) {
                         elevation = 1.dp,
                         shape = RoundedCornerShape(2.dp)
                     )
+                    .background(Color.White)
 
                     .fillMaxWidth()
                     .padding(16.dp)
@@ -63,12 +68,13 @@ fun ListScreen(navController: NavController, listViewModel: ListViewModel) {
                     },
                 horizontalArrangement = Arrangement.SpaceBetween,
                 content = {
-                    Text(text = item.name,
+                    Text(
+                        text = item.name,
                         //Modifier.weight(4f)
-                        )
+                    )
                     Spacer(modifier = Modifier.weight(1f))
                     Box(
-                     //   Modifier.weight(1f)
+                        //   Modifier.weight(1f)
                     ) {
                         val lesNum = item.lessons?.size ?: 0
                         Text(

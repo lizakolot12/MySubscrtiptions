@@ -77,12 +77,14 @@ fun Main(activity: ComponentActivity) {
 
                 modifier = Modifier.fillMaxWidth(),
                 navigationIcon = {
-                    IconButton(onClick = {
-                        navController.navigateUp()
-                    }) {
-                        Icon(Icons.Rounded.ArrowBack, "", tint = White)
-                    }
+                     if (!currentRoute.value?.destination?.route.equals(Navigation.LIST.route)) {
+                        IconButton(onClick = {
+                            navController.navigateUp()
+                        }) {
+                            Icon(Icons.Rounded.ArrowBack, "", tint = White)
+                        }
 
+                    }
                 },
             )
         },

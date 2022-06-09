@@ -26,9 +26,19 @@ class ListViewModel @Inject constructor(
         }
     }
 
-    fun delete(subscription: Subscription){
+    fun delete(subscription: Subscription) {
         viewModelScope.launch {
             repository.deleteSubscription(subscription)
+        }
+    }
+
+    fun copy(subscription: Subscription) {
+        viewModelScope.launch {
+            val newSubscription = Subscription(
+                0, subscription.name + "_copy",
+                Date(), Date(), subscription.lessonNumbers, subscription.description, emptyList()
+            )
+            repository.createSubscription(newSubscription)
         }
     }
 }

@@ -12,7 +12,7 @@ android {
         applicationId "com.mits.subscription"
         minSdk 27
         targetSdk 32
-        versionCode 1
+        versionCode 10000001
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

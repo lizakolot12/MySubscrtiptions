@@ -136,11 +136,17 @@ fun ContextMenu(
 
 
         }
-        Divider()
-        DropdownMenuItem(onClick = { /* Handle send feedback! */ }) {
-            Text("text")
+        DropdownMenuItem(onClick = {
+            listViewModel.copy(subscription)
+            expanded.value = false
+        }) {
+            Text(stringResource(id = R.string.copy_subscription))
             Spacer(modifier = Modifier.weight(1f))
-            Icon(imageVector = Icons.Default.Check, contentDescription = null) // <-- Icon
+            Icon(
+                painter = painterResource(id = R.drawable.ic_baseline_content_copy_24),
+                contentDescription = null,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
         }
     }
 }

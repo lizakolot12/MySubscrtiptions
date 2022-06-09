@@ -11,6 +11,7 @@
     <string name="creating_error">Виникла помилка при створенні запису</string>
     <string name="delete">Видалити</string>
     <string name="description_add_lesson">Відмітити заняття</string>
+    <string name="copy_subscription">Копія абонементу</string>
     <string name="visited_lessons">Відвідані заняття</string>
     <string name="empty_visited_lessons">Не було занять</string>
 </resources>

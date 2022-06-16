@@ -3,20 +3,24 @@ package com.mits.subscription.data.repo
 import androidx.lifecycle.LiveData
 import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
+import com.mits.subscription.data.db.dao.FolderDao
 import com.mits.subscription.data.db.dao.LessonDao
 import com.mits.subscription.data.db.entity.LessonEntity
 import com.mits.subscription.data.db.dao.SubscriptionDao
+import com.mits.subscription.data.db.entity.FolderEntity
 import com.mits.subscription.data.db.entity.SubscriptionEntity
+import com.mits.subscription.model.Folder
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.model.Subscription
 import java.util.*
 
 class SubscriptionRepository(
     private val lessonDao: LessonDao,
-    private val subscriptionDao: SubscriptionDao
+    private val subscriptionDao: SubscriptionDao,
+    private val folderDao: FolderDao
 ) {
 
-    val subscriptions: LiveData<List<Subscription>> = subscriptionDao.getAll()
+    val subsFolders: LiveData<List<Folder>> = folderDao.getAll()
 
     suspend fun createSubscription(subscription: Subscription): Long {
         val subscriptionEntity = SubscriptionEntity(
@@ -62,6 +66,10 @@ class SubscriptionRepository(
             subscription.lessonNumbers,
             subscription.description
         )
+    }
+
+    suspend fun createFolder(name: String) {
+        folderDao.insert(FolderEntity(0, name))
     }
 
 }

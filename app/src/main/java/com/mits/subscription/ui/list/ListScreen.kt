@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.icons.Icons
@@ -23,13 +22,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.material.BackdropScaffold
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.mits.subscription.R
+import com.mits.subscription.model.Folder
 import com.mits.subscription.model.Subscription
 
 @Composable
@@ -40,57 +42,117 @@ fun ListScreen(navController: NavController, listViewModel: ListViewModel) {
         alpha = 0.9f
     )
 
-    val subscriptions by listViewModel.subscriptions.observeAsState(listOf())
+    val subsFolder by listViewModel.subsFolders.observeAsState(listOf())
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
     ) {
 
-        itemsIndexed(items = subscriptions, itemContent = { pos, item ->
-            val expanded = remember { mutableStateOf(false) }
-            Row(
-
-                modifier = Modifier
-                    .shadow(
-                        elevation = 1.dp,
-                        shape = RoundedCornerShape(2.dp)
-                    )
-                    .background(Color.White)
-
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .pointerInput(Unit) {
-                        detectTapGestures(
-                            // onPress = { navController.navigate("detail/${item.id}") },
-                            onDoubleTap = { /* Called on Double Tap */ },
-                            onLongPress = { expanded.value = true },
-                            onTap = { navController.navigate("detail/${item.id}") }
+        itemsIndexed(items = subsFolder, itemContent = { pos, item ->
+            Column(content = {
+                ExpandedListItemView(
+                    item,
+                    onButtonClicked = { id: Long, expanded: Boolean ->
+                        listViewModel.changeExpand(
+                            item, expanded
                         )
-                    },
-                horizontalArrangement = Arrangement.SpaceBetween,
-                content = {
-                    Text(
-                        text = item.name,
-                        //Modifier.weight(4f)
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    Box(
-                        //   Modifier.weight(1f)
-                    ) {
-                        val lesNum = item.lessons?.size ?: 0
-                        Text(
-
-                            color = if ((item.lessonNumbers - lesNum) < 2) {
-                                Color.Red
-                            } else Color.Green,
-                            text = "" + item.lessons?.size + " з " + item.lessonNumbers,
-                        )
+                    })
+                //Spacer(modifier = Modifier.size(8.dp))
+                if (item.expanded) {
+                    item.folder.subscriptions?.forEach {
+                        SubscriptionRow(it, navController, listViewModel)
                     }
-                    ContextMenu(listViewModel, item, expanded)
-                })
+                }
+            })
         })
 
     }
+}
+
+@Composable
+fun ExpandedListItemView(
+    item: ExpandableListItem,
+    onButtonClicked: ((id: Long, expanded: Boolean) -> Unit)? = null
+) {
+    Row(
+        content = {
+            Text(
+                item.folder.name, modifier = Modifier
+                    .weight(1F)
+                    .padding(4.dp), fontWeight = FontWeight.Bold
+            )
+            Text("" + item.folder.subscriptions?.size, Modifier.padding(6.dp))
+            Icon(
+                imageVector = if (item.expanded) ImageVector.vectorResource(id = R.drawable.arrow_drop_up)
+                else Icons.Default.ArrowDropDown,
+                contentDescription = "image",
+                tint = Color.White, modifier = Modifier
+                    .size(30.dp)
+                    .clickable(onClick = {
+                        onButtonClicked?.invoke(item.folder.id, !item.expanded)
+                    })
+            )
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(8.dp, shape = RoundedCornerShape(1.dp))
+            .background(Color.LightGray, shape = RoundedCornerShape(6.dp))
+            .clickable(onClick = {
+                onButtonClicked?.invoke(item.folder.id, !item.expanded)
+            })
+            .padding(8.dp),
+
+        )
+}
+
+
+@Composable
+fun SubscriptionRow(
+    subscription: Subscription,
+    navController: NavController,
+    listViewModel: ListViewModel
+) {
+    val expanded = remember { mutableStateOf(false) }
+    Row(
+
+        modifier = Modifier
+            .padding(4.dp)
+            .shadow(
+                elevation = 1.dp,
+                shape = RoundedCornerShape(2.dp)
+            )
+            .background(Color.White)
+            .fillMaxWidth()
+            .padding(16.dp)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    // onPress = { navController.navigate("detail/${item.id}") },
+                    onDoubleTap = { /* Called on Double Tap */ },
+                    onLongPress = { expanded.value = true },
+                    onTap = { navController.navigate("detail/${subscription.id}") }
+                )
+            },
+        horizontalArrangement = Arrangement.SpaceBetween,
+        content = {
+            Text(
+                text = subscription.name,
+                //Modifier.weight(4f)
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Box(
+                //   Modifier.weight(1f)
+            ) {
+                val lesNum = subscription.lessons?.size ?: 0
+                Text(
+
+                    color = if ((subscription.lessonNumbers - lesNum) < 2) {
+                        Color.Red
+                    } else Color.Green,
+                    text = "" + subscription.lessons?.size + " з " + subscription.lessonNumbers,
+                )
+            }
+            ContextMenu(listViewModel, subscription, expanded)
+        })
 }
 
 @Composable
@@ -151,3 +213,4 @@ fun ContextMenu(
         }
     }
 }
+

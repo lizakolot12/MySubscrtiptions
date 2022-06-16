@@ -3,6 +3,7 @@ package com.mits.subscription.data.db.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.mits.subscription.data.db.SubscriptionDb
 import java.util.*
 
 @Entity(tableName = "subscription",
@@ -30,5 +31,5 @@ data class SubscriptionEntity(
     val description: String?,
 
     @ColumnInfo(name = "folder_id", index = true)
-    val folderId: Long? = -1
+    val folderId: Long? = SubscriptionDb.DEFAULT_FOLDER_ID
 )

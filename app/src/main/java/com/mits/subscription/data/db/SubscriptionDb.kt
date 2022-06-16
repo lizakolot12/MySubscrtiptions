@@ -63,7 +63,7 @@ abstract class SubscriptionDb : RoomDatabase() {
             )
                 .build()
 
-        const val DEFAULT_FOLDER_ID = 1
+        const val DEFAULT_FOLDER_ID = 1L
 
     }
 

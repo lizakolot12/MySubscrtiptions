@@ -37,7 +37,7 @@ object SubscriptionRepositoryModule {
         database: SubscriptionDb
     ): SubscriptionRepository {
         return SubscriptionRepository(
-            database.lessonDao(), database.subscriptionDao()
+            database.lessonDao(), database.subscriptionDao(), database.folderDao()
         )
     }
 }

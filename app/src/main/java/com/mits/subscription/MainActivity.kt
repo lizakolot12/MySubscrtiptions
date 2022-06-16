@@ -5,27 +5,19 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.TextField
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -35,6 +27,8 @@ import com.mits.subscription.ui.creating.CreatingScreen
 import com.mits.subscription.ui.creating.CreatingViewModel
 import com.mits.subscription.ui.detail.DetailScreen
 import com.mits.subscription.ui.detail.DetailViewModel
+import com.mits.subscription.ui.folder.CreateFolderViewModel
+import com.mits.subscription.ui.folder.FolderCreatingDialog
 import com.mits.subscription.ui.list.ListScreen
 import com.mits.subscription.ui.list.ListViewModel
 import com.mits.subscription.ui.theme.SubscriptionTheme
@@ -133,45 +127,10 @@ fun Main(activity: ComponentActivity) {
             }
         }
         if (createFolder.value) {
-            FolderCreatingDialog(createFolder)
+            val createFolderViewModel: CreateFolderViewModel by activity.viewModels()
+            FolderCreatingDialog(createFolder, createFolderViewModel)
         }
     }
-}
-
-@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
-@Composable
-fun FolderCreatingDialog(createFolder: MutableState<Boolean>) {
-    val folderName = remember { mutableStateOf("") }
-    AlertDialog(
-        onDismissRequest = {
-            createFolder.value = false
-        },
-        title = {
-            Text(text = stringResource(id = R.string.title_create_folder))
-        },
-        text = {
-            Column() {
-                TextField(
-                    value = folderName.value,
-                    onValueChange = { folderName.value = it }
-                )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = { createFolder.value = false }
-            ) {
-                Text(stringResource(id = R.string.ok))
-            }
-        },
-        dismissButton = {
-            Button(
-                onClick = { createFolder.value = false }
-            ) {
-                Text(stringResource(id = R.string.cancel))
-            }
-        })
-
 }
 
 @Preview(showBackground = true)

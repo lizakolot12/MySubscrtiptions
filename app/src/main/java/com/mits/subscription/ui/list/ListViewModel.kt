@@ -2,22 +2,65 @@ package com.mits.subscription.ui.list
 
 import androidx.lifecycle.*
 import com.mits.subscription.data.repo.SubscriptionRepository
+import com.mits.subscription.model.Folder
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.model.Subscription
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
+import kotlin.collections.ArrayList
+import kotlin.collections.HashSet
+
+data class ExpandableListItem(
+    val folder: Folder,
+    var expanded: Boolean = false
+)
 
 @HiltViewModel
 class ListViewModel @Inject constructor(
     private val repository: SubscriptionRepository
 ) :
     ViewModel() {
-    val subscriptions: LiveData<List<Subscription>>
+    private val expandedIds: MutableSet<Long> = HashSet()
+    private val _subsFolders: MediatorLiveData<List<ExpandableListItem>> = MediatorLiveData()
+    val subsFolders: LiveData<List<ExpandableListItem>> = _subsFolders
 
     init {
-        subscriptions = repository.subscriptions
+        _subsFolders.addSource(repository.subsFolders) { newList ->
+            run {
+                updateSubFolders(transform(newList))
+            }
+        }
+
+    }
+
+    private fun transform(list: List<Folder>): List<ExpandableListItem> =
+        list.map {
+            ExpandableListItem(
+                it,
+                expandedIds.contains(it.id)
+            )
+        }
+
+    fun changeExpand(expandableListItem: ExpandableListItem, expand: Boolean) {
+        if (expand) {
+            expandedIds.add(expandableListItem.folder.id)
+        } else {
+            expandedIds.remove(expandableListItem.folder.id)
+        }
+        val newList = _subsFolders.value?.map { it ->
+            ExpandableListItem(
+                it.folder,
+                expandedIds.contains(it.folder.id)
+            )
+        }
+        newList?.let { updateSubFolders(it) }
+    }
+
+    @Synchronized
+    private fun updateSubFolders(newList: List<ExpandableListItem>) {
+        _subsFolders.value = newList
     }
 
     fun addVisitedLesson(subscription: Subscription) {

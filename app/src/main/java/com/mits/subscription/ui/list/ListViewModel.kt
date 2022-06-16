@@ -6,7 +6,9 @@ import com.mits.subscription.model.Folder
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.model.Subscription
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 import javax.inject.Inject
 import kotlin.collections.ArrayList
@@ -82,6 +84,25 @@ class ListViewModel @Inject constructor(
                 Date(), Date(), subscription.lessonNumbers, subscription.description, emptyList()
             )
             repository.createSubscription(newSubscription)
+        }
+    }
+
+    fun moveToFolder(folderId: Long, subscription: Subscription) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO){
+                repository.addToFolder(folderId, subscription)
+            }
+
+        }
+
+    }
+
+    fun deleteFolder(folder: Folder) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO){
+                repository.deleteFolder(folder)
+            }
+
         }
     }
 }

@@ -43,10 +43,10 @@ class SubscriptionRepository(
         return subscriptionDao.getById(subscriptionId)
     }
 
-    suspend fun update(subscription:Subscription){
+    suspend fun update(subscription: Subscription) {
         lessonDao.deleteBySubscriptionId(subscription.id)
         subscription.lessons?.forEach {
-            lessonDao.insert(LessonEntity( 0, it.description, it.date, subscription.id))
+            lessonDao.insert(LessonEntity(0, it.description, it.date, subscription.id))
         }
         return subscriptionDao.updateSubscription(convert(subscription))
     }
@@ -57,7 +57,7 @@ class SubscriptionRepository(
         )
     }
 
-    private fun convert(subscription: Subscription):SubscriptionEntity{
+    private fun convert(subscription: Subscription): SubscriptionEntity {
         return SubscriptionEntity(
             subscription.id,
             subscription.name,
@@ -70,6 +70,23 @@ class SubscriptionRepository(
 
     suspend fun createFolder(name: String) {
         folderDao.insert(FolderEntity(0, name))
+    }
+
+    suspend fun addToFolder(folderId: Long, subscription: Subscription) {
+        val subs = SubscriptionEntity(
+            subscription.id,
+            subscription.name,
+            subscription.startDate,
+            subscription.endDate,
+            subscription.lessonNumbers,
+            subscription.description,
+            folderId
+        )
+        subscriptionDao.updateSubscription(subs)
+    }
+
+    suspend fun deleteFolder(folder: Folder) {
+        folderDao.delete(FolderEntity(folder.id, folder.name))
     }
 
 }

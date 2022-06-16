@@ -2,6 +2,7 @@ package com.mits.subscription.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Relation
+import com.mits.subscription.data.db.SubscriptionDb
 import com.mits.subscription.data.db.entity.LessonEntity
 import java.util.*
 
@@ -20,5 +21,8 @@ data class Subscription(
         entityColumn = "subscription_id",
         entity = LessonEntity::class
     )
-    var lessons: List<Lesson>? = null
+    var lessons: List<Lesson>? = null,
+
+    @ColumnInfo(name="folder_id")
+    var folderId:Long? = SubscriptionDb.DEFAULT_FOLDER_ID
 )

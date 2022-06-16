@@ -14,4 +14,8 @@
     <string name="copy_subscription">Копія абонементу</string>
     <string name="visited_lessons">Відвідані заняття</string>
     <string name="empty_visited_lessons">Не було занять</string>
+    <string name="title_create_folder">Створити папку</string>
+    <string name="cancel">Скасувати</string>
+    <string name="ok">Гаразд</string>
+    <string name="default_folder_name">Без папки</string>
 </resources>

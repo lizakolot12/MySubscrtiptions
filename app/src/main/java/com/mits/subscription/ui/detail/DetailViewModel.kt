@@ -9,7 +9,9 @@ import com.mits.subscription.data.repo.SubscriptionRepository
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.model.Subscription
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 import javax.inject.Inject
 
@@ -24,9 +26,12 @@ class DetailViewModel
     fun init(id: Long?) {
         viewModelState.value = DetailState(null)
         viewModelScope.launch {
-            val subscription = repository.get(id ?: 0)
-            val newState = DetailState(subscription)
-            viewModelState.postValue(newState)
+            withContext(Dispatchers.IO){
+                val subscription = repository.get(id ?: 0)
+                val newState = DetailState(subscription)
+                viewModelState.postValue(newState)
+            }
+
         }
     }
 

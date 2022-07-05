@@ -3,6 +3,7 @@ package com.mits.subscription.data.repo
 import androidx.lifecycle.LiveData
 import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
+import com.mits.subscription.data.db.SubscriptionDb
 import com.mits.subscription.data.db.dao.FolderDao
 import com.mits.subscription.data.db.dao.LessonDao
 import com.mits.subscription.data.db.entity.LessonEntity
@@ -30,6 +31,7 @@ class SubscriptionRepository(
             subscription.endDate,
             subscription.lessonNumbers,
             subscription.description,
+            subscription.folderId
         )
         return subscriptionDao.insert(subscriptionEntity)
     }
@@ -64,7 +66,8 @@ class SubscriptionRepository(
             subscription.startDate,
             subscription.endDate,
             subscription.lessonNumbers,
-            subscription.description
+            subscription.description,
+            subscription.folderId
         )
     }
 

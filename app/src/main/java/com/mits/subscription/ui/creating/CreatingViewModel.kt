@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.*
 import com.mits.subscription.R
 import com.mits.subscription.data.repo.SubscriptionRepository
+import com.mits.subscription.model.Folder
 import com.mits.subscription.model.Subscription
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -27,6 +28,7 @@ class CreatingViewModel
       val uiState: State<CreatingState>
           get() = _uiState
   */
+    val folders:LiveData<List<Folder>> = repository.subsFolders
     private val viewModelState = mutableStateOf(CreatingState())
 
     fun init(){

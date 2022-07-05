@@ -2,4 +2,13 @@
 <resources>
 
     <style name="Theme.Subscription" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="DatePickerDialogTheme"  parent="android:Theme.Material.Light.Dialog">
+        <item name="colorAccent">#FF9500d0</item>
+
+    <item name="android:colorAccent">#FF9500d0</item>
+    <!--Days unselected Text Color and Month Text Color-->
+    <item name="android:textColorPrimary">#FF60009e</item>
+    <!--Picker Background Color-->
+
+    </style>
 </resources>

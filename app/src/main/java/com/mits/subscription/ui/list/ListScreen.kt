@@ -1,40 +1,38 @@
 package com.mits.subscription.ui.list
 
-import android.util.Log
+import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.*
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.mits.subscription.R
+import com.mits.subscription.data.db.SubscriptionDb
 import com.mits.subscription.model.Folder
 import com.mits.subscription.model.Subscription
 import kotlin.math.roundToInt
@@ -75,7 +73,6 @@ fun ListScreen(navController: NavController, listViewModel: ListViewModel) {
                                 item, expanded
                             )
                         })
-                    //Spacer(modifier = Modifier.size(8.dp))
                     if (item.expanded) {
                         item.folder.subscriptions?.forEach {
                             SubscriptionRow(it, navController, listViewModel, mapPosition)
@@ -87,6 +84,7 @@ fun ListScreen(navController: NavController, listViewModel: ListViewModel) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ExpandedListItemView(
     item: ExpandableListItem,
@@ -119,15 +117,14 @@ fun ExpandedListItemView(
             .fillMaxWidth()
             .shadow(8.dp, shape = RoundedCornerShape(1.dp))
             .background(Color.LightGray, shape = RoundedCornerShape(6.dp))
-        /*    .clickable(onClick = {
-                onButtonClicked?.invoke(item.folder.id, !item.expanded)
-            })*/
-            .pointerInput(Unit) {
-                detectTapGestures(onLongPress = { contextMenu.value = true },
-          /*      onPress = {
-                    onButtonClicked?.invoke(item.folder.id, !item.expanded)
-                })*/
-                )}
+            .combinedClickable(
+                onClick = { onButtonClicked?.invoke(item.folder.id, !item.expanded) },
+                onLongClick = {
+                    if (item.folder.id != SubscriptionDb.DEFAULT_FOLDER_ID) {
+                        contextMenu.value = true
+                    }
+                }
+            )
             .padding(8.dp)
 
     )
@@ -150,7 +147,7 @@ fun SubscriptionRow(
                 // Log.e("TST", "current " + currentPosition)
             }
             .offset { IntOffset(0, offsetY.roundToInt()) }
-            .draggable(
+/*            .draggable(
                 orientation = Orientation.Vertical,
                 state = rememberDraggableState { delta ->
                     // Log.e("TEST", "Offset = " + offsetY)
@@ -161,16 +158,18 @@ fun SubscriptionRow(
                     Log.e("TEST", "folder = " + folder)
                     if (folder != null && folder > 0 && folder != subscription.folderId) {
                         listViewModel.moveToFolder(folder, subscription)
+                        Log.e("TEST", "must move to folder " + folder)
                     } else {
+                        Log.e("TEST", "must go back")
                         offsetY = 0f
                     }
                 }
-            )
+            )*/
             .pointerInput(Unit) {
                 detectTapGestures(
                     // onPress = { navController.navigate("detail/${item.id}") },
                     onDoubleTap = { expanded.value = true },
-                    /*     onLongPress = { expanded.value = true },*/
+                    onLongPress = { expanded.value = true },
                     onTap = { navController.navigate("detail/${subscription.id}") },
                 )
             }
@@ -182,24 +181,13 @@ fun SubscriptionRow(
             .background(Color.White)
             .fillMaxWidth()
             .padding(16.dp),
-        /*   .draggable(
-               orientation = Orientation.Vertical,
-               state = rememberDraggableState { delta ->
-                   Log.e("TEST", "Offset = " + offsetY)
-                   offsetY += delta
-               }
-           ).offset(0.dp, offsetY.dp),*/
-
         horizontalArrangement = Arrangement.SpaceBetween,
         content = {
             Text(
                 text = subscription.name,
-                //Modifier.weight(4f)
             )
             Spacer(modifier = Modifier.weight(1f))
-            Box(
-                //   Modifier.weight(1f)
-            ) {
+            Box {
                 val lesNum = subscription.lessons?.size ?: 0
                 Text(
 
@@ -229,7 +217,6 @@ fun checkIntersection(
 
         }
     }.keys.firstOrNull()
-    Log.e("TEST", "result = " + result)
     return result
 }
 

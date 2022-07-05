@@ -18,4 +18,5 @@
     <string name="cancel">Скасувати</string>
     <string name="ok">Гаразд</string>
     <string name="default_folder_name">Без папки</string>
+    <string name="folder">Папка</string>
 </resources>

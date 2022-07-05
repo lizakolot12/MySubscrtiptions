@@ -2,19 +2,19 @@ package com.mits.subscription.ui.detail
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.TextField
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.livedata.observeAsState
@@ -27,13 +27,16 @@ import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.mits.subscription.R
+import com.mits.subscription.data.db.SubscriptionDb
+import com.mits.subscription.model.Folder
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.parseCalendar
 import com.mits.subscription.parseDate
+import com.mits.subscription.ui.creating.Folders
 import com.mits.subscription.ui.creating.ShowDatePicker
-import com.mits.subscription.ui.theme.Purple
 import java.util.*
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -54,10 +57,8 @@ fun Detail(
     detailViewModel: DetailViewModel
 ) {
     Column(
-
         modifier = Modifier
             .fillMaxHeight(1f)
-
     )
     {
         if (uiState.value?.isLoading == true) {
@@ -109,7 +110,7 @@ fun Detail(
             Button(
                 onClick = { choseStartDate.value = true },
                 modifier = Modifier
-                    .fillMaxWidth(0.7f)
+                    .fillMaxWidth(0.85f)
                     .padding(horizontal = 16.dp),
             ) {
                 Row() {
@@ -134,7 +135,7 @@ fun Detail(
             Button(
                 onClick = { choseEndDate.value = true },
                 modifier = Modifier
-                    .fillMaxWidth(0.7f)
+                    .fillMaxWidth(0.85f)
                     .padding(horizontal = 16.dp),
 
                 ) {
@@ -155,57 +156,67 @@ fun Detail(
                     }
                 })
             }
-            Row() {
-                Text(
-                    text = stringResource(id = R.string.visited_lessons),
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .weight(0.9f),
-                    color = Purple
-                )
 
-                Icon(
-                    Icons.Filled.Add,
-                    contentDescription = stringResource(id = R.string.description_add_lesson),
-                    Modifier
-                        .clickable(true, onClick = { detailViewModel.addVisitedLesson() })
-                        .weight(0.1f)
-                )
-            }
 
-            if ((uiState.value?.subscription?.lessons?.size ?: 0) > 0) {
-                /* uiState.value?.subscription?.lessons?.forEach {
-                     LessonRow(it, detailViewModel)
-                     Spacer(modifier = Modifier.height(2.dp).shadow(2.dp))
-                 }*/
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
-                    /*   modifier = Modifier.fillMaxHeight(0.7f)*/
-                ) {
+            val folder = detailViewModel.folders.value?.find {
+                it.id == (uiState.value?.subscription?.folderId)
+            } ?: Folder(
+                SubscriptionDb.DEFAULT_FOLDER_ID,
+                stringResource(id = R.string.default_folder_name), emptyList()
+            )
 
-                    itemsIndexed(items = uiState.value?.subscription?.lessons ?: emptyList(),
-                        itemContent = { pos, item ->
-                            LessonRow(item, detailViewModel)
-                        })
+            Folders(
+                detailViewModel.folders,
+                folder,
+                onChanged = { detailViewModel.acceptNewFolder(it) })
+
+            Card(
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp,  )
+            ) {
+                Column() {
+                    Row(
+                        modifier = Modifier.padding(top = 16.dp)
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.visited_lessons),
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .weight(0.9f)
+                        )
+
+                        Icon(
+                            Icons.Filled.Add,
+                            contentDescription = stringResource(id = R.string.description_add_lesson),
+                            Modifier
+                                .clickable(true, onClick = { detailViewModel.addVisitedLesson() })
+                                .weight(0.2f)
+                                .padding(end =  16.dp)
+                        )
+                    }
+
+                    if ((uiState.value?.subscription?.lessons?.size ?: 0) > 0) {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
+                        ) {
+
+                            itemsIndexed(items = uiState.value?.subscription?.lessons
+                                ?: emptyList(),
+                                itemContent = { pos, item ->
+                                    LessonRow(item, detailViewModel)
+                                })
+                        }
+                    } else {
+                        Text(
+                            text = stringResource(id = R.string.empty_visited_lessons),
+                            fontSize = 12.sp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 16.dp, bottom = 8.dp),
+                        )
+                    }
                 }
-            } else {
-                Text(
-                    text = stringResource(id = R.string.empty_visited_lessons),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                )
             }
-
-
-            /*   ExtendedFloatingActionButton(
-                   icon = { Icon(Icons.Filled.Check, "", tint = Color.White) },
-                   text = { Text(text = stringResource(R.string.btn_save), color = Color.White) },
-                   onClick = {
-                       detailViewModel.save()
-                   },
-               )*/
         }
     }
     Box(
@@ -265,7 +276,7 @@ fun LessonRow(item: Lesson, detailViewModel: DetailViewModel) {
         })
     if (expanded.value) {
         val start = Calendar.getInstance()
-        start.time= item.date
+        start.time = item.date
         ShowDatePicker(start, onChanged = { newCalendar ->
             detailViewModel.changeLessonDate(item, newCalendar)
             expanded.value = false

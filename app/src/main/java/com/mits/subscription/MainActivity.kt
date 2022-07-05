@@ -6,11 +6,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.TopAppBar
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.rounded.ArrowBack
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.White
@@ -47,7 +46,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun Main(activity: ComponentActivity) {
     val navController = rememberNavController()
@@ -67,6 +66,7 @@ fun Main(activity: ComponentActivity) {
                     )
                 },
 
+                //backgroundColor =  MaterialTheme.colorScheme.primary,
                 actions = {
                     if (currentRoute.value?.destination?.route.equals(Navigation.LIST.route)) {
                         IconButton(onClick = { createFolder.value = true }) {

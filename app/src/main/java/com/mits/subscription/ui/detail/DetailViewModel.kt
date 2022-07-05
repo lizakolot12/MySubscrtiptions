@@ -1,11 +1,13 @@
 package com.mits.subscription.ui.detail
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mits.subscription.R
 import com.mits.subscription.data.repo.SubscriptionRepository
+import com.mits.subscription.model.Folder
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.model.Subscription
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,6 +24,8 @@ class DetailViewModel
 ) : ViewModel() {
     private val viewModelState: MutableLiveData<DetailState> = MutableLiveData(DetailState(null))
     val uiState: LiveData<DetailState> = viewModelState
+
+    val folders:LiveData<List<Folder>> = repository.subsFolders
 
     fun init(id: Long?) {
         viewModelState.value = DetailState(null)
@@ -78,6 +82,21 @@ class DetailViewModel
         try {
             val subscription = uiState.value?.subscription
             subscription?.lessonNumbers = numStr.toInt()
+            acceptNewSubscription(subscription)
+            checkSaveAvailability()
+        } catch (ex: Exception) {
+            val subscription = uiState.value?.subscription
+            val newState = DetailState(subscription)
+            newState.generalError = ex.message
+            viewModelState.value = newState
+        }
+    }
+
+    fun acceptNewFolder(folder: Folder) {
+        try {
+            Log.e("TEST", "accept new folder "+ folder.id + "   " + folder.name)
+            val subscription = uiState.value?.subscription
+            subscription?.folderId = folder.id
             acceptNewSubscription(subscription)
             checkSaveAvailability()
         } catch (ex: Exception) {

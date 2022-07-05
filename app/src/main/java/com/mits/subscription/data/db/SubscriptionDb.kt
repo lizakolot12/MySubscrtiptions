@@ -38,15 +38,20 @@ abstract class SubscriptionDb : RoomDatabase() {
         override fun onPostMigrate(db: SupportSQLiteDatabase) {
             super.onPostMigrate(db)
             db.execSQL(
-                "INSERT INTO folder (folder_id, name)" +
-                        "VALUES (" + DEFAULT_FOLDER_ID + " , 'Без папки');"
+                CREATE_DEFAULT_FOLDER
             )
-            db.execSQL("UPDATE subscription \n" +
-                    "   SET folder_id = " + DEFAULT_FOLDER_ID )
+            db.execSQL(UPDATE_EXISTING_DESCRIPTION )
         }
     }
 
     companion object {
+
+
+        const val DEFAULT_FOLDER_ID = 1L
+        val CREATE_DEFAULT_FOLDER = "INSERT INTO folder (folder_id, name)" +
+                "VALUES (" + DEFAULT_FOLDER_ID + " , 'Без папки');"
+        val UPDATE_EXISTING_DESCRIPTION = "UPDATE subscription \n" +
+                "   SET folder_id = " + DEFAULT_FOLDER_ID
 
         @Volatile
         private var INSTANCE: SubscriptionDb? = null
@@ -61,9 +66,14 @@ abstract class SubscriptionDb : RoomDatabase() {
                 context.applicationContext,
                 SubscriptionDb::class.java, "subscription.db"
             )
-                .build()
+                .addCallback(object:Callback(){
+                    override fun onCreate(db: SupportSQLiteDatabase) {
+                        super.onCreate(db)
+                        db.execSQL(CREATE_DEFAULT_FOLDER)
+                    }
 
-        const val DEFAULT_FOLDER_ID = 1L
+                })
+                .build()
 
     }
 

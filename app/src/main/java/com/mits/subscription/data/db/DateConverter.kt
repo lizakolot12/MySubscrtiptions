@@ -9,7 +9,7 @@ class DateConverter {
     @TypeConverter
     fun fromLong(date: Long): Date? {
         if (date == 0L) {
-            return null;
+            return null
         }
         return Date(date);
     }
@@ -17,7 +17,7 @@ class DateConverter {
     @TypeConverter
     fun toString(date: Date?): Long {
         if (date == null) return 0;
-        return date.time;
+        return date.time
     }
 
 }

@@ -1,6 +1,5 @@
 package com.mits.subscription.ui.detail
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -94,7 +93,6 @@ class DetailViewModel
 
     fun acceptNewFolder(folder: Folder) {
         try {
-            Log.e("TEST", "accept new folder "+ folder.id + "   " + folder.name)
             val subscription = uiState.value?.subscription
             subscription?.folderId = folder.id
             acceptNewSubscription(subscription)
@@ -173,7 +171,6 @@ class DetailViewModel
 
     class DetailState(var subscription: Subscription?) {
         var nameError: Int? = null
-        var beginRestrictionEndDate: Calendar? = null
         var savingAvailable: Boolean = true
         var finished: Boolean = false
         var generalError: String? = null

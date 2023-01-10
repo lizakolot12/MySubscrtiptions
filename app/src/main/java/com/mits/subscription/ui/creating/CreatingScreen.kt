@@ -33,8 +33,6 @@ import com.mits.subscription.model.Subscription
 import com.mits.subscription.parseCalendar
 import java.util.*
 
-
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CreatingScreen(
     navController: NavController,
@@ -47,7 +45,7 @@ fun CreatingScreen(
     CreatingScreenState(navController, uiState, createViewModel)
 }
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun CreatingScreenState(
     navController: NavController,
@@ -63,9 +61,11 @@ fun CreatingScreenState(
             CircularProgressIndicator()
         }
     }
+
     if (state.value.finished) {
         navController.navigateUp()
     }
+
     Column(modifier = Modifier.fillMaxWidth()) {
         val name = remember { mutableStateOf(TextFieldValue()) }
         val focusRequester = remember { FocusRequester() }
@@ -83,7 +83,7 @@ fun CreatingScreenState(
             isError = state.value.nameError != null,
             label = { Text(stringResource(id = R.string.label_name)) },
             keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Next, // ** Go to next **
+                imeAction = ImeAction.Next,
             ),
         )
         LaunchedEffect(Unit) {
@@ -140,11 +140,15 @@ fun CreatingScreenState(
         val choseEndDate = remember { mutableStateOf(false) }
         if (choseStartDate.value) {
             ShowDatePicker(
-                startDate.value, onChanged = { newCalendar ->
+                startDate.value, onChanged = {
                     choseStartDate.value = false
                     choseEndDate.value = true
-
-                }, R.string.label_start_date
+                },
+                onDismiss = {
+                    choseStartDate.value = false
+                    choseEndDate.value = false
+                },
+                R.string.label_start_date
             )
 
         }
@@ -174,6 +178,10 @@ fun CreatingScreenState(
                     choseEndDate.value = false
 
                 },
+                onDismiss = {
+                    choseStartDate.value = false
+                    choseEndDate.value = false
+                },
                 R.string.label_end_date
             )
         }
@@ -189,7 +197,6 @@ fun CreatingScreenState(
             onChanged = { selectedOptionFolder.value = it })
         Button(
             onClick = {
-                Log.e("TEST", "selectedOptionFolder.value.id = " + selectedOptionFolder.value.id)
                 createViewModel.create(
                     Subscription(
                         0, name.value.text,
@@ -218,7 +225,7 @@ fun CreatingScreenState(
 private fun String.digits() = filter { it.isDigit() }
 
 @Composable
-fun ShowDatePicker(initial: Calendar, onChanged: (m: Calendar) -> Unit, titleId: Int? = null) {
+fun ShowDatePicker(initial: Calendar, onChanged: (m: Calendar) -> Unit, onDismiss: (() -> Unit)? = null, titleId: Int? = null) {
     val context = LocalContext.current
 
     val yearInit = initial.get(Calendar.YEAR)
@@ -233,6 +240,7 @@ fun ShowDatePicker(initial: Calendar, onChanged: (m: Calendar) -> Unit, titleId:
             onChanged.invoke(calendar)
         }, yearInit, monthInit, dayInit
     )
+    datePickerDialog.setOnDismissListener { onDismiss?.invoke() }
     titleId?.let {
         datePickerDialog.setMessage(stringResource(id = titleId))
     }
@@ -241,10 +249,7 @@ fun ShowDatePicker(initial: Calendar, onChanged: (m: Calendar) -> Unit, titleId:
 
 }
 
-@OptIn(
-    ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class,
-    ExperimentalMaterialApi::class
-)
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Folders(folders: LiveData<List<Folder>>, init: Folder, onChanged: (folder: Folder) -> Unit) {
 
@@ -290,7 +295,6 @@ fun Folders(folders: LiveData<List<Folder>>, init: Folder, onChanged: (folder: F
                 DropdownMenuItem(
                     onClick = {
                         selectedOptionFolder.value = selectionOption
-                        Log.e("TEST", "selectedOptionFolder = " + selectedOptionFolder.value.id)
                         expanded = false
                         onChanged.invoke(selectionOption)
                     }

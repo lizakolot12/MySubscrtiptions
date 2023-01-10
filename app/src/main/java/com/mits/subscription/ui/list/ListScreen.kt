@@ -16,6 +16,8 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
@@ -28,13 +30,19 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.mits.subscription.R
 import com.mits.subscription.data.db.SubscriptionDb
 import com.mits.subscription.model.Folder
 import com.mits.subscription.model.Subscription
+import com.mits.subscription.ui.theme.DarkPurpleGrey
+import com.mits.subscription.ui.theme.Purple
+import com.mits.subscription.ui.theme.PurpleLight
+import kotlinx.coroutines.flow.mapLatest
 import kotlin.math.roundToInt
 
 @Composable
@@ -75,7 +83,7 @@ fun ListScreen(navController: NavController, listViewModel: ListViewModel) {
                         })
                     if (item.expanded) {
                         item.folder.subscriptions?.forEach {
-                            SubscriptionRow(it, navController, listViewModel, mapPosition)
+                            SubscriptionRow(it, navController, listViewModel)
                         }
                     }
                 })
@@ -92,20 +100,21 @@ fun ExpandedListItemView(
     onButtonClicked: ((id: Long, expanded: Boolean) -> Unit)? = null
 ) {
     val contextMenu = remember { mutableStateOf(false) }
-
     Row(
         content = {
             Text(
-                item.folder.name, modifier = Modifier
+                item.folder.name,
+                modifier = Modifier
                     .weight(1F)
-                    .padding(4.dp), fontWeight = FontWeight.Bold
+                    .padding(4.dp),
+                fontWeight = FontWeight.SemiBold,
             )
             Text("" + item.folder.subscriptions?.size, Modifier.padding(6.dp))
             Icon(
                 imageVector = if (item.expanded) ImageVector.vectorResource(id = R.drawable.arrow_drop_up)
                 else Icons.Default.ArrowDropDown,
                 contentDescription = "image",
-                tint = Color.White, modifier = Modifier
+                tint = Purple, modifier = Modifier
                     .size(30.dp)
                     .clickable(onClick = {
                         onButtonClicked?.invoke(item.folder.id, !item.expanded)
@@ -113,6 +122,7 @@ fun ExpandedListItemView(
             )
             ContextMenuFolder(listViewModel, item.folder, contextMenu)
         },
+
         modifier = Modifier
             .fillMaxWidth()
             .shadow(8.dp, shape = RoundedCornerShape(1.dp))
@@ -134,46 +144,21 @@ fun ExpandedListItemView(
 fun SubscriptionRow(
     subscription: Subscription,
     navController: NavController,
-    listViewModel: ListViewModel,
-    mapPosition: MutableMap<Long, Offset>
+    listViewModel: ListViewModel
 ) {
     val expanded = remember { mutableStateOf(false) }
-    var offsetY by remember { mutableStateOf(0f) }
-    var currentPosition by remember { mutableStateOf(Offset.Zero) }
+    val offsetY by remember { mutableStateOf(0f) }
     Row(
         modifier = Modifier
-            .onGloballyPositioned {
-                currentPosition = it.localToWindow(Offset.Zero)
-                // Log.e("TST", "current " + currentPosition)
-            }
             .offset { IntOffset(0, offsetY.roundToInt()) }
-/*            .draggable(
-                orientation = Orientation.Vertical,
-                state = rememberDraggableState { delta ->
-                    // Log.e("TEST", "Offset = " + offsetY)
-                    offsetY += delta
-                },
-                onDragStopped = {
-                    val folder: Long? = checkIntersection(mapPosition, currentPosition, offsetY)
-                    Log.e("TEST", "folder = " + folder)
-                    if (folder != null && folder > 0 && folder != subscription.folderId) {
-                        listViewModel.moveToFolder(folder, subscription)
-                        Log.e("TEST", "must move to folder " + folder)
-                    } else {
-                        Log.e("TEST", "must go back")
-                        offsetY = 0f
-                    }
-                }
-            )*/
             .pointerInput(Unit) {
                 detectTapGestures(
-                    // onPress = { navController.navigate("detail/${item.id}") },
                     onDoubleTap = { expanded.value = true },
                     onLongPress = { expanded.value = true },
                     onTap = { navController.navigate("detail/${subscription.id}") },
                 )
             }
-            .padding(4.dp)
+            .padding(horizontal = 4.dp, vertical = 1.dp)
             .shadow(
                 elevation = 1.dp,
                 shape = RoundedCornerShape(2.dp)
@@ -185,39 +170,26 @@ fun SubscriptionRow(
         content = {
             Text(
                 text = subscription.name,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
             Spacer(modifier = Modifier.weight(1f))
-            Box {
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight(1f)
+                    .align(CenterVertically)
+            )
+            {
                 val lesNum = subscription.lessons?.size ?: 0
                 Text(
-
                     color = if ((subscription.lessonNumbers - lesNum) < 2) {
                         Color.Red
-                    } else Color.Green,
+                    } else Color.Black,
                     text = "" + subscription.lessons?.size + " з " + subscription.lessonNumbers,
                 )
             }
             ContextMenu(listViewModel, subscription, expanded)
         })
-}
-
-fun checkIntersection(
-    mapPosition: MutableMap<Long, Offset>,
-    currentPosition: Offset,
-    offsetY: Float
-): Long? {
-    val curPos = currentPosition.y + offsetY
-    var init = 0
-
-    val result = mapPosition.filter { entry ->
-        if (curPos > init && curPos <= entry.value.y) true
-        else {
-            init = entry.value.y.roundToInt()
-            false
-
-        }
-    }.keys.firstOrNull()
-    return result
 }
 
 @Composable

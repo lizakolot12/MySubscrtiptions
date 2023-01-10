@@ -1,7 +1,9 @@
 package com.mits.subscription.ui.list
 
-import android.util.Log
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.mits.subscription.data.repo.SubscriptionRepository
 import com.mits.subscription.model.Folder
 import com.mits.subscription.model.Lesson
@@ -12,8 +14,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
 import javax.inject.Inject
-import kotlin.collections.ArrayList
-import kotlin.collections.HashSet
 
 data class ExpandableListItem(
     val folder: Folder,
@@ -49,14 +49,11 @@ class ListViewModel @Inject constructor(
     fun changeExpand(expandableListItem: ExpandableListItem, expand: Boolean) {
         if (expand) {
             expandedIds.add(expandableListItem.folder.id)
-            Log.e("TEST", "add expand"  + expandableListItem.folder.id)
         } else {
             expandedIds.remove(expandableListItem.folder.id)
-            Log.e("TEST", "remove expand" + expandableListItem.folder.id)
         }
         val newList = _subsFolders.value?.map { it ->
             val isExpand =  expandedIds.contains(it.folder.id)
-            Log.e("TEST", it.folder.name + "  " + it.folder.id + "  " + isExpand)
             ExpandableListItem(
                 it.folder,
                 isExpand

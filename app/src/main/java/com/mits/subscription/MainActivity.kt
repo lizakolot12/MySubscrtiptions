@@ -30,6 +30,7 @@ import com.mits.subscription.ui.folder.CreateFolderViewModel
 import com.mits.subscription.ui.folder.FolderCreatingDialog
 import com.mits.subscription.ui.list.ListScreen
 import com.mits.subscription.ui.list.ListViewModel
+import com.mits.subscription.ui.theme.Purple
 import com.mits.subscription.ui.theme.SubscriptionTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -46,7 +47,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun Main(activity: ComponentActivity) {
     val navController = rememberNavController()
@@ -66,7 +66,6 @@ fun Main(activity: ComponentActivity) {
                     )
                 },
 
-                //backgroundColor =  MaterialTheme.colorScheme.primary,
                 actions = {
                     if (currentRoute.value?.destination?.route.equals(Navigation.LIST.route)) {
                         IconButton(onClick = { createFolder.value = true }) {
@@ -93,8 +92,8 @@ fun Main(activity: ComponentActivity) {
         floatingActionButton = {
             if (currentRoute.value?.destination?.route.equals(Navigation.LIST.route)) {
                 ExtendedFloatingActionButton(
-                    icon = { Icon(Icons.Filled.Add, "", tint = White) },
-                    text = { Text(text = stringResource(R.string.btn_new), color = White) },
+                    icon = { Icon(Icons.Filled.Add, "", tint = Purple) },
+                    text = { Text(text = stringResource(R.string.btn_new), color = Purple) },
                     onClick = {
                         navController.navigate(Navigation.NEW.route)
                     },
@@ -102,7 +101,6 @@ fun Main(activity: ComponentActivity) {
             }
         }
     ) {
-        // Screen content
         NavHost(navController = navController, startDestination = Navigation.LIST.route) {
 
             composable(Navigation.LIST.route) {

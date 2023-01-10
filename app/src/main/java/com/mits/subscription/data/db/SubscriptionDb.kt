@@ -45,12 +45,10 @@ abstract class SubscriptionDb : RoomDatabase() {
     }
 
     companion object {
-
-
         const val DEFAULT_FOLDER_ID = 1L
-        val CREATE_DEFAULT_FOLDER = "INSERT INTO folder (folder_id, name)" +
+        const val CREATE_DEFAULT_FOLDER = "INSERT INTO folder (folder_id, name)" +
                 "VALUES (" + DEFAULT_FOLDER_ID + " , 'Без папки');"
-        val UPDATE_EXISTING_DESCRIPTION = "UPDATE subscription \n" +
+        const val UPDATE_EXISTING_DESCRIPTION = "UPDATE subscription \n" +
                 "   SET folder_id = " + DEFAULT_FOLDER_ID
 
         @Volatile

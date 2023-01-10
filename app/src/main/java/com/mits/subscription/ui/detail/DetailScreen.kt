@@ -1,16 +1,11 @@
 package com.mits.subscription.ui.detail
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -39,7 +34,6 @@ import com.mits.subscription.ui.creating.Folders
 import com.mits.subscription.ui.creating.ShowDatePicker
 import java.util.*
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DetailScreen(
     navController: NavController,
@@ -49,7 +43,6 @@ fun DetailScreen(
     Detail(state, navController, detailViewModel)
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Detail(
     uiState: State<DetailViewModel.DetailState?>,
@@ -123,10 +116,16 @@ fun Detail(
 
             }
             if (choseStartDate.value) {
-                ShowDatePicker(startCalendar, onChanged = { newCalendar ->
-                    detailViewModel.acceptStartCalendar(newCalendar)
-                    choseStartDate.value = false
-                })
+                ShowDatePicker(
+                    startCalendar, onChanged = { newCalendar ->
+                        detailViewModel.acceptStartCalendar(newCalendar)
+                        choseStartDate.value = false
+                    },
+                    onDismiss = {
+                        choseStartDate.value = false
+                    },
+                    R.string.label_start_date
+                )
             }
             val choseEndDate = remember { mutableStateOf(false) }
             val endCalendar = Calendar.getInstance()
@@ -154,7 +153,13 @@ fun Detail(
                         choseEndDate.value = false
                         detailViewModel.acceptEndCalendar(newCalendar)
                     }
-                })
+
+                }, onDismiss = {
+                    choseStartDate.value = false
+                    choseEndDate.value = false
+                },
+                    R.string.label_end_date
+                )
             }
 
 
@@ -171,7 +176,7 @@ fun Detail(
                 onChanged = { detailViewModel.acceptNewFolder(it) })
 
             Card(
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp,  )
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
             ) {
                 Column() {
                     Row(
@@ -190,7 +195,7 @@ fun Detail(
                             Modifier
                                 .clickable(true, onClick = { detailViewModel.addVisitedLesson() })
                                 .weight(0.2f)
-                                .padding(end =  16.dp)
+                                .padding(end = 16.dp)
                         )
                     }
 
@@ -256,9 +261,9 @@ fun LessonRow(item: Lesson, detailViewModel: DetailViewModel) {
             .padding(16.dp)
             .pointerInput(Unit) {
                 detectTapGestures(
-                    onPress = { expanded.value = true },
+                    onPress = { },
                     onDoubleTap = { /* Called on Double Tap */ },
-                    onLongPress = { },
+                    onLongPress = { expanded.value = true },
                     onTap = { /* Called on Tap */ }
                 )
             },
@@ -280,7 +285,10 @@ fun LessonRow(item: Lesson, detailViewModel: DetailViewModel) {
         ShowDatePicker(start, onChanged = { newCalendar ->
             detailViewModel.changeLessonDate(item, newCalendar)
             expanded.value = false
-        })
+        },
+            onDismiss = {
+                expanded.value = false
+            })
     }
 }
 

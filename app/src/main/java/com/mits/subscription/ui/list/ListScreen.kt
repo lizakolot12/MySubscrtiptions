@@ -6,17 +6,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -33,16 +29,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.mits.subscription.R
 import com.mits.subscription.data.db.SubscriptionDb
 import com.mits.subscription.model.Folder
 import com.mits.subscription.model.Subscription
-import com.mits.subscription.ui.theme.DarkPurpleGrey
-import com.mits.subscription.ui.theme.Purple
-import com.mits.subscription.ui.theme.PurpleLight
-import kotlinx.coroutines.flow.mapLatest
+import com.mits.subscription.ui.theme.*
 import kotlin.math.roundToInt
 
 @Composable
@@ -114,7 +106,7 @@ fun ExpandedListItemView(
                 imageVector = if (item.expanded) ImageVector.vectorResource(id = R.drawable.arrow_drop_up)
                 else Icons.Default.ArrowDropDown,
                 contentDescription = "image",
-                tint = Purple, modifier = Modifier
+                modifier = Modifier
                     .size(30.dp)
                     .clickable(onClick = {
                         onButtonClicked?.invoke(item.folder.id, !item.expanded)
@@ -126,7 +118,7 @@ fun ExpandedListItemView(
         modifier = Modifier
             .fillMaxWidth()
             .shadow(8.dp, shape = RoundedCornerShape(1.dp))
-            .background(Color.LightGray, shape = RoundedCornerShape(6.dp))
+            .background(md_theme_light_secondaryContainer, shape = RoundedCornerShape(6.dp))
             .combinedClickable(
                 onClick = { onButtonClicked?.invoke(item.folder.id, !item.expanded) },
                 onLongClick = {
@@ -163,7 +155,7 @@ fun SubscriptionRow(
                 elevation = 1.dp,
                 shape = RoundedCornerShape(2.dp)
             )
-            .background(Color.White)
+            .background(md_theme_light_background)
             .fillMaxWidth()
             .padding(16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -203,51 +195,42 @@ fun ContextMenu(
         onDismissRequest = { expanded.value = false },
         modifier = Modifier.fillMaxWidth(0.7f)
     ) {
-        DropdownMenuItem(onClick = {
-            listViewModel.delete(subscription)
-            expanded.value = false
-        }) {
-
-            Text(
-                stringResource(id = R.string.delete),
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            Icon(
-                Icons.Filled.Delete,
-                contentDescription = stringResource(id = R.string.description_add_lesson),
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-        }
-
+        DropdownMenuItem(
+            text = { Text(stringResource(id = R.string.delete)) },
+            onClick = {
+                listViewModel.delete(subscription)
+                expanded.value = false
+            },
+            leadingIcon = {
+                Icon(
+                    Icons.Filled.Delete,
+                    contentDescription = null
+                )
+            })
         DropdownMenuItem(
             onClick = {
                 listViewModel.addVisitedLesson(subscription)
                 expanded.value = false
             },
-        ) {
-            Text(
-                stringResource(id = R.string.description_add_lesson),
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            Icon(
-                imageVector = Icons.Default.Check, contentDescription = null,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-
-
-        }
+            text = { Text(stringResource(id = R.string.description_add_lesson)) },
+            leadingIcon = {
+                Icon(
+                    Icons.Default.Check,
+                    contentDescription = null
+                )
+            }
+        )
         DropdownMenuItem(onClick = {
             listViewModel.copy(subscription)
             expanded.value = false
-        }) {
-            Text(stringResource(id = R.string.copy_subscription))
-            Spacer(modifier = Modifier.weight(1f))
-            Icon(
-                painter = painterResource(id = R.drawable.ic_baseline_content_copy_24),
-                contentDescription = null,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-        }
+        },
+            text = { Text(stringResource(id = R.string.copy_subscription)) },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_baseline_content_copy_24),
+                    contentDescription = null
+                )
+            })
     }
 }
 
@@ -265,17 +248,14 @@ fun ContextMenuFolder(
         DropdownMenuItem(onClick = {
             listViewModel.deleteFolder(folder)
             expanded.value = false
-        }) {
-
-            Text(
-                stringResource(id = R.string.delete),
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            Icon(
-                Icons.Filled.Delete,
-                contentDescription = stringResource(id = R.string.description_add_lesson),
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-        }
+        },
+          /*  colors = MenuItemColors(textColor = md_theme_light_outline),*/
+            text = { Text(stringResource(id = R.string.delete)) },
+            leadingIcon = {
+                Icon(
+                    Icons.Filled.Delete,
+                    contentDescription = null
+                )
+            })
     }
 }

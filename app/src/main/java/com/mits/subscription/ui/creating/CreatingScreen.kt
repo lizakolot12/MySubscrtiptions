@@ -1,14 +1,14 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.mits.subscription.ui.creating
 
 import android.app.DatePickerDialog
-import android.util.Log
 import android.widget.DatePicker
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.*
-import androidx.compose.material.ExposedDropdownMenuDefaults.TrailingIcon
+import androidx.compose.material3.*
+import androidx.compose.material3.ExposedDropdownMenuDefaults.TrailingIcon
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -249,7 +249,6 @@ fun ShowDatePicker(initial: Calendar, onChanged: (m: Calendar) -> Unit, onDismis
 
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Folders(folders: LiveData<List<Folder>>, init: Folder, onChanged: (folder: Folder) -> Unit) {
 
@@ -298,10 +297,15 @@ fun Folders(folders: LiveData<List<Folder>>, init: Folder, onChanged: (folder: F
                         expanded = false
                         onChanged.invoke(selectionOption)
                     }
-                ) {
+                , text = {selectionOption.name}
+                ) /*{
                     Text(text = selectionOption.name)
-                }
+                }*/
             }
         }
     }
 }
+
+
+
+

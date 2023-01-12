@@ -3,6 +3,7 @@
     <string name="title">Абонементи</string>
     <string name="btn_new">Новий</string>
     <string name="label_name">Назва</string>
+    <string name="label_tag">Мітка</string>
     <string name="label_lesson_number">Заплановано занять</string>
     <string name="label_start_date">Дата старту </string>
     <string name="label_end_date">Дата кінця </string>
@@ -10,7 +11,7 @@
     <string name="name_error">Не вказана назва</string>
     <string name="creating_error">Виникла помилка при створенні запису</string>
     <string name="delete">Видалити</string>
-    <string name="description_add_lesson">Відмітити заняття</string>
+    <string name="description_add_lesson">Відвідано заняття</string>
     <string name="copy_subscription">Копія абонементу</string>
     <string name="visited_lessons">Відвідані заняття</string>
     <string name="empty_visited_lessons">Не було занять</string>
@@ -19,4 +20,17 @@
     <string name="ok">Гаразд</string>
     <string name="default_folder_name">Без папки</string>
     <string name="folder">Папка</string>
+    <string name="january">Січень</string>
+    <string name="february">Лютий</string>
+    <string name="march">Березень</string>
+    <string name="april">Квітень</string>
+    <string name="may">Травень</string>
+    <string name="june">Червень</string>
+    <string name="july">Липень</string>
+    <string name="august">Серпень</string>
+    <string name="september">Вересень</string>
+    <string name="october">Жовтень</string>
+    <string name="november">Листопад</string>
+    <string name="december">Грудень</string>
+
 </resources>

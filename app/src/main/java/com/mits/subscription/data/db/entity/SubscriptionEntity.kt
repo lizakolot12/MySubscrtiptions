@@ -18,9 +18,9 @@ import java.util.*
 data class SubscriptionEntity(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name="sub_id")
-    val id: Long,
+    val id: Long? = null,
 
-    val name: String,
+    val name: String?,
 
     val startDate: Date?,
 
@@ -28,8 +28,6 @@ data class SubscriptionEntity(
 
     val lessonNumbers: Int,
 
-    val description: String?,
-
     @ColumnInfo(name = "folder_id", index = true)
-    val folderId: Long? = SubscriptionDb.DEFAULT_FOLDER_ID
+    val folderId: Long
 )

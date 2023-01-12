@@ -10,6 +10,8 @@ import com.mits.subscription.model.Folder
 import com.mits.subscription.model.Subscription
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import java.util.Calendar
+import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
@@ -18,31 +20,67 @@ class CreatingViewModel
     private val repository: SubscriptionRepository
 ) : ViewModel() {
 
-    val folders:LiveData<List<Folder>> = repository.subsFolders
     private val viewModelState = mutableStateOf(CreatingState())
 
-    fun init(){
-        viewModelState.value = CreatingState()
+    fun init() {
+        val defaultTag = getDefaultTag()
+        viewModelState.value = CreatingState(defaultTag)
+
+    }
+
+    private fun getDefaultTag(): Int? {
+        val currentDate = Calendar.getInstance()
+        return when (currentDate.get(Calendar.MONTH)) {
+            0 -> R.string.january
+            1 -> R.string.february
+            2 -> R.string.march
+            3 -> R.string.april
+            4 -> R.string.may
+            5 -> R.string.june
+            6 -> R.string.july
+            7 -> R.string.august
+            8 -> R.string.september
+            9 -> R.string.october
+            10 -> R.string.november
+            11 -> R.string.december
+            else -> {
+                null
+            }
+        }
     }
 
     val uiState = viewModelState
-    fun create(subscription: Subscription) {
+    fun create(
+        name: String,
+        tag: String? = null,
+        lessonNumbers: Int,
+        startDate: Date,
+        endDate: Date
+    ) {
         val copy = CreatingState()
         copy.isLoading = true
-        viewModelState.value= copy
+        viewModelState.value = copy
         viewModelScope.launch {
-            repository.createSubscription(subscription)
-            val copy2 = CreatingState()
-            copy2.isLoading = false
-            copy2.finished = true
-
-            viewModelState.value= copy2
+            val folderId = repository.createFolder(name)
+            val newSubscription = Subscription(
+                -1,
+                name = tag,
+                startDate = startDate,
+                endDate = endDate,
+                lessonNumbers = lessonNumbers,
+                folderId = folderId
+            )
+            repository.createSubscription(newSubscription)
+            val newState = CreatingState()
+            newState.isLoading = false
+            newState.finished = true
+            viewModelState.value = newState
         }
     }
 
     fun checkName(name: String) {
         if (name.isBlank()) {
-            viewModelState.value.nameError =  R.string.name_error
+            viewModelState.value.nameError = R.string.name_error
         } else {
             viewModelState.value.nameError = null
         }
@@ -56,7 +94,15 @@ class CreatingViewModel
                     && !viewModelState.value.isLoading
     }
 
-    class CreatingState {
+    fun checkTag(text: String) {
+        if (text.isNotBlank()) {
+            val newState = viewModelState.value
+            newState.defaultTagStrId = null
+            viewModelState.value = newState
+        }
+    }
+
+    class CreatingState(var defaultTagStrId: Int? = null) {
         var nameError: Int? = null
         var savingAvailable: Boolean = false
         var finished: Boolean = false

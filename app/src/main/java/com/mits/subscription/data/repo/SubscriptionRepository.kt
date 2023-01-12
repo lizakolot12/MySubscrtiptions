@@ -30,7 +30,6 @@ class SubscriptionRepository(
             subscription.startDate,
             subscription.endDate,
             subscription.lessonNumbers,
-            subscription.description,
             subscription.folderId
         )
         return subscriptionDao.insert(subscriptionEntity)
@@ -66,14 +65,11 @@ class SubscriptionRepository(
             subscription.startDate,
             subscription.endDate,
             subscription.lessonNumbers,
-            subscription.description,
             subscription.folderId
         )
     }
 
-    suspend fun createFolder(name: String) {
-        folderDao.insert(FolderEntity(0, name))
-    }
+    suspend fun createFolder(name: String) = folderDao.insert(FolderEntity(name = name))
 
     suspend fun addToFolder(folderId: Long, subscription: Subscription) {
         val subs = SubscriptionEntity(
@@ -82,7 +78,6 @@ class SubscriptionRepository(
             subscription.startDate,
             subscription.endDate,
             subscription.lessonNumbers,
-            subscription.description,
             folderId
         )
         subscriptionDao.updateSubscription(subs)

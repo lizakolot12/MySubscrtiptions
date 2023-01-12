@@ -72,16 +72,6 @@ fun Main(activity: ComponentActivity) {
                     )
                 },
 
-                actions = {
-                    if (currentRoute.value?.destination?.route.equals(Navigation.LIST.route)) {
-                        IconButton(onClick = { createFolder.value = true }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_baseline_create_new_folder_24),
-                                ""
-                            )
-                        }
-                    }
-                },
                 modifier = Modifier.fillMaxWidth(),
                 navigationIcon = {
                     if (!currentRoute.value?.destination?.route.equals(Navigation.LIST.route)) {

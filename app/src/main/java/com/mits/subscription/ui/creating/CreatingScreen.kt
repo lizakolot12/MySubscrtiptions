@@ -25,6 +25,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.mits.subscription.R
 import com.mits.subscription.data.db.SubscriptionDb
@@ -99,14 +100,35 @@ fun CreatingScreenState(
                 fontSize = 12.sp
             )
         }
+
+        val tag = remember { mutableStateOf(TextFieldValue()) }
+        if (state.value.defaultTagStrId != null) {
+            tag.value = TextFieldValue(stringResource(id = state.value.defaultTagStrId!!))
+        }
+        TextField(
+            value = tag.value,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp),
+            onValueChange = {
+                tag.value = it
+                createViewModel.checkTag(it.text)
+            },
+
+            label = { Text(stringResource(id = R.string.label_tag)) },
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next,
+            ),
+        )
+
         val number = remember { mutableStateOf("") }
         val keyboardController = LocalSoftwareKeyboardController.current
         val choseStartDate = remember { mutableStateOf(false) }
         TextField(
             modifier = Modifier
                 .padding(horizontal = 16.dp)
-                .fillMaxWidth().
-            padding(vertical = 8.dp),
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
             value = number.value,
 
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
@@ -185,29 +207,17 @@ fun CreatingScreenState(
                 R.string.label_end_date
             )
         }
-        val defaultFolderName = stringResource(id = R.string.default_folder_name)
-        val defaultFolder = Folder(
-            SubscriptionDb.DEFAULT_FOLDER_ID,
-            defaultFolderName, emptyList()
-        )
-        val selectedOptionFolder = remember { mutableStateOf(defaultFolder) }
-        Folders(
-            createViewModel.folders,
-            defaultFolder,
-            onChanged = { selectedOptionFolder.value = it })
+
         Button(
             onClick = {
                 createViewModel.create(
-                    Subscription(
-                        0, name.value.text,
-                        startDate.value.time,
-                        endDate.value.time,
-                        Integer.valueOf(
-                            number.value.ifBlank { "0" }
-                        ), "",
-                        emptyList(),
-                        selectedOptionFolder.value.id
-                    )
+                    name.value.text,
+                    tag.value.text,
+                    Integer.valueOf(
+                        number.value.ifBlank { "0" }
+                    ),
+                    startDate.value.time,
+                    endDate.value.time,
                 )
             },
 
@@ -225,7 +235,12 @@ fun CreatingScreenState(
 private fun String.digits() = filter { it.isDigit() }
 
 @Composable
-fun ShowDatePicker(initial: Calendar, onChanged: (m: Calendar) -> Unit, onDismiss: (() -> Unit)? = null, titleId: Int? = null) {
+fun ShowDatePicker(
+    initial: Calendar,
+    onChanged: (m: Calendar) -> Unit,
+    onDismiss: (() -> Unit)? = null,
+    titleId: Int? = null
+) {
     val context = LocalContext.current
 
     val yearInit = initial.get(Calendar.YEAR)
@@ -296,8 +311,7 @@ fun Folders(folders: LiveData<List<Folder>>, init: Folder, onChanged: (folder: F
                         selectedOptionFolder.value = selectionOption
                         expanded = false
                         onChanged.invoke(selectionOption)
-                    }
-                , text = {selectionOption.name}
+                    }, text = { selectionOption.name }
                 ) /*{
                     Text(text = selectionOption.name)
                 }*/

@@ -2,17 +2,17 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "ca7e01ba870042699d5457b48001ba35",
+    "identityHash": "623fd225acb7206fed85cb0ddc88ee8b",
     "entities": [
       {
         "tableName": "folder",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`folder_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`folder_id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT)",
         "fields": [
           {
             "fieldPath": "id",
             "columnName": "folder_id",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "name",
@@ -32,13 +32,13 @@
       },
       {
         "tableName": "subscription",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sub_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `startDate` INTEGER, `endDate` INTEGER, `lessonNumbers` INTEGER NOT NULL, `description` TEXT, `folder_id` INTEGER, FOREIGN KEY(`folder_id`) REFERENCES `folder`(`folder_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sub_id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `startDate` INTEGER, `endDate` INTEGER, `lessonNumbers` INTEGER NOT NULL, `folder_id` INTEGER, FOREIGN KEY(`folder_id`) REFERENCES `folder`(`folder_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
             "columnName": "sub_id",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "name",
@@ -63,12 +63,6 @@
             "columnName": "lessonNumbers",
             "affinity": "INTEGER",
             "notNull": true
-          },
-          {
-            "fieldPath": "description",
-            "columnName": "description",
-            "affinity": "TEXT",
-            "notNull": false
           },
           {
             "fieldPath": "folderId",
@@ -172,7 +166,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ca7e01ba870042699d5457b48001ba35')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '623fd225acb7206fed85cb0ddc88ee8b')"
     ]
   }
 }

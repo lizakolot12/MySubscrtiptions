@@ -15,14 +15,7 @@ import com.mits.subscription.data.db.entity.SubscriptionEntity
 
 @Database(
     entities = [FolderEntity::class, SubscriptionEntity::class, LessonEntity::class],
-    version = 2,
-    autoMigrations = [
-        AutoMigration(
-            from = 1,
-            to = 2,
-            spec = SubscriptionDb.AutoMigration::class
-        )
-    ],
+    version = 1,
     exportSchema = true
 )
 
@@ -33,24 +26,8 @@ abstract class SubscriptionDb : RoomDatabase() {
     abstract fun subscriptionDao(): SubscriptionDao
     abstract fun lessonDao(): LessonDao
 
-    class AutoMigration : AutoMigrationSpec {
-
-        override fun onPostMigrate(db: SupportSQLiteDatabase) {
-            super.onPostMigrate(db)
-            db.execSQL(
-                CREATE_DEFAULT_FOLDER
-            )
-            db.execSQL(UPDATE_EXISTING_DESCRIPTION )
-        }
-    }
 
     companion object {
-        const val DEFAULT_FOLDER_ID = 1L
-        const val CREATE_DEFAULT_FOLDER = "INSERT INTO folder (folder_id, name)" +
-                "VALUES (" + DEFAULT_FOLDER_ID + " , 'Без папки');"
-        const val UPDATE_EXISTING_DESCRIPTION = "UPDATE subscription \n" +
-                "   SET folder_id = " + DEFAULT_FOLDER_ID
-
         @Volatile
         private var INSTANCE: SubscriptionDb? = null
 
@@ -64,13 +41,6 @@ abstract class SubscriptionDb : RoomDatabase() {
                 context.applicationContext,
                 SubscriptionDb::class.java, "subscription.db"
             )
-                .addCallback(object:Callback(){
-                    override fun onCreate(db: SupportSQLiteDatabase) {
-                        super.onCreate(db)
-                        db.execSQL(CREATE_DEFAULT_FOLDER)
-                    }
-
-                })
                 .build()
 
     }

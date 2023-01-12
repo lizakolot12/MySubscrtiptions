@@ -24,8 +24,6 @@ class DetailViewModel
     private val viewModelState: MutableLiveData<DetailState> = MutableLiveData(DetailState(null))
     val uiState: LiveData<DetailState> = viewModelState
 
-    val folders:LiveData<List<Folder>> = repository.subsFolders
-
     fun init(id: Long?) {
         viewModelState.value = DetailState(null)
         viewModelScope.launch {

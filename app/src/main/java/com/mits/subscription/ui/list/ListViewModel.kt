@@ -81,11 +81,11 @@ class ListViewModel @Inject constructor(
 
     fun copy(subscription: Subscription) {
         viewModelScope.launch {
-            val newSubscription = Subscription(
+        /*    val newSubscription = Subscription(
                 0, subscription.name + "_copy",
-                Date(), Date(), subscription.lessonNumbers, subscription.description, emptyList()
+                Date(), Date(), subscription.lessonNumbers, emptyList()
             )
-            repository.createSubscription(newSubscription)
+            repository.createSubscription(newSubscription)*/
         }
     }
 

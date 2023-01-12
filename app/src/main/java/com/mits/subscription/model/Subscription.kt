@@ -10,11 +10,10 @@ data class Subscription(
 
     @ColumnInfo(name="sub_id")
     var id: Long,
-    var name: String,
+    var name: String? = null,
     var startDate: Date?,
     var endDate: Date?,
     var lessonNumbers: Int = 0,
-    var description: String?,
 
     @Relation(
         parentColumn = "sub_id",
@@ -24,5 +23,5 @@ data class Subscription(
     var lessons: List<Lesson>? = null,
 
     @ColumnInfo(name="folder_id")
-    var folderId:Long? = SubscriptionDb.DEFAULT_FOLDER_ID
+    var folderId:Long
 )

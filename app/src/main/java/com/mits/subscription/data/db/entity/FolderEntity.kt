@@ -9,8 +9,8 @@ import java.util.*
 )
 data class FolderEntity(
     @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name="folder_id")
-    val id: Long,
+    @ColumnInfo(name = "folder_id")
+    val id: Long? = null,
 
     val name: String?
 )

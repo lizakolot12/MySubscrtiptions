@@ -15,9 +15,13 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -39,12 +43,12 @@ import kotlin.math.roundToInt
 
 @Composable
 fun ListScreen(navController: NavController, listViewModel: ListViewModel) {
-    Image(
-        painterResource(id = R.drawable.background), contentDescription = "Фон",
-        Modifier.fillMaxSize(), contentScale = ContentScale.FillHeight,
-        alpha = 0.9f
-    )
-
+    if ((listViewModel.subsFolders.value?.size ?: 0) == 0) {
+        Image(
+            painterResource(id = R.drawable.background), contentDescription = "Фон",
+            Modifier.fillMaxSize()
+        )
+    }
     val subsFolder by listViewModel.subsFolders.observeAsState(listOf())
 
     val mapPosition: MutableMap<Long, Offset> = HashMap()
@@ -122,9 +126,7 @@ fun ExpandedListItemView(
             .combinedClickable(
                 onClick = { onButtonClicked?.invoke(item.folder.id, !item.expanded) },
                 onLongClick = {
-                    if (item.folder.id != SubscriptionDb.DEFAULT_FOLDER_ID) {
-                        contextMenu.value = true
-                    }
+                    contextMenu.value = true
                 }
             )
             .padding(8.dp)
@@ -161,7 +163,7 @@ fun SubscriptionRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         content = {
             Text(
-                text = subscription.name,
+                text = subscription.name ?: "not_found",
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -196,18 +198,6 @@ fun ContextMenu(
         modifier = Modifier.fillMaxWidth(0.7f)
     ) {
         DropdownMenuItem(
-            text = { Text(stringResource(id = R.string.delete)) },
-            onClick = {
-                listViewModel.delete(subscription)
-                expanded.value = false
-            },
-            leadingIcon = {
-                Icon(
-                    Icons.Filled.Delete,
-                    contentDescription = null
-                )
-            })
-        DropdownMenuItem(
             onClick = {
                 listViewModel.addVisitedLesson(subscription)
                 expanded.value = false
@@ -231,6 +221,19 @@ fun ContextMenu(
                     contentDescription = null
                 )
             })
+
+        DropdownMenuItem(
+            text = { Text(stringResource(id = R.string.delete)) },
+            onClick = {
+                listViewModel.delete(subscription)
+                expanded.value = false
+            },
+            leadingIcon = {
+                Icon(
+                    Icons.Filled.Delete,
+                    contentDescription = null
+                )
+            })
     }
 }
 
@@ -249,7 +252,7 @@ fun ContextMenuFolder(
             listViewModel.deleteFolder(folder)
             expanded.value = false
         },
-          /*  colors = MenuItemColors(textColor = md_theme_light_outline),*/
+            /*  colors = MenuItemColors(textColor = md_theme_light_outline),*/
             text = { Text(stringResource(id = R.string.delete)) },
             leadingIcon = {
                 Icon(

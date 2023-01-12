@@ -164,19 +164,6 @@ fun Detail(
                 )
             }
 
-
-            val folder = detailViewModel.folders.value?.find {
-                it.id == (uiState.value?.subscription?.folderId)
-            } ?: Folder(
-                SubscriptionDb.DEFAULT_FOLDER_ID,
-                stringResource(id = R.string.default_folder_name), emptyList()
-            )
-
-            Folders(
-                detailViewModel.folders,
-                folder,
-                onChanged = { detailViewModel.acceptNewFolder(it) })
-
             Card(
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
             ) {

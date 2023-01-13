@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mits.subscription.R
 import com.mits.subscription.data.repo.SubscriptionRepository
-import com.mits.subscription.model.Folder
+import com.mits.subscription.model.Workshop
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.model.Subscription
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,18 +21,18 @@ class DetailViewModel
 @Inject constructor(
     private val repository: SubscriptionRepository
 ) : ViewModel() {
-    private val viewModelState: MutableLiveData<DetailState> = MutableLiveData(DetailState(null))
+    private val viewModelState: MutableLiveData<DetailState> = MutableLiveData(DetailState(null, null))
     val uiState: LiveData<DetailState> = viewModelState
 
     fun init(id: Long?) {
-        viewModelState.value = DetailState(null)
+        viewModelState.value = DetailState(null, null)
         viewModelScope.launch {
             withContext(Dispatchers.IO){
-                val subscription = repository.get(id ?: 0)
-                val newState = DetailState(subscription)
+                val subscription = repository.getSubscription(id ?: 0)
+                val workshop = repository.getWorkshop(subscription.workshopId)
+                val newState = DetailState(subscription, workshop.name)
                 viewModelState.postValue(newState)
             }
-
         }
     }
 
@@ -41,36 +41,43 @@ class DetailViewModel
         val array = subscription?.lessons?.toMutableList()
         array?.remove(lesson)
         subscription?.lessons = array
-        acceptNewSubscription(subscription)
+        acceptNewSubscription(subscription, uiState.value?.workshopName)
         checkSaveAvailability()
     }
 
     fun save() {
-        val newState = DetailState(viewModelState.value?.subscription)
+        val newState = DetailState(viewModelState.value?.subscription, uiState.value?.workshopName)
         newState.isLoading = true
         viewModelState.value = newState
         viewModelScope.launch {
-            val endedState = DetailState(viewModelState.value?.subscription)
-            uiState.value?.subscription?.let { repository.update(it) }
+            val endedState = DetailState(viewModelState.value?.subscription, uiState.value?.workshopName)
+            uiState.value?.subscription?.let { repository.update(it, uiState.value?.workshopName) }
             endedState.isLoading = false
             endedState.finished = true
             viewModelState.value = endedState
         }
     }
 
-    fun checkName(name: String) {
+    fun checkNameWorkshop(name: String) {
         if (name.isBlank()) {
             viewModelState.value?.nameError = R.string.name_error
         } else {
             viewModelState.value?.nameError = null
         }
         val subscription = uiState.value?.subscription
-        subscription?.name = name
-        acceptNewSubscription(subscription)
+        acceptNewSubscription(subscription, name)
         checkSaveAvailability()
     }
-    private fun acceptNewSubscription(subscription: Subscription?){
-        val newState = DetailState(subscription)
+
+    fun acceptDetail(name: String) {
+        val subscription = uiState.value?.subscription
+        subscription?.detail = name
+        acceptNewSubscription(subscription, uiState.value?.workshopName)
+        checkSaveAvailability()
+    }
+
+    private fun acceptNewSubscription(subscription: Subscription?, workshopName: String?){
+        val newState = DetailState(subscription, workshopName)
         newState.wasChanged = true
         viewModelState.value = newState
     }
@@ -79,28 +86,17 @@ class DetailViewModel
         try {
             val subscription = uiState.value?.subscription
             subscription?.lessonNumbers = numStr.toInt()
-            acceptNewSubscription(subscription)
+            acceptNewSubscription(subscription, uiState.value?.workshopName)
             checkSaveAvailability()
         } catch (ex: Exception) {
-            val subscription = uiState.value?.subscription
-            val newState = DetailState(subscription)
+            val newState = currentState()
             newState.generalError = ex.message
             viewModelState.value = newState
         }
     }
 
-    fun acceptNewFolder(folder: Folder) {
-        try {
-            val subscription = uiState.value?.subscription
-            subscription?.folderId = folder.id
-            acceptNewSubscription(subscription)
-            checkSaveAvailability()
-        } catch (ex: Exception) {
-            val subscription = uiState.value?.subscription
-            val newState = DetailState(subscription)
-            newState.generalError = ex.message
-            viewModelState.value = newState
-        }
+    private fun currentState():DetailState {
+        return uiState.value?:DetailState(null,null)
     }
 
     fun acceptStartCalendar(calendar: Calendar) {
@@ -110,11 +106,10 @@ class DetailViewModel
             if ((subscription?.endDate ?: Date()) < (subscription?.startDate ?: Date())) {
                 subscription?.endDate = subscription?.startDate
             }
-            acceptNewSubscription(subscription)
+            acceptNewSubscription(subscription, uiState.value?.workshopName)
             checkSaveAvailability()
         } catch (ex: Exception) {
-            val subscription = uiState.value?.subscription
-            val newState = DetailState(subscription)
+            val newState = currentState()
             newState.wasChanged = true
             newState.generalError = ex.message
             viewModelState.value = newState
@@ -125,11 +120,10 @@ class DetailViewModel
         try {
             val subscription = uiState.value?.subscription
             subscription?.endDate = calendar.time
-            acceptNewSubscription(subscription)
+            acceptNewSubscription(subscription, uiState.value?.workshopName)
             checkSaveAvailability()
         } catch (ex: Exception) {
-            val subscription = uiState.value?.subscription
-            val newState = DetailState(subscription)
+            val newState = currentState()
             newState.wasChanged = true
             newState.generalError = ex.message
             viewModelState.value = newState
@@ -142,7 +136,7 @@ class DetailViewModel
             val array = subscription?.lessons?.toMutableList()
             array?.add(Lesson(-1, "", Date()))
             subscription?.lessons = array
-            acceptNewSubscription(subscription)
+            acceptNewSubscription(subscription, uiState.value?.workshopName)
             checkSaveAvailability()
         }
     }
@@ -163,11 +157,11 @@ class DetailViewModel
             }
         }
         subscription?.lessons = array
-        acceptNewSubscription(subscription)
+        acceptNewSubscription(subscription, uiState.value?.workshopName)
         checkSaveAvailability()
     }
 
-    class DetailState(var subscription: Subscription?) {
+    class DetailState(var subscription: Subscription?, var workshopName:String?) {
         var nameError: Int? = null
         var savingAvailable: Boolean = true
         var finished: Boolean = false

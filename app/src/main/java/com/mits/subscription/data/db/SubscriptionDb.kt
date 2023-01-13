@@ -1,20 +1,16 @@
 package com.mits.subscription.data.db
 
 import android.content.Context
-import android.util.Log
 import androidx.room.*
-import androidx.room.migration.AutoMigrationSpec
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
-import com.mits.subscription.data.db.dao.FolderDao
+import com.mits.subscription.data.db.dao.WorkshopDao
 import com.mits.subscription.data.db.dao.LessonDao
 import com.mits.subscription.data.db.dao.SubscriptionDao
-import com.mits.subscription.data.db.entity.FolderEntity
+import com.mits.subscription.data.db.entity.WorkshopEntity
 import com.mits.subscription.data.db.entity.LessonEntity
 import com.mits.subscription.data.db.entity.SubscriptionEntity
 
 @Database(
-    entities = [FolderEntity::class, SubscriptionEntity::class, LessonEntity::class],
+    entities = [WorkshopEntity::class, SubscriptionEntity::class, LessonEntity::class],
     version = 1,
     exportSchema = true
 )
@@ -22,7 +18,7 @@ import com.mits.subscription.data.db.entity.SubscriptionEntity
 @TypeConverters(DateConverter::class)
 abstract class SubscriptionDb : RoomDatabase() {
 
-    abstract fun folderDao(): FolderDao
+    abstract fun folderDao(): WorkshopDao
     abstract fun subscriptionDao(): SubscriptionDao
     abstract fun lessonDao(): LessonDao
 

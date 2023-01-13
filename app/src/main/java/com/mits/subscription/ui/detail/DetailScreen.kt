@@ -27,12 +27,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.mits.subscription.R
-import com.mits.subscription.data.db.SubscriptionDb
-import com.mits.subscription.model.Folder
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.parseCalendar
 import com.mits.subscription.parseDate
-import com.mits.subscription.ui.creating.Folders
 import com.mits.subscription.ui.creating.ShowDatePicker
 import java.util.*
 
@@ -68,14 +65,14 @@ fun Detail(
             navController.navigateUp()
         }
         Column(modifier = Modifier.fillMaxWidth()) {
-            val name = uiState.value?.subscription?.name ?: ""
+            val name = uiState.value?.workshopName?:""
             TextField(
                 value = name,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
                 onValueChange = {
-                    detailViewModel.checkName(it)
+                    detailViewModel.checkNameWorkshop(it)
                 },
                 isError = uiState.value?.nameError != null,
                 label = { Text(stringResource(id = R.string.label_name)) }
@@ -89,6 +86,18 @@ fun Detail(
                     color = Red
                 )
             }
+
+            val detail = uiState.value?.subscription?.detail?:""
+            TextField(
+                value = detail,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                onValueChange = {
+                    detailViewModel.acceptDetail(it)
+                },
+                label = { Text(stringResource(id = R.string.label_tag)) }
+            )
 
             TextField(
                 modifier = Modifier

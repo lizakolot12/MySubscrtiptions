@@ -1,15 +1,13 @@
 package com.mits.subscription.data.db.entity
 
 import androidx.room.*
-import androidx.room.ForeignKey.CASCADE
-import java.util.*
 
 @Entity(
-    tableName = "folder"
+    tableName = "workshop"
 )
-data class FolderEntity(
+data class WorkshopEntity(
     @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "folder_id")
+    @ColumnInfo(name = "workshop_id")
     val id: Long? = null,
 
     val name: String?

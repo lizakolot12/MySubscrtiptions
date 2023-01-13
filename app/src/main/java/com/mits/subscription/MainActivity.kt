@@ -30,8 +30,6 @@ import com.mits.subscription.ui.creating.CreatingScreen
 import com.mits.subscription.ui.creating.CreatingViewModel
 import com.mits.subscription.ui.detail.DetailScreen
 import com.mits.subscription.ui.detail.DetailViewModel
-import com.mits.subscription.ui.folder.CreateFolderViewModel
-import com.mits.subscription.ui.folder.FolderCreatingDialog
 import com.mits.subscription.ui.list.ListScreen
 import com.mits.subscription.ui.list.ListViewModel
 import com.mits.subscription.ui.theme.SubscriptionTheme
@@ -124,10 +122,6 @@ fun Main(activity: ComponentActivity) {
                     detailViewModel.init(it.arguments?.getLong("subscriptionId"))
                     DetailScreen(navController, detailViewModel)
                 }
-            }
-            if (createFolder.value) {
-                val createFolderViewModel: CreateFolderViewModel by activity.viewModels()
-                FolderCreatingDialog(createFolder, createFolderViewModel)
             }
         }
     }

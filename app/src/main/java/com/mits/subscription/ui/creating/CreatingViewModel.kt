@@ -1,12 +1,10 @@
 package com.mits.subscription.ui.creating
 
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mits.subscription.R
 import com.mits.subscription.data.repo.SubscriptionRepository
-import com.mits.subscription.model.Folder
 import com.mits.subscription.model.Subscription
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -52,7 +50,7 @@ class CreatingViewModel
     val uiState = viewModelState
     fun create(
         name: String,
-        tag: String? = null,
+        detail: String? = null,
         lessonNumbers: Int,
         startDate: Date,
         endDate: Date
@@ -61,14 +59,14 @@ class CreatingViewModel
         copy.isLoading = true
         viewModelState.value = copy
         viewModelScope.launch {
-            val folderId = repository.createFolder(name)
+            val workshopId = repository.createWorkshop(name)
             val newSubscription = Subscription(
                 -1,
-                name = tag,
+                detail = detail,
                 startDate = startDate,
                 endDate = endDate,
                 lessonNumbers = lessonNumbers,
-                folderId = folderId
+                workshopId = workshopId
             )
             repository.createSubscription(newSubscription)
             val newState = CreatingState()

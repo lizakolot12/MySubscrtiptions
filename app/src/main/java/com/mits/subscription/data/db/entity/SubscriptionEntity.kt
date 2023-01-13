@@ -3,15 +3,14 @@ package com.mits.subscription.data.db.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.mits.subscription.data.db.SubscriptionDb
 import java.util.*
 
 @Entity(tableName = "subscription",
         foreignKeys = [
         androidx.room.ForeignKey(
-            entity = FolderEntity::class,
-            parentColumns = arrayOf("folder_id"),
-            childColumns = arrayOf("folder_id"),
+            entity = WorkshopEntity::class,
+            parentColumns = arrayOf("workshop_id"),
+            childColumns = arrayOf("workshop_id"),
             onDelete = androidx.room.ForeignKey.CASCADE
         )
 ],)
@@ -20,7 +19,7 @@ data class SubscriptionEntity(
     @ColumnInfo(name="sub_id")
     val id: Long? = null,
 
-    val name: String?,
+    val detail: String?,
 
     val startDate: Date?,
 
@@ -28,6 +27,6 @@ data class SubscriptionEntity(
 
     val lessonNumbers: Int,
 
-    @ColumnInfo(name = "folder_id", index = true)
-    val folderId: Long
+    @ColumnInfo(name = "workshop_id", index = true)
+    val workshopId: Long
 )

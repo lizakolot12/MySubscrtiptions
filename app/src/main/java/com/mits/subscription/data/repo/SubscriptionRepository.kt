@@ -1,36 +1,32 @@
 package com.mits.subscription.data.repo
 
 import androidx.lifecycle.LiveData
-import androidx.room.ColumnInfo
-import androidx.room.PrimaryKey
-import com.mits.subscription.data.db.SubscriptionDb
-import com.mits.subscription.data.db.dao.FolderDao
+import com.mits.subscription.data.db.dao.WorkshopDao
 import com.mits.subscription.data.db.dao.LessonDao
 import com.mits.subscription.data.db.entity.LessonEntity
 import com.mits.subscription.data.db.dao.SubscriptionDao
-import com.mits.subscription.data.db.entity.FolderEntity
+import com.mits.subscription.data.db.entity.WorkshopEntity
 import com.mits.subscription.data.db.entity.SubscriptionEntity
-import com.mits.subscription.model.Folder
+import com.mits.subscription.model.Workshop
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.model.Subscription
-import java.util.*
 
 class SubscriptionRepository(
     private val lessonDao: LessonDao,
     private val subscriptionDao: SubscriptionDao,
-    private val folderDao: FolderDao
+    private val workshopDao: WorkshopDao
 ) {
 
-    val subsFolders: LiveData<List<Folder>> = folderDao.getAll()
+    val workshops: LiveData<List<Workshop>> = workshopDao.getAll()
 
     suspend fun createSubscription(subscription: Subscription): Long {
         val subscriptionEntity = SubscriptionEntity(
-            subscription.id,
-            subscription.name,
+            null,
+            subscription.detail,
             subscription.startDate,
             subscription.endDate,
             subscription.lessonNumbers,
-            subscription.folderId
+            subscription.workshopId
         )
         return subscriptionDao.insert(subscriptionEntity)
     }
@@ -40,15 +36,20 @@ class SubscriptionRepository(
         return lessonDao.insert(lessonEntity)
     }
 
-    suspend fun get(subscriptionId: Long): Subscription {
+    suspend fun getSubscription(subscriptionId: Long): Subscription {
         return subscriptionDao.getById(subscriptionId)
     }
 
-    suspend fun update(subscription: Subscription) {
+    suspend fun getWorkshop(workshopId: Long): Workshop {
+        return workshopDao.getById(workshopId)
+    }
+
+    suspend fun update(subscription: Subscription, workshopName: String?) {
         lessonDao.deleteBySubscriptionId(subscription.id)
         subscription.lessons?.forEach {
             lessonDao.insert(LessonEntity(0, it.description, it.date, subscription.id))
         }
+        workshopDao.updateWorkshop(WorkshopEntity(subscription.workshopId, workshopName))
         return subscriptionDao.updateSubscription(convert(subscription))
     }
 
@@ -61,30 +62,19 @@ class SubscriptionRepository(
     private fun convert(subscription: Subscription): SubscriptionEntity {
         return SubscriptionEntity(
             subscription.id,
-            subscription.name,
+            subscription.detail,
             subscription.startDate,
             subscription.endDate,
             subscription.lessonNumbers,
-            subscription.folderId
+            subscription.workshopId
         )
     }
 
-    suspend fun createFolder(name: String) = folderDao.insert(FolderEntity(name = name))
+    suspend fun createWorkshop(name: String) = workshopDao.insert(WorkshopEntity(name = name))
 
-    suspend fun addToFolder(folderId: Long, subscription: Subscription) {
-        val subs = SubscriptionEntity(
-            subscription.id,
-            subscription.name,
-            subscription.startDate,
-            subscription.endDate,
-            subscription.lessonNumbers,
-            folderId
-        )
-        subscriptionDao.updateSubscription(subs)
-    }
 
-    suspend fun deleteFolder(folder: Folder) {
-        folderDao.delete(FolderEntity(folder.id, folder.name))
+    suspend fun deleteFolder(workshop: Workshop) {
+        workshopDao.delete(WorkshopEntity(workshop.id, workshop.name))
     }
 
 }

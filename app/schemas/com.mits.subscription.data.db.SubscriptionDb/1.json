@@ -2,15 +2,15 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "d30870e3a3deade5749c56b61fa05589",
+    "identityHash": "5328194de836b6913a891f23229eb6a2",
     "entities": [
       {
-        "tableName": "folder",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`folder_id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT)",
+        "tableName": "workshop",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`workshop_id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT)",
         "fields": [
           {
             "fieldPath": "id",
-            "columnName": "folder_id",
+            "columnName": "workshop_id",
             "affinity": "INTEGER",
             "notNull": false
           },
@@ -23,7 +23,7 @@
         ],
         "primaryKey": {
           "columnNames": [
-            "folder_id"
+            "workshop_id"
           ],
           "autoGenerate": true
         },
@@ -32,7 +32,7 @@
       },
       {
         "tableName": "subscription",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sub_id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT, `startDate` INTEGER, `endDate` INTEGER, `lessonNumbers` INTEGER NOT NULL, `folder_id` INTEGER NOT NULL, FOREIGN KEY(`folder_id`) REFERENCES `folder`(`folder_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sub_id` INTEGER PRIMARY KEY AUTOINCREMENT, `detail` TEXT, `startDate` INTEGER, `endDate` INTEGER, `lessonNumbers` INTEGER NOT NULL, `workshop_id` INTEGER NOT NULL, FOREIGN KEY(`workshop_id`) REFERENCES `workshop`(`workshop_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -41,8 +41,8 @@
             "notNull": false
           },
           {
-            "fieldPath": "name",
-            "columnName": "name",
+            "fieldPath": "detail",
+            "columnName": "detail",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -65,8 +65,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "folderId",
-            "columnName": "folder_id",
+            "fieldPath": "workshopId",
+            "columnName": "workshop_id",
             "affinity": "INTEGER",
             "notNull": true
           }
@@ -79,25 +79,25 @@
         },
         "indices": [
           {
-            "name": "index_subscription_folder_id",
+            "name": "index_subscription_workshop_id",
             "unique": false,
             "columnNames": [
-              "folder_id"
+              "workshop_id"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_subscription_folder_id` ON `${TABLE_NAME}` (`folder_id`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_subscription_workshop_id` ON `${TABLE_NAME}` (`workshop_id`)"
           }
         ],
         "foreignKeys": [
           {
-            "table": "folder",
+            "table": "workshop",
             "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
             "columns": [
-              "folder_id"
+              "workshop_id"
             ],
             "referencedColumns": [
-              "folder_id"
+              "workshop_id"
             ]
           }
         ]
@@ -166,7 +166,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd30870e3a3deade5749c56b61fa05589')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5328194de836b6913a891f23229eb6a2')"
     ]
   }
 }

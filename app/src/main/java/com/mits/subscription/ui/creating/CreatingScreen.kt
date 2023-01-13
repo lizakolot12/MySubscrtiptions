@@ -25,12 +25,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.mits.subscription.R
-import com.mits.subscription.data.db.SubscriptionDb
-import com.mits.subscription.model.Folder
-import com.mits.subscription.model.Subscription
+import com.mits.subscription.model.Workshop
 import com.mits.subscription.parseCalendar
 import java.util.*
 
@@ -265,7 +262,7 @@ fun ShowDatePicker(
 }
 
 @Composable
-fun Folders(folders: LiveData<List<Folder>>, init: Folder, onChanged: (folder: Folder) -> Unit) {
+fun Folders(folders: LiveData<List<Workshop>>, init: Workshop, onChanged: (workshop: Workshop) -> Unit) {
 
     val selectedOptionFolder = remember { mutableStateOf(init) }
     var expanded by remember { mutableStateOf(false) }

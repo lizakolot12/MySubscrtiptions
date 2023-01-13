@@ -10,7 +10,7 @@ data class Subscription(
 
     @ColumnInfo(name="sub_id")
     var id: Long,
-    var name: String? = null,
+    var detail: String? = null,
     var startDate: Date?,
     var endDate: Date?,
     var lessonNumbers: Int = 0,
@@ -22,6 +22,6 @@ data class Subscription(
     )
     var lessons: List<Lesson>? = null,
 
-    @ColumnInfo(name="folder_id")
-    var folderId:Long
+    @ColumnInfo(name="workshop_id")
+    var workshopId:Long
 )

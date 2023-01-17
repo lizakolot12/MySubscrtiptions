@@ -1,5 +1,6 @@
 package com.mits.subscription.data.repo
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import com.mits.subscription.data.db.dao.WorkshopDao
 import com.mits.subscription.data.db.dao.LessonDao
@@ -10,6 +11,7 @@ import com.mits.subscription.data.db.entity.SubscriptionEntity
 import com.mits.subscription.model.Workshop
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.model.Subscription
+import java.util.*
 
 class SubscriptionRepository(
     private val lessonDao: LessonDao,
@@ -36,6 +38,15 @@ class SubscriptionRepository(
         return lessonDao.insert(lessonEntity)
     }
 
+    suspend fun deleteLesson(lesson: Lesson) {
+        lessonDao.deleteByLessonId(lesson.lId)
+    }
+
+    suspend fun updateLesson(lesson: Lesson, newCalendar: Calendar, subscriptionId:Long) {
+        val lessonEntity = LessonEntity(lesson.lId, lesson.description, newCalendar.time, subscriptionId)
+        lessonDao.updateLesson(lessonEntity)
+    }
+
     suspend fun getSubscription(subscriptionId: Long): Subscription {
         return subscriptionDao.getById(subscriptionId)
     }
@@ -53,10 +64,19 @@ class SubscriptionRepository(
         return subscriptionDao.updateSubscription(convert(subscription))
     }
 
+    suspend fun deleteWorkshop(subscription: Subscription) {
+        workshopDao.deleteById(subscription.workshopId)
+    }
+
     suspend fun deleteSubscription(subscription: Subscription) {
-        subscriptionDao.delete(
-            convert(subscription)
-        )
+        val currentWorkshop = workshopDao.getById(subscription.workshopId)
+        if((currentWorkshop.subscriptions?.size ?: 0) > 1) {
+            Log.e("TEST", " delete subscription " + subscription.id)
+            subscriptionDao.deleteById(subscription.id)
+        } else{
+            Log.e("TEST", " delete workshop " + subscription.workshopId)
+            deleteWorkshop(subscription)
+        }
     }
 
     private fun convert(subscription: Subscription): SubscriptionEntity {
@@ -72,9 +92,5 @@ class SubscriptionRepository(
 
     suspend fun createWorkshop(name: String) = workshopDao.insert(WorkshopEntity(name = name))
 
-
-    suspend fun deleteFolder(workshop: Workshop) {
-        workshopDao.delete(WorkshopEntity(workshop.id, workshop.name))
-    }
 
 }

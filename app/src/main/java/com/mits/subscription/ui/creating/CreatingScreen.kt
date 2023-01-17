@@ -141,10 +141,10 @@ fun CreatingScreenState(
             )
 
         val startDate = remember { mutableStateOf(Calendar.getInstance()) }
-        Button(
+        FilledTonalButton(
             onClick = { choseStartDate.value = true },
             modifier = Modifier
-                .fillMaxWidth(0.85f)
+                .fillMaxWidth(1f)
                 .padding(horizontal = 16.dp),
         ) {
             Row() {
@@ -174,10 +174,10 @@ fun CreatingScreenState(
 
         val endDate =
             remember { mutableStateOf(Calendar.getInstance()) }
-        Button(
+        FilledTonalButton(
             onClick = { choseEndDate.value = true },
             modifier = Modifier
-                .fillMaxWidth(0.85f)
+                .fillMaxWidth(1f)
                 .padding(horizontal = 16.dp),
 
             ) {
@@ -204,27 +204,31 @@ fun CreatingScreenState(
                 R.string.label_end_date
             )
         }
-
-        Button(
-            onClick = {
-                createViewModel.create(
-                    name.value.text,
-                    tag.value.text,
-                    Integer.valueOf(
-                        number.value.ifBlank { "0" }
-                    ),
-                    startDate.value.time,
-                    endDate.value.time,
-                )
-            },
-
-            modifier = Modifier.padding(horizontal = 16.dp),
-            enabled = state.value.savingAvailable
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.TopEnd
         ) {
-            Row() {
-                Text(stringResource(id = R.string.btn_save))
-            }
+            Button(
+                onClick = {
+                    createViewModel.create(
+                        name.value.text,
+                        tag.value.text,
+                        Integer.valueOf(
+                            number.value.ifBlank { "0" }
+                        ),
+                        startDate.value.time,
+                        endDate.value.time,
+                    )
+                },
 
+                modifier = Modifier.padding(horizontal = 16.dp),
+                enabled = state.value.savingAvailable
+            ) {
+                Row() {
+                    Text(stringResource(id = R.string.btn_save))
+                }
+
+            }
         }
     }
 }
@@ -262,7 +266,11 @@ fun ShowDatePicker(
 }
 
 @Composable
-fun Folders(folders: LiveData<List<Workshop>>, init: Workshop, onChanged: (workshop: Workshop) -> Unit) {
+fun Folders(
+    folders: LiveData<List<Workshop>>,
+    init: Workshop,
+    onChanged: (workshop: Workshop) -> Unit
+) {
 
     val selectedOptionFolder = remember { mutableStateOf(init) }
     var expanded by remember { mutableStateOf(false) }

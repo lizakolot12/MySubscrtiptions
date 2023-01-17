@@ -7,7 +7,9 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -48,8 +50,10 @@ fun Detail(
     navController: NavController,
     detailViewModel: DetailViewModel
 ) {
+    val scrollState = rememberScrollState()
     Column(
         modifier = Modifier
+            .verticalScroll(rememberScrollState())
             .fillMaxHeight(1f)
     )
     {
@@ -65,7 +69,7 @@ fun Detail(
             navController.navigateUp()
         }
         Column(modifier = Modifier.fillMaxWidth()) {
-            val name = uiState.value?.workshopName?:""
+            val name = uiState.value?.workshopName ?: ""
             TextField(
                 value = name,
                 modifier = Modifier
@@ -87,7 +91,7 @@ fun Detail(
                 )
             }
 
-            val detail = uiState.value?.subscription?.detail?:""
+            val detail = uiState.value?.subscription?.detail ?: ""
             TextField(
                 value = detail,
                 modifier = Modifier
@@ -174,11 +178,11 @@ fun Detail(
             }
 
             Card(
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                modifier = Modifier.padding(16.dp)
             ) {
                 Column() {
                     Row(
-                        modifier = Modifier.padding(top = 16.dp)
+                        modifier = Modifier.padding(16.dp)
                     ) {
                         Text(
                             text = stringResource(id = R.string.visited_lessons),
@@ -198,16 +202,14 @@ fun Detail(
                     }
 
                     if ((uiState.value?.subscription?.lessons?.size ?: 0) > 0) {
-                        LazyColumn(
+                        Column(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
-                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
                         ) {
 
-                            itemsIndexed(items = uiState.value?.subscription?.lessons
-                                ?: emptyList(),
-                                itemContent = { pos, item ->
-                                    LessonRow(item, detailViewModel)
-                                })
+                            uiState.value?.subscription?.lessons?.forEach {
+                                LessonRow(it, detailViewModel)
+                            }
+
                         }
                     } else {
                         Text(
@@ -221,25 +223,24 @@ fun Detail(
                 }
             }
         }
-    }
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Button(
-            onClick = {
-                detailViewModel.save()
-            },
 
-            modifier = Modifier
-                .padding(24.dp)
-                .align(Alignment.BottomEnd),
-            enabled = uiState.value?.savingAvailable ?: false
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.TopEnd
         ) {
-            Row() {
-                Text(stringResource(id = R.string.btn_save))
-            }
+            Button(
+                onClick = {
+                    detailViewModel.save()
+                },
 
+                modifier = Modifier
+                    .padding(horizontal = 16.dp),
+                enabled = uiState.value?.savingAvailable ?: false
+            ) {
+                Row() {
+                    Text(stringResource(id = R.string.btn_save))
+                }
+            }
         }
     }
 }

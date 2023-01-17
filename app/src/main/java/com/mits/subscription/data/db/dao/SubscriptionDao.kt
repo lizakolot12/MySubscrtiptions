@@ -14,6 +14,10 @@ interface SubscriptionDao {
     @Delete
     suspend fun delete(subscriptionEntity: SubscriptionEntity)
 
+    @Query("DELETE FROM subscription where sub_id = :id")
+    @Transaction
+    suspend fun deleteById(id: Long)
+
     @Transaction
     @Query("SELECT * FROM subscription")
     fun getAll(): LiveData<List<Subscription>>

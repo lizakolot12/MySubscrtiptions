@@ -14,6 +14,9 @@ interface WorkshopDao {
     @Delete
     suspend fun delete(workshopEntity: WorkshopEntity)
 
+    @Query("DELETE FROM workshop where workshop_id = :id")
+    suspend fun deleteById(id:Long)
+
     @Transaction
     @Query("SELECT * FROM workshop")
     fun getAll(): LiveData<List<Workshop>>

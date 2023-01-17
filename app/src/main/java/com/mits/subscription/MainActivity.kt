@@ -1,6 +1,7 @@
 package com.mits.subscription
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -55,7 +56,6 @@ fun Main(activity: ComponentActivity) {
     val currentRoute = navController
         .currentBackStackEntryFlow
         .collectAsState(initial = navController.currentBackStackEntry)
-    val createFolder = remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -118,6 +118,7 @@ fun Main(activity: ComponentActivity) {
                     Navigation.DETAIL.route + "/{subscriptionId}",
                     arguments = listOf(navArgument("subscriptionId") { type = NavType.LongType })
                 ) { it ->
+                    Log.e("TEST", "create detail screen " + it.arguments?.getLong("subscriptionId"))
                     val detailViewModel: DetailViewModel by activity.viewModels()
                     detailViewModel.init(it.arguments?.getLong("subscriptionId"))
                     DetailScreen(navController, detailViewModel)

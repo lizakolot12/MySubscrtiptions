@@ -20,6 +20,8 @@
     <string name="cancel">Скасувати</string>
     <string name="ok">Гаразд</string>
     <string name="default_folder_name">Без папки</string>
+    <string name="label_start_period">З</string>
+    <string name="label_end_period">По</string>
     <string name="folder">Папка</string>
     <string name="january">Січень</string>
     <string name="february">Лютий</string>

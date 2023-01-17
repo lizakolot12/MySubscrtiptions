@@ -27,7 +27,6 @@ class ListViewModel @Inject constructor(
     private val repository: SubscriptionRepository
 ) :
     ViewModel() {
-    private val activeIds: MutableMap<Long, Long> = HashMap()
     private val _workshops: MediatorLiveData<List<WorkshopViewItem>> = MediatorLiveData()
     val workshop: LiveData<List<WorkshopViewItem>> = _workshops
 
@@ -48,9 +47,17 @@ class ListViewModel @Inject constructor(
         }
 
         return list.map {
+            Log.e("TEST", " map " + getCurrentActiveId(it))
+            var currentActive = getCurrentActiveId(it)
+            val currentActiveInNewCollection =
+                it.subscriptions?.firstOrNull { sub -> sub.id == currentActive }
+            if (currentActiveInNewCollection == null) {
+                currentActive = it.subscriptions?.get(0)?.id ?: -1
+            }
+            Log.e("TEST", " new active map " + currentActive)
             WorkshopViewItem(
                 it,
-                getCurrentActiveId(it)
+                currentActive
             )
         }
     }
@@ -74,7 +81,7 @@ class ListViewModel @Inject constructor(
     private fun updateWorkshops(newList: List<WorkshopViewItem>) {
         Log.e("TEST", "updateWorkshops1 " + _workshops.value)
         Log.e("TEST", "updateWorkshops2 " + newList)
-        _workshops.value= newList
+        _workshops.value = newList
     }
 
     fun addVisitedLesson(subscription: Subscription) {
@@ -83,7 +90,13 @@ class ListViewModel @Inject constructor(
         }
     }
 
-    fun delete(subscription: Subscription) {
+    fun deleteWorkshop(subscription: Subscription) {
+        viewModelScope.launch {
+            repository.deleteWorkshop(subscription)
+        }
+    }
+
+    fun deleteSubscription(subscription: Subscription) {
         viewModelScope.launch {
             repository.deleteSubscription(subscription)
         }
@@ -99,16 +112,21 @@ class ListViewModel @Inject constructor(
         }
     }
 
-    fun deleteFolder(workshop: Workshop) {
+    fun changeLessonDate(item: Lesson, newCalendar: Calendar, subscriptionId: Long) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                repository.deleteFolder(workshop)
+                repository.updateLesson(item, newCalendar, subscriptionId)
             }
-
         }
     }
 
-    fun deleteVisitedLesson(lesson: Lesson?) {
 
+    fun deleteVisitedLesson(lesson: Lesson) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                repository.deleteLesson(lesson)
+            }
+
+        }
     }
 }

@@ -5,17 +5,16 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -26,17 +25,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.mits.subscription.R
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.model.Workshop
 import com.mits.subscription.model.Subscription
+import com.mits.subscription.ui.creating.ShowDatePicker
 import com.mits.subscription.ui.theme.*
 import java.text.SimpleDateFormat
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import java.util.*
 import kotlin.math.roundToInt
+
+val DATE_FORMATTER = SimpleDateFormat("dd.MM.yyyy")
 
 @Composable
 fun ListScreen(navController: NavController, listViewModel: ListViewModel) {
@@ -73,16 +74,14 @@ fun List(
                         md_theme_light_secondaryContainer,
                         shape = RoundedCornerShape(4.dp)
                     ),
-                /*.verticalScroll(scrollStateVertical),*/
                 content = {
                     ListItemView(
                         item,
                         listViewModel,
-                        onButtonClicked = { id: Long, expanded: Boolean ->
-                            /*   listViewModel.changeActiveElement(
-                                   item, expanded
-                               )*/
-                        }, navController = navController
+                        onButtonClicked = {
+                            Log.e("TEST", " navigate " + item.activeElementId)
+                                navController.navigate("detail/${item.activeElementId}")
+                        }
                     )
                     if ((item.workshop.subscriptions?.size ?: 0) > 1) {
                         val scrollStateHorizontal = rememberScrollState()
@@ -107,24 +106,20 @@ fun List(
 fun ListItemView(
     item: WorkshopViewItem,
     listViewModel: ListViewModel,
-    navController: NavController,
-    onButtonClicked: ((id: Long, expanded: Boolean) -> Unit)? = null
+    onButtonClicked: (() -> Unit)? = null
 ) {
     val contextMenu = remember { mutableStateOf(false) }
     fun getItemById(id: Long): Subscription? {
         return item.workshop.subscriptions?.firstOrNull { it.id == id }
     }
+
     Column(
         content = {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(5.dp)
-                    .pointerInput(Unit) {
-                        detectTapGestures(
-                            onTap = { navController.navigate("detail/${item.activeElementId}") },
-                        )
-                    },
+                    .clickable { onButtonClicked?.invoke() },
                 elevation = CardDefaults.cardElevation(
                     defaultElevation = 10.dp
                 )
@@ -149,17 +144,65 @@ fun ListItemView(
                                 .padding(4.dp),
                             fontWeight = FontWeight.Light,
                         )
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+
+                            Column() {
+                                Text(
+                                    stringResource(id = R.string.label_start_period),
+                                    modifier = Modifier
+                                        .padding(4.dp)
+                                )
+                                Text(
+                                    stringResource(id = R.string.label_end_period),
+                                    modifier = Modifier
+                                        .padding(4.dp)
+                                )
+                            }
+                            Column() {
+                                Text(
+                                    DATE_FORMATTER.format(activeElement?.startDate ?: Date()),
+                                    modifier = Modifier
+                                        .padding(4.dp)
+                                )
+                                Text(
+                                    DATE_FORMATTER.format(activeElement?.endDate ?: Date()),
+                                    modifier = Modifier
+                                        .padding(4.dp)
+                                )
+                            }
+                            val lesNum = activeElement?.lessons?.size ?: 0
+                            Text(
+                                fontSize = 22.sp,
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                color = if (((activeElement?.lessonNumbers ?: 0) - lesNum) < 2) {
+                                    Color.Red
+                                } else Color.Black,
+                                text = "" + activeElement?.lessons?.size + " з " + activeElement?.lessonNumbers,
+                            )
+                        }
                         if ((activeElement?.lessons?.size ?: 0) > 0) {
                             var k = 0
                             var hasAddButton = false
                             for (i in 0 until (activeElement?.lessons?.size ?: 0) step 2) {
                                 k += 2
-                                Row() {
-                                    LessonView(activeElement?.lessons?.get(i), listViewModel)
+                                Row(
+                                  /*  Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween*/
+                                ) {
+                                    LessonView(
+                                        activeElement?.lessons?.get(i),
+                                        activeElement?.id ?: -1,
+                                        listViewModel
+                                    )
                                     if (i + 1 < (activeElement?.lessons?.size ?: 0)) {
                                         LessonView(
                                             activeElement?.lessons?.get(i + 1),
-                                            listViewModel
+                                            activeElement?.id ?: -1,
+                                            listViewModel,
                                         )
                                     } else {
                                         activeElement?.let {
@@ -171,9 +214,17 @@ fun ListItemView(
 
                             }
                             if (k < (activeElement?.lessons?.size ?: (0 - 1))) {
-                                LessonView(activeElement?.lessons?.get(k), listViewModel)
+                                LessonView(
+                                    activeElement?.lessons?.get(k),
+                                    activeElement?.id ?: -1,
+                                    listViewModel
+                                )
                             }
                             if (activeElement != null && !hasAddButton) {
+                                AddNewLessonView(listViewModel, activeElement)
+                            }
+                        } else {
+                            if (activeElement != null) {
                                 AddNewLessonView(listViewModel, activeElement)
                             }
                         }
@@ -188,8 +239,11 @@ fun ListItemView(
                             //modifier = Modifier.padding(4.dp)
                         )
                     }
-                    item.workshop.subscriptions?.get(0)
-                        ?.let { ContextMenu(listViewModel, it, expanded) }
+                    if ((item.workshop.subscriptions?.size
+                            ?: 0) > 0 && item.workshop.subscriptions?.get(0) != null
+                    ) {
+                        ContextMenu(listViewModel, item.workshop.subscriptions?.get(0)!!, expanded)
+                    }
                 }
 
             }
@@ -203,62 +257,71 @@ fun ListItemView(
 }
 
 @Composable
-fun LessonView(lesson: Lesson?, listViewModel: ListViewModel) {
-    val formatter = SimpleDateFormat("dd.MM.yyyy")
-    Row(
-        modifier = Modifier
-            .padding(start = 16.dp)
-            .border(
-                width = 1.dp, color =
-                Color.Blue, shape = RoundedCornerShape(8.dp)
-            )
-            .shadow(
-                elevation = 1.dp,
-                shape = RoundedCornerShape(8.dp)
-            )
-            .background(shape = RoundedCornerShape(8.dp), color = md_theme_light_background)
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        content = {
-            Text(
-                text = lesson?.date?.let { formatter.format(it) } ?: "",
-                overflow = TextOverflow.Ellipsis
-            )
+fun LessonView(lesson: Lesson?, subscriptionId: Long, listViewModel: ListViewModel) {
 
-            IconButton(onClick = {
-                listViewModel.deleteVisitedLesson(lesson)
-            }) {
-                Icon(Icons.Rounded.Close, "")
-            }
-        })
+    val expanded = remember { mutableStateOf(false) }
+    if (expanded.value) {
+        val start = Calendar.getInstance()
+        start.time = lesson?.date ?: Date()
+        ShowDatePicker(start, onChanged = { newCalendar ->
+            lesson?.let { listViewModel.changeLessonDate(it, newCalendar, subscriptionId) }
+            expanded.value = false
+        },
+            onDismiss = {
+                expanded.value = false
+            })
+    }
+    Button(
+        onClick = { expanded.value = true },
+        contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
+        modifier = Modifier.padding(8.dp)
+    ) {
+        Text(lesson?.date?.let { DATE_FORMATTER.format(it) } ?: "")
+        /*  Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+          Icon(
+              Icons.Rounded.Close,
+              contentDescription = "Відмінити заняття",
+              modifier = Modifier
+                  .size(ButtonDefaults.IconSize)
+                  .clickable {
+                      lesson?.let {
+                          listViewModel.deleteVisitedLesson(
+                              it
+                          )
+                      }
+                  },
+          )*/
+
+    }
+    /*      Text(
+              text = lesson?.date?.let { formatter.format(it) } ?: "",
+              overflow = TextOverflow.Ellipsis
+          )
+
+          IconButton(onClick = {
+              listViewModel.deleteVisitedLesson(lesson)
+          }) {
+              Icon(Icons.Rounded.Close, "")
+          }*/
+    /* })*/
 }
 
 @Composable
 fun AddNewLessonView(listViewModel: ListViewModel, subscription: Subscription) {
-    Row(
-        modifier = Modifier
-            .padding(start = 16.dp)
-            .border(
-                width = 1.dp, color =
-                Color.Blue, shape = RoundedCornerShape(8.dp)
-            )
-            .shadow(
-                elevation = 1.dp,
-                shape = RoundedCornerShape(8.dp)
-            )
-            .clickable {
-                listViewModel.addVisitedLesson(subscription)
-            }
-            .background(shape = RoundedCornerShape(8.dp), color = md_theme_light_background)
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        content = {
-            Text(
-                text = stringResource(id = R.string.add_new_lesson),
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-        })
+    ElevatedButton(
+        onClick = { listViewModel.addVisitedLesson(subscription) },
+        contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
+        modifier = Modifier.padding(8.dp)
+    ) {
+        Icon(
+            Icons.Rounded.Add,
+            contentDescription = "Додати заняття",
+            modifier = Modifier.size(ButtonDefaults.IconSize),
+        )
+        Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+        Text(stringResource(id = R.string.add_new_lesson))
+
+    }
 }
 
 @Composable
@@ -275,8 +338,8 @@ fun SubscriptionSmall(
             .offset { IntOffset(0, offsetY.roundToInt()) }
             .pointerInput(Unit) {
                 detectTapGestures(
-                    onDoubleTap = { expanded.value = true },
-                    onLongPress = { navController.navigate("detail/${subscription.id}") },
+                    onDoubleTap = { navController.navigate("detail/${subscription.id}") },
+                    onLongPress = { expanded.value = true },
                     onTap = {
                         listViewModel.changeActiveElement(
                             workshopViewItem,
@@ -324,6 +387,7 @@ fun SubscriptionSmall(
                 text = "" + subscription.lessons?.size + " з " + subscription.lessonNumbers,
             )
         })
+    ContextMenuSubscription(listViewModel, subscription, expanded)
 }
 
 @Composable
@@ -365,7 +429,7 @@ fun ContextMenu(
         DropdownMenuItem(
             text = { Text(stringResource(id = R.string.delete)) },
             onClick = {
-                listViewModel.delete(subscription)
+                listViewModel.deleteWorkshop(subscription)
                 expanded.value = false
             },
             leadingIcon = {
@@ -378,9 +442,9 @@ fun ContextMenu(
 }
 
 @Composable
-fun ContextMenuFolder(
+fun ContextMenuSubscription(
     listViewModel: ListViewModel,
-    workshop: Workshop,
+    subscription: Subscription,
     expanded: MutableState<Boolean>
 ) {
     DropdownMenu(
@@ -389,7 +453,7 @@ fun ContextMenuFolder(
         modifier = Modifier.fillMaxWidth(0.7f)
     ) {
         DropdownMenuItem(onClick = {
-            listViewModel.deleteFolder(workshop)
+            listViewModel.deleteSubscription(subscription)
             expanded.value = false
         },
             /*  colors = MenuItemColors(textColor = md_theme_light_outline),*/

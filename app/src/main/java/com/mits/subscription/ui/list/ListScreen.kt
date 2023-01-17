@@ -3,14 +3,17 @@ package com.mits.subscription.ui.list
 import android.util.Log
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -19,20 +22,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.mits.subscription.R
 import com.mits.subscription.model.Lesson
-import com.mits.subscription.model.Workshop
 import com.mits.subscription.model.Subscription
 import com.mits.subscription.ui.creating.ShowDatePicker
-import com.mits.subscription.ui.theme.*
+import com.mits.subscription.ui.theme.md_theme_light_background
+import com.mits.subscription.ui.theme.md_theme_light_secondaryContainer
+import kotlinx.coroutines.coroutineScope
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
@@ -79,8 +86,7 @@ fun List(
                         item,
                         listViewModel,
                         onButtonClicked = {
-                            Log.e("TEST", " navigate " + item.activeElementId)
-                                navController.navigate("detail/${item.activeElementId}")
+                            navController.navigate("detail/${item.activeElementId}")
                         }
                     )
                     if ((item.workshop.subscriptions?.size ?: 0) > 1) {
@@ -108,7 +114,6 @@ fun ListItemView(
     listViewModel: ListViewModel,
     onButtonClicked: (() -> Unit)? = null
 ) {
-    val contextMenu = remember { mutableStateOf(false) }
     fun getItemById(id: Long): Subscription? {
         return item.workshop.subscriptions?.firstOrNull { it.id == id }
     }
@@ -184,50 +189,72 @@ fun ListItemView(
                                 text = "" + activeElement?.lessons?.size + " з " + activeElement?.lessonNumbers,
                             )
                         }
+                        val scrollState = rememberScrollState()
+                        var maxHeight = 0.dp
+                        var sizeInDp by remember { mutableStateOf(DpSize.Zero) }
+                        val density = LocalDensity.current
                         if ((activeElement?.lessons?.size ?: 0) > 0) {
-                            var k = 0
-                            var hasAddButton = false
-                            for (i in 0 until (activeElement?.lessons?.size ?: 0) step 2) {
-                                k += 2
-                                Row(
-                                  /*  Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween*/
-                                ) {
-                                    LessonView(
-                                        activeElement?.lessons?.get(i),
-                                        activeElement?.id ?: -1,
-                                        listViewModel
-                                    )
-                                    if (i + 1 < (activeElement?.lessons?.size ?: 0)) {
-                                        LessonView(
-                                            activeElement?.lessons?.get(i + 1),
-                                            activeElement?.id ?: -1,
-                                            listViewModel,
+                            Column(
+                                modifier = Modifier.onSizeChanged {
+                                    sizeInDp = density.run {
+                                        DpSize(
+                                            it.width.toDp(),
+                                            it.height.toDp()
                                         )
-                                    } else {
-                                        activeElement?.let {
-                                            hasAddButton = true
-                                            AddNewLessonView(listViewModel, activeElement)
+                                    }
+                                }
+                                    .heightIn(min = 0.dp, max = 200.dp)
+                                    .verticalScroll(scrollState)
+                                    //.heightIn(max = 148.dp)
+
+                            ) {
+                                var k = 0
+                                var hasAddButton = false
+                                for (i in 0 until (activeElement?.lessons?.size ?: 0) step 2) {
+                                    k += 2
+                                    Log.e("TEST", "maxHeight " + maxHeight + "   k = " + k)
+                                    if(k > 1 && maxHeight < 1.dp) {
+                                        maxHeight = sizeInDp.height
+                                    }
+
+                                    Row {
+                                        LessonView(
+                                            activeElement?.lessons?.get(i),
+                                            activeElement?.id ?: -1,
+                                            listViewModel
+                                        )
+                                        if (i + 1 < (activeElement?.lessons?.size ?: 0)) {
+                                            LessonView(
+                                                activeElement?.lessons?.get(i + 1),
+                                                activeElement?.id ?: -1,
+                                                listViewModel,
+                                            )
+                                        } else {
+                                            activeElement?.let {
+                                                hasAddButton = true
+                                                AddNewLessonView(listViewModel, activeElement)
+                                            }
                                         }
                                     }
                                 }
-
-                            }
-                            if (k < (activeElement?.lessons?.size ?: (0 - 1))) {
-                                LessonView(
-                                    activeElement?.lessons?.get(k),
-                                    activeElement?.id ?: -1,
-                                    listViewModel
-                                )
-                            }
-                            if (activeElement != null && !hasAddButton) {
-                                AddNewLessonView(listViewModel, activeElement)
+                                if (k < (activeElement?.lessons?.size ?: (0 - 1))) {
+                                    LessonView(
+                                        activeElement?.lessons?.get(k),
+                                        activeElement?.id ?: -1,
+                                        listViewModel
+                                    )
+                                }
+                                if (activeElement != null && !hasAddButton) {
+                                    AddNewLessonView(listViewModel, activeElement)
+                                }
                             }
                         } else {
                             if (activeElement != null) {
                                 AddNewLessonView(listViewModel, activeElement)
                             }
                         }
+
+
                     }
                     IconButton(
                         modifier = Modifier.size(24.dp),
@@ -254,6 +281,10 @@ fun ListItemView(
             .padding(8.dp)
 
     )
+}
+
+private fun drawRow() {
+
 }
 
 @Composable

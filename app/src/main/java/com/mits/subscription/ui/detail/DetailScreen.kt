@@ -2,11 +2,10 @@
 
 package com.mits.subscription.ui.detail
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -14,11 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -40,17 +35,18 @@ fun DetailScreen(
     navController: NavController,
     detailViewModel: DetailViewModel
 ) {
-    val state = detailViewModel.uiState.observeAsState()
-    Detail(state, navController, detailViewModel)
+    val uiState = detailViewModel.uiState.collectAsState()
+    Detail(uiState, navController, detailViewModel)
 }
 
 @Composable
 fun Detail(
-    uiState: State<DetailViewModel.DetailState?>,
+    uiState: State<DetailViewModel.DetailState>,
     navController: NavController,
     detailViewModel: DetailViewModel
 ) {
-    val scrollState = rememberScrollState()
+
+    Log.e("TEST", "recompose detail ")
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
@@ -65,11 +61,11 @@ fun Detail(
                 CircularProgressIndicator()
             }
         }
-        if (uiState.value?.finished == true) {
+        if (uiState.value.finished == true) {
             navController.navigateUp()
         }
         Column(modifier = Modifier.fillMaxWidth()) {
-            val name = uiState.value?.workshopName ?: ""
+            val name = uiState.value.workshopName ?: ""
             TextField(
                 value = name,
                 modifier = Modifier
@@ -78,12 +74,12 @@ fun Detail(
                 onValueChange = {
                     detailViewModel.checkNameWorkshop(it)
                 },
-                isError = uiState.value?.nameError != null,
+                isError = uiState.value.nameError != null,
                 label = { Text(stringResource(id = R.string.label_name)) }
             )
-            if (uiState.value?.nameError != null) {
+            if (uiState.value.nameError != null) {
                 Text(
-                    text = stringResource(id = uiState.value?.nameError!!),
+                    text = stringResource(id = uiState.value.nameError!!),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
@@ -91,7 +87,8 @@ fun Detail(
                 )
             }
 
-            val detail = uiState.value?.subscription?.detail ?: ""
+            val detail = uiState.value.subscription?.detail ?: ""
+            Log.e("TEST", "detail = " + detail)
             TextField(
                 value = detail,
                 modifier = Modifier
@@ -115,10 +112,10 @@ fun Detail(
             val startCalendar = Calendar.getInstance()
             startCalendar.time = uiState.value?.subscription?.startDate ?: Date()
 
-            Button(
+            FilledTonalButton(
                 onClick = { choseStartDate.value = true },
                 modifier = Modifier
-                    .fillMaxWidth(0.85f)
+                    .fillMaxWidth(1f)
                     .padding(horizontal = 16.dp),
             ) {
                 Row() {
@@ -146,10 +143,10 @@ fun Detail(
             val endCalendar = Calendar.getInstance()
             endCalendar.time = uiState.value?.subscription?.endDate ?: Date()
 
-            Button(
+            FilledTonalButton(
                 onClick = { choseEndDate.value = true },
                 modifier = Modifier
-                    .fillMaxWidth(0.85f)
+                    .fillMaxWidth(1f)
                     .padding(horizontal = 16.dp),
 
                 ) {

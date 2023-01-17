@@ -162,6 +162,7 @@ fun CreatingScreenState(
                 startDate.value, onChanged = {
                     choseStartDate.value = false
                     choseEndDate.value = true
+                    startDate.value = it
                 },
                 onDismiss = {
                     choseStartDate.value = false
@@ -195,6 +196,7 @@ fun CreatingScreenState(
             ShowDatePicker(
                 endDate.value, onChanged = { newCalendar ->
                     choseEndDate.value = false
+                    endDate.value = newCalendar
 
                 },
                 onDismiss = {
@@ -263,66 +265,6 @@ fun ShowDatePicker(
 
     datePickerDialog.show()
 
-}
-
-@Composable
-fun Folders(
-    folders: LiveData<List<Workshop>>,
-    init: Workshop,
-    onChanged: (workshop: Workshop) -> Unit
-) {
-
-    val selectedOptionFolder = remember { mutableStateOf(init) }
-    var expanded by remember { mutableStateOf(false) }
-
-    val options = folders.value
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = {
-            expanded = !expanded
-        },
-        modifier = Modifier.padding(16.dp)
-    ) {
-        val folLabel = stringResource(id = R.string.folder)
-        TextField(
-            modifier = Modifier
-                .fillMaxWidth(),
-            value = init.name,
-            onValueChange = { },
-            readOnly = true,
-            label = {
-                Text(
-                    text = folLabel,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                )
-            },
-            trailingIcon = {
-                TrailingIcon(
-                    expanded = expanded
-                )
-            },
-            colors = ExposedDropdownMenuDefaults.textFieldColors()
-        )
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = {
-                expanded = false
-            }
-        ) {
-            options?.forEach { selectionOption ->
-                DropdownMenuItem(
-                    onClick = {
-                        selectedOptionFolder.value = selectionOption
-                        expanded = false
-                        onChanged.invoke(selectionOption)
-                    }, text = { selectionOption.name }
-                ) /*{
-                    Text(text = selectionOption.name)
-                }*/
-            }
-        }
-    }
 }
 
 

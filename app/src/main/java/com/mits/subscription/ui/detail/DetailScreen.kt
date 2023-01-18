@@ -2,12 +2,10 @@
 
 package com.mits.subscription.ui.detail
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -45,15 +43,13 @@ fun Detail(
     navController: NavController,
     detailViewModel: DetailViewModel
 ) {
-
-    Log.e("TEST", "recompose detail ")
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
             .fillMaxHeight(1f)
     )
     {
-        if (uiState.value?.isLoading == true) {
+        if (uiState.value.isLoading) {
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.fillMaxSize()
@@ -61,7 +57,7 @@ fun Detail(
                 CircularProgressIndicator()
             }
         }
-        if (uiState.value.finished == true) {
+        if (uiState.value.finished) {
             navController.navigateUp()
         }
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -117,7 +113,7 @@ fun Detail(
                     .fillMaxWidth(1f)
                     .padding(start = 16.dp, top = 16.dp, end = 16.dp),
             ) {
-                Row() {
+                Row {
                     Text(stringResource(id = R.string.label_start_date))
                     Text(
                         text = parseCalendar(startCalendar),
@@ -149,7 +145,7 @@ fun Detail(
                     .padding(horizontal = 16.dp),
 
                 ) {
-                Row() {
+                Row {
                     Text(stringResource(id = R.string.label_end_date))
                     Text(
                         text = parseCalendar(endCalendar),
@@ -231,9 +227,9 @@ fun Detail(
 
                 modifier = Modifier
                     .padding(horizontal = 16.dp),
-                enabled = uiState.value?.savingAvailable ?: false
+                enabled = uiState.value.savingAvailable
             ) {
-                Row() {
+                Row {
                     Text(stringResource(id = R.string.btn_save))
                 }
             }

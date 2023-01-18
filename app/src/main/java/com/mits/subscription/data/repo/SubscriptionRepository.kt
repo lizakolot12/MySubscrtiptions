@@ -1,16 +1,15 @@
 package com.mits.subscription.data.repo
 
-import android.util.Log
 import androidx.lifecycle.LiveData
-import com.mits.subscription.data.db.dao.WorkshopDao
 import com.mits.subscription.data.db.dao.LessonDao
-import com.mits.subscription.data.db.entity.LessonEntity
 import com.mits.subscription.data.db.dao.SubscriptionDao
-import com.mits.subscription.data.db.entity.WorkshopEntity
+import com.mits.subscription.data.db.dao.WorkshopDao
+import com.mits.subscription.data.db.entity.LessonEntity
 import com.mits.subscription.data.db.entity.SubscriptionEntity
-import com.mits.subscription.model.Workshop
+import com.mits.subscription.data.db.entity.WorkshopEntity
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.model.Subscription
+import com.mits.subscription.model.Workshop
 import java.util.*
 
 class SubscriptionRepository(
@@ -71,10 +70,8 @@ class SubscriptionRepository(
     suspend fun deleteSubscription(subscription: Subscription) {
         val currentWorkshop = workshopDao.getById(subscription.workshopId)
         if((currentWorkshop.subscriptions?.size ?: 0) > 1) {
-            Log.e("TEST", " delete subscription " + subscription.id)
             subscriptionDao.deleteById(subscription.id)
         } else{
-            Log.e("TEST", " delete workshop " + subscription.workshopId)
             deleteWorkshop(subscription)
         }
     }

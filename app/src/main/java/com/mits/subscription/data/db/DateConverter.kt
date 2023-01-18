@@ -1,8 +1,8 @@
 package com.mits.subscription.data.db;
 
-import androidx.room.TypeConverter;
+import androidx.room.TypeConverter
 
-import java.util.Date;
+import java.util.Date
 
 class DateConverter {
 
@@ -11,12 +11,12 @@ class DateConverter {
         if (date == 0L) {
             return null
         }
-        return Date(date);
+        return Date(date)
     }
 
     @TypeConverter
     fun toString(date: Date?): Long {
-        if (date == null) return 0;
+        if (date == null) return 0
         return date.time
     }
 

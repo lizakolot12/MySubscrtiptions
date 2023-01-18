@@ -1,7 +1,6 @@
 package com.mits.subscription
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -15,7 +14,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -33,7 +31,6 @@ import com.mits.subscription.ui.list.ListScreen
 import com.mits.subscription.ui.list.ListViewModel
 import com.mits.subscription.ui.theme.SubscriptionTheme
 import com.mits.subscription.ui.theme.md_theme_light_primary
-import com.mits.subscription.ui.theme.md_theme_light_primaryContainer
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -122,8 +119,7 @@ fun Main(activity: ComponentActivity) {
                 composable(
                     Navigation.DETAIL.route + "/{subscriptionId}",
                     arguments = listOf(navArgument("subscriptionId") { type = NavType.LongType })
-                ) { it ->
-                    Log.e("TEST", "create detail screen " + it.arguments?.getLong("subscriptionId"))
+                ) {
                     val detailViewModel: DetailViewModel by activity.viewModels()
                     detailViewModel.init(it.arguments?.getLong("subscriptionId"))
                     DetailScreen(navController, detailViewModel)

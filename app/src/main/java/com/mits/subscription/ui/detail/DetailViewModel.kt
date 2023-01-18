@@ -1,6 +1,5 @@
 package com.mits.subscription.ui.detail
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mits.subscription.R
@@ -26,7 +25,6 @@ class DetailViewModel
     val uiState = _uiState.asStateFlow()
 
     fun init(id: Long?) {
-        //Log.e("TEST", "init = " + id)
         _uiState.value = DetailState(null, null)
         viewModelScope.launch {
             withContext(Dispatchers.IO) {

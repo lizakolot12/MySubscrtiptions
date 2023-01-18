@@ -1,13 +1,10 @@
 package com.mits.subscription.ui.list
 
-import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -23,14 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,7 +32,10 @@ import com.mits.subscription.R
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.model.Subscription
 import com.mits.subscription.ui.creating.ShowDatePicker
-import com.mits.subscription.ui.theme.*
+import com.mits.subscription.ui.theme.md_theme_light_background
+import com.mits.subscription.ui.theme.md_theme_light_error
+import com.mits.subscription.ui.theme.md_theme_light_primaryContainer
+import com.mits.subscription.ui.theme.md_theme_light_surfaceVariant
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
@@ -64,7 +60,6 @@ fun List(
     navController: NavController,
     listViewModel: ListViewModel
 ) {
-    Log.e("TEST", "compose list")
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(
@@ -154,7 +149,7 @@ fun ListItemView(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
 
-                            Column() {
+                            Column {
                                 Text(
                                     stringResource(id = R.string.label_start_period),
                                     modifier = Modifier
@@ -166,7 +161,7 @@ fun ListItemView(
                                         .padding(4.dp)
                                 )
                             }
-                            Column() {
+                            Column {
                                 Text(
                                     DATE_FORMATTER.format(activeElement?.startDate ?: Date()),
                                     modifier = Modifier
@@ -247,10 +242,6 @@ fun ListItemView(
                 }
 
             }
-}
-
-private fun drawRow() {
-
 }
 
 @Composable

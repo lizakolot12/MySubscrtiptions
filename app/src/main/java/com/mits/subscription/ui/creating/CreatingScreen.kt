@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
-import androidx.compose.material3.ExposedDropdownMenuDefaults.TrailingIcon
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -24,10 +23,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.LiveData
 import androidx.navigation.NavController
 import com.mits.subscription.R
-import com.mits.subscription.model.Workshop
 import com.mits.subscription.parseCalendar
 import java.util.*
 
@@ -147,7 +144,7 @@ fun CreatingScreenState(
                 .fillMaxWidth(1f)
                 .padding(horizontal = 16.dp),
         ) {
-            Row() {
+            Row {
                 Text(stringResource(id = R.string.label_start_date))
                 Text(
                     text = parseCalendar(startDate.value),
@@ -182,7 +179,7 @@ fun CreatingScreenState(
                 .padding(horizontal = 16.dp),
 
             ) {
-            Row() {
+            Row {
                 Text(stringResource(id = R.string.label_end_date))
                 Text(
                     text = parseCalendar(endDate.value),
@@ -226,7 +223,7 @@ fun CreatingScreenState(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 enabled = state.value.savingAvailable
             ) {
-                Row() {
+                Row {
                     Text(stringResource(id = R.string.btn_save))
                 }
 

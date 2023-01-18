@@ -1,12 +1,13 @@
 package com.mits.subscription.ui.list
 
 import android.util.Log
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -27,6 +28,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntOffset
@@ -37,9 +39,7 @@ import com.mits.subscription.R
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.model.Subscription
 import com.mits.subscription.ui.creating.ShowDatePicker
-import com.mits.subscription.ui.theme.md_theme_light_background
-import com.mits.subscription.ui.theme.md_theme_light_secondaryContainer
-import kotlinx.coroutines.coroutineScope
+import com.mits.subscription.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
@@ -66,7 +66,7 @@ fun List(
 ) {
     Log.e("TEST", "compose list")
     LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(
             top = 8.dp,
             bottom = 88.dp
@@ -78,17 +78,17 @@ fun List(
             Column(
                 modifier = Modifier
                     .background(
-                        md_theme_light_secondaryContainer,
+                        md_theme_light_surfaceVariant,
                         shape = RoundedCornerShape(4.dp)
-                    ),
+                    ).padding(8.dp),
                 content = {
-                    ListItemView(
-                        item,
-                        listViewModel,
-                        onButtonClicked = {
-                            navController.navigate("detail/${item.activeElementId}")
-                        }
-                    )
+                        ListItemView(
+                            item,
+                            listViewModel,
+                            onButtonClicked = {
+                                navController.navigate("detail/${item.activeElementId}")
+                            }
+                        )
                     if ((item.workshop.subscriptions?.size ?: 0) > 1) {
                         val scrollStateHorizontal = rememberScrollState()
 
@@ -117,16 +117,15 @@ fun ListItemView(
     fun getItemById(id: Long): Subscription? {
         return item.workshop.subscriptions?.firstOrNull { it.id == id }
     }
-
-    Column(
-        content = {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(5.dp)
-                    .clickable { onButtonClicked?.invoke() },
+                    .clickable { onButtonClicked?.invoke() }
+                    .animateContentSize()
+                    .padding(8.dp)
+                ,
                 elevation = CardDefaults.cardElevation(
-                    defaultElevation = 10.dp
+                    defaultElevation = 4.dp
                 )
             ) {
                 Row(modifier = Modifier.padding(4.dp)) {
@@ -184,69 +183,44 @@ fun ListItemView(
                                 fontSize = 22.sp,
                                 modifier = Modifier.padding(horizontal = 16.dp),
                                 color = if (((activeElement?.lessonNumbers ?: 0) - lesNum) < 2) {
-                                    Color.Red
+                                    md_theme_light_error
                                 } else Color.Black,
                                 text = "" + activeElement?.lessons?.size + " з " + activeElement?.lessonNumbers,
                             )
                         }
                         val scrollState = rememberScrollState()
-                        var maxHeight = 0.dp
-                        var sizeInDp by remember { mutableStateOf(DpSize.Zero) }
-                        val density = LocalDensity.current
+
                         if ((activeElement?.lessons?.size ?: 0) > 0) {
                             Column(
-                                modifier = Modifier.onSizeChanged {
-                                    sizeInDp = density.run {
-                                        DpSize(
-                                            it.width.toDp(),
-                                            it.height.toDp()
-                                        )
-                                    }
-                                }
-                                    .heightIn(min = 0.dp, max = 200.dp)
-                                    .verticalScroll(scrollState)
-                                    //.heightIn(max = 148.dp)
-
-                            ) {
-                                var k = 0
-                                var hasAddButton = false
-                                for (i in 0 until (activeElement?.lessons?.size ?: 0) step 2) {
-                                    k += 2
-                                    Log.e("TEST", "maxHeight " + maxHeight + "   k = " + k)
-                                    if(k > 1 && maxHeight < 1.dp) {
-                                        maxHeight = sizeInDp.height
-                                    }
-
-                                    Row {
-                                        LessonView(
-                                            activeElement?.lessons?.get(i),
-                                            activeElement?.id ?: -1,
-                                            listViewModel
-                                        )
-                                        if (i + 1 < (activeElement?.lessons?.size ?: 0)) {
-                                            LessonView(
-                                                activeElement?.lessons?.get(i + 1),
-                                                activeElement?.id ?: -1,
-                                                listViewModel,
-                                            )
-                                        } else {
-                                            activeElement?.let {
-                                                hasAddButton = true
-                                                AddNewLessonView(listViewModel, activeElement)
-                                            }
-                                        }
-                                    }
-                                }
-                                if (k < (activeElement?.lessons?.size ?: (0 - 1))) {
-                                    LessonView(
-                                        activeElement?.lessons?.get(k),
-                                        activeElement?.id ?: -1,
-                                        listViewModel
+                                modifier = Modifier
+                                    .padding(vertical = 16.dp)
+                                    .heightIn(
+                                        min = 0.dp,
+                                        max = 200.dp
                                     )
-                                }
-                                if (activeElement != null && !hasAddButton) {
-                                    AddNewLessonView(listViewModel, activeElement)
-                                }
+                                    .verticalScroll(scrollState)
+                            ) {
+
+                                val columnCount = 2
+                                for (i in 0 .. (activeElement?.lessons?.size ?: 0) step columnCount) {
+                                    Row {
+                                        for (j in i until i + columnCount) {
+                                            if (j == (activeElement?.lessons?.size ?: 0)) {
+                                                activeElement?.let {
+                                                    AddNewLessonView(
+                                                        listViewModel,
+                                                        it
+                                                    )
+                                                }
+                                                break
+                                            }
+                                            LessonView(
+                                                activeElement?.lessons?.get(j),
+                                                activeElement?.id ?: -1,
+                                                listViewModel
+                                            )
+                                        }
+                                    }}
                             }
                         } else {
                             if (activeElement != null) {
@@ -263,7 +237,6 @@ fun ListItemView(
                         Icon(
                             Icons.Filled.MoreVert,
                             "menu",
-                            //modifier = Modifier.padding(4.dp)
                         )
                     }
                     if ((item.workshop.subscriptions?.size
@@ -274,13 +247,6 @@ fun ListItemView(
                 }
 
             }
-        },
-
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-
-    )
 }
 
 private fun drawRow() {
@@ -302,39 +268,13 @@ fun LessonView(lesson: Lesson?, subscriptionId: Long, listViewModel: ListViewMod
                 expanded.value = false
             })
     }
-    Button(
+    OutlinedButton(
         onClick = { expanded.value = true },
-        contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
-        modifier = Modifier.padding(8.dp)
+        modifier = Modifier.padding(4.dp)
     ) {
         Text(lesson?.date?.let { DATE_FORMATTER.format(it) } ?: "")
-        /*  Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-          Icon(
-              Icons.Rounded.Close,
-              contentDescription = "Відмінити заняття",
-              modifier = Modifier
-                  .size(ButtonDefaults.IconSize)
-                  .clickable {
-                      lesson?.let {
-                          listViewModel.deleteVisitedLesson(
-                              it
-                          )
-                      }
-                  },
-          )*/
 
     }
-    /*      Text(
-              text = lesson?.date?.let { formatter.format(it) } ?: "",
-              overflow = TextOverflow.Ellipsis
-          )
-
-          IconButton(onClick = {
-              listViewModel.deleteVisitedLesson(lesson)
-          }) {
-              Icon(Icons.Rounded.Close, "")
-          }*/
-    /* })*/
 }
 
 @Composable
@@ -382,18 +322,18 @@ fun SubscriptionSmall(
             .padding(start = 16.dp)
             .border(
                 width = if (workshopViewItem.activeElementId == subscription.id) {
-                    1.dp
+                    2.dp
                 } else {
                     0.dp
                 }, color = if (workshopViewItem.activeElementId == subscription.id) {
-                    Color.Blue
+                    md_theme_light_primaryContainer
                 } else {
                     Color.Transparent
                 }, shape = RoundedCornerShape(8.dp)
             )
             .shadow(
                 elevation = if (workshopViewItem.activeElementId == subscription.id) {
-                    10.dp
+                    20.dp
                 } else {
                     1.dp
                 },
@@ -413,7 +353,7 @@ fun SubscriptionSmall(
             Text(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 color = if ((subscription.lessonNumbers - lesNum) < 2) {
-                    Color.Red
+                    md_theme_light_error
                 } else Color.Black,
                 text = "" + subscription.lessons?.size + " з " + subscription.lessonNumbers,
             )

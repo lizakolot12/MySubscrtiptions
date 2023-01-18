@@ -14,14 +14,12 @@ import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -34,6 +32,8 @@ import com.mits.subscription.ui.detail.DetailViewModel
 import com.mits.subscription.ui.list.ListScreen
 import com.mits.subscription.ui.list.ListViewModel
 import com.mits.subscription.ui.theme.SubscriptionTheme
+import com.mits.subscription.ui.theme.md_theme_light_primary
+import com.mits.subscription.ui.theme.md_theme_light_primaryContainer
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -58,25 +58,30 @@ fun Main(activity: ComponentActivity) {
         .collectAsState(initial = navController.currentBackStackEntry)
     Scaffold(
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
+
                 title = {
                     Text(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         text = stringResource(R.string.title),
+                        textAlign = TextAlign.Center,
+                        color = md_theme_light_primary,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(start = 45.dp),
+
+                            //.padding(start = 45.dp),
                     )
                 },
 
                 modifier = Modifier.fillMaxWidth(),
                 navigationIcon = {
                     if (!currentRoute.value?.destination?.route.equals(Navigation.LIST.route)) {
-                        IconButton(onClick = {
+                        IconButton(
+                            onClick = {
                             navController.navigateUp()
                         }) {
-                            Icon(Icons.Rounded.ArrowBack, "")
+                            Icon(Icons.Rounded.ArrowBack,  "", tint = md_theme_light_primary)
                         }
 
                     }

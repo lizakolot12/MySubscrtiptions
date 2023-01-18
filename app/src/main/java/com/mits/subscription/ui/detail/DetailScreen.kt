@@ -70,7 +70,7 @@ fun Detail(
                 value = name,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(horizontal = 16.dp),
                 onValueChange = {
                     detailViewModel.checkNameWorkshop(it)
                 },
@@ -88,7 +88,6 @@ fun Detail(
             }
 
             val detail = uiState.value.subscription?.detail ?: ""
-            Log.e("TEST", "detail = " + detail)
             TextField(
                 value = detail,
                 modifier = Modifier
@@ -104,19 +103,19 @@ fun Detail(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
-                value = "" + uiState.value?.subscription?.lessonNumbers,
+                value = "" + uiState.value.subscription?.lessonNumbers,
                 onValueChange = { detailViewModel.acceptNumber(it) },
                 label = { Text(stringResource(id = R.string.label_lesson_number)) }
             )
             val choseStartDate = remember { mutableStateOf(false) }
             val startCalendar = Calendar.getInstance()
-            startCalendar.time = uiState.value?.subscription?.startDate ?: Date()
+            startCalendar.time = uiState.value.subscription?.startDate ?: Date()
 
             FilledTonalButton(
                 onClick = { choseStartDate.value = true },
                 modifier = Modifier
                     .fillMaxWidth(1f)
-                    .padding(horizontal = 16.dp),
+                    .padding(start = 16.dp, top = 16.dp, end = 16.dp),
             ) {
                 Row() {
                     Text(stringResource(id = R.string.label_start_date))
@@ -141,7 +140,7 @@ fun Detail(
             }
             val choseEndDate = remember { mutableStateOf(false) }
             val endCalendar = Calendar.getInstance()
-            endCalendar.time = uiState.value?.subscription?.endDate ?: Date()
+            endCalendar.time = uiState.value.subscription?.endDate ?: Date()
 
             FilledTonalButton(
                 onClick = { choseEndDate.value = true },
@@ -177,7 +176,7 @@ fun Detail(
             Card(
                 modifier = Modifier.padding(16.dp)
             ) {
-                Column() {
+                Column(modifier = Modifier.padding(vertical = 16.dp)) {
                     Row(
                         modifier = Modifier.padding(16.dp)
                     ) {
@@ -198,12 +197,12 @@ fun Detail(
                         )
                     }
 
-                    if ((uiState.value?.subscription?.lessons?.size ?: 0) > 0) {
+                    if ((uiState.value.subscription?.lessons?.size ?: 0) > 0) {
                         Column(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
 
-                            uiState.value?.subscription?.lessons?.forEach {
+                            uiState.value.subscription?.lessons?.forEach {
                                 LessonRow(it, detailViewModel)
                             }
 
@@ -248,13 +247,14 @@ fun LessonRow(item: Lesson, detailViewModel: DetailViewModel) {
     Row(
 
         modifier = Modifier
+            .padding(start = 8.dp, end = 8.dp, bottom = 4.dp)
             .shadow(
                 elevation = 1.dp,
-                shape = RoundedCornerShape(2.dp)
+               // shape = RoundedCornerShape(4.dp)
             )
 
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(12.dp)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onPress = { },

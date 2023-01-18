@@ -18,7 +18,7 @@ android {
         targetSdk 33
         versionCode 10000003
         versionName "1.0"
-
+        archivesBaseName = "MySubscription-" + defaultConfig.versionName + "-" + defaultConfig.versionCode
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         javaCompileOptions {

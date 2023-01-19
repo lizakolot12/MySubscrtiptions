@@ -51,6 +51,8 @@ class ListViewModel @Inject constructor(
             if (currentActiveInNewCollection == null) {
                 currentActive = it.subscriptions?.get(0)?.id ?: -1
             }
+            val sorted = it.subscriptions?.sortedBy { sub -> sub.startDate }
+            it.subscriptions = sorted
             WorkshopViewItem(
                 it,
                 currentActive

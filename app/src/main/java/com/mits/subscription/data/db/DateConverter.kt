@@ -1,4 +1,4 @@
-package com.mits.subscription.data.db;
+package com.mits.subscription.data.db
 
 import androidx.room.TypeConverter
 

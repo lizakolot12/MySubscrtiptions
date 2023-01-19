@@ -68,7 +68,7 @@ fun List(
         ),
     ) {
 
-        itemsIndexed(items = workshops, itemContent = { pos, item ->
+        itemsIndexed(items = workshops, itemContent = { _, item ->
 
             Column(
                 modifier = Modifier

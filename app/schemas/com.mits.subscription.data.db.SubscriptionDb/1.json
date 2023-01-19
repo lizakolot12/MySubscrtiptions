@@ -22,10 +22,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": true,
           "columnNames": [
             "workshop_id"
-          ],
-          "autoGenerate": true
+          ]
         },
         "indices": [],
         "foreignKeys": []
@@ -72,10 +72,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": true,
           "columnNames": [
             "sub_id"
-          ],
-          "autoGenerate": true
+          ]
         },
         "indices": [
           {
@@ -132,10 +132,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": true,
           "columnNames": [
             "lId"
-          ],
-          "autoGenerate": true
+          ]
         },
         "indices": [
           {

@@ -20,12 +20,7 @@ object AppModule {
     fun provideDataBase(@ApplicationContext context: Context): SubscriptionDb {
         return SubscriptionDb.getInstance(context)
     }
-
-    @Singleton
-    @Provides
-    fun provideIoDispatcher() = Dispatchers.IO
 }
-
 
 @Module
 @InstallIn(SingletonComponent::class)

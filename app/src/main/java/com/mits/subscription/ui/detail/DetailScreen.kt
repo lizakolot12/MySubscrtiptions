@@ -15,7 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color.Companion.Red
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -47,192 +47,19 @@ fun Detail(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
             .fillMaxHeight(1f)
-    )
-    {
-        if (uiState.value.isLoading) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                CircularProgressIndicator()
-            }
-        }
+            .fillMaxWidth()
+    ) {
+        ProgressView(uiState)
+        NameView(uiState, detailViewModel)
+        LabelView(uiState, detailViewModel)
+        LessonNumberView(uiState, detailViewModel)
+        StartDateView(uiState, detailViewModel)
+        EndDateView(uiState, detailViewModel)
+        LessonsView(uiState, detailViewModel)
+        SaveButton(uiState, detailViewModel)
+
         if (uiState.value.finished) {
             navController.navigateUp()
-        }
-        Column(modifier = Modifier.fillMaxWidth()) {
-            val name = uiState.value.workshopName ?: ""
-            TextField(
-                value = name,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                onValueChange = {
-                    detailViewModel.checkNameWorkshop(it)
-                },
-                isError = uiState.value.nameError != null,
-                label = { Text(stringResource(id = R.string.label_name)) }
-            )
-            if (uiState.value.nameError != null) {
-                Text(
-                    text = stringResource(id = uiState.value.nameError!!),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    color = Red
-                )
-            }
-
-            val detail = uiState.value.subscription?.detail ?: ""
-            TextField(
-                value = detail,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                onValueChange = {
-                    detailViewModel.acceptDetail(it)
-                },
-                label = { Text(stringResource(id = R.string.label_tag)) }
-            )
-
-            TextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                value = "" + uiState.value.subscription?.lessonNumbers,
-                onValueChange = { detailViewModel.acceptNumber(it) },
-                label = { Text(stringResource(id = R.string.label_lesson_number)) }
-            )
-            val choseStartDate = remember { mutableStateOf(false) }
-            val startCalendar = Calendar.getInstance()
-            startCalendar.time = uiState.value.subscription?.startDate ?: Date()
-
-            FilledTonalButton(
-                onClick = { choseStartDate.value = true },
-                modifier = Modifier
-                    .fillMaxWidth(1f)
-                    .padding(start = 16.dp, top = 16.dp, end = 16.dp),
-            ) {
-                Row {
-                    Text(stringResource(id = R.string.label_start_date))
-                    Text(
-                        text = parseCalendar(startCalendar),
-                        modifier = Modifier.padding(horizontal = 8.dp)
-                    )
-                }
-
-            }
-            if (choseStartDate.value) {
-                ShowDatePicker(
-                    startCalendar, onChanged = { newCalendar ->
-                        detailViewModel.acceptStartCalendar(newCalendar)
-                        choseStartDate.value = false
-                    },
-                    onDismiss = {
-                        choseStartDate.value = false
-                    },
-                    R.string.label_start_date
-                )
-            }
-            val choseEndDate = remember { mutableStateOf(false) }
-            val endCalendar = Calendar.getInstance()
-            endCalendar.time = uiState.value.subscription?.endDate ?: Date()
-
-            FilledTonalButton(
-                onClick = { choseEndDate.value = true },
-                modifier = Modifier
-                    .fillMaxWidth(1f)
-                    .padding(horizontal = 16.dp),
-
-                ) {
-                Row {
-                    Text(stringResource(id = R.string.label_end_date))
-                    Text(
-                        text = parseCalendar(endCalendar),
-                        modifier = Modifier.padding(horizontal = 8.dp)
-                    )
-                }
-
-            }
-            if (choseEndDate.value) {
-                ShowDatePicker(endCalendar, onChanged = { newCalendar ->
-                    run {
-                        choseEndDate.value = false
-                        detailViewModel.acceptEndCalendar(newCalendar)
-                    }
-
-                }, onDismiss = {
-                    choseStartDate.value = false
-                    choseEndDate.value = false
-                },
-                    R.string.label_end_date
-                )
-            }
-
-            Card(
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Column(modifier = Modifier.padding(vertical = 16.dp)) {
-                    Row(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.visited_lessons),
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp)
-                                .weight(0.9f)
-                        )
-
-                        Icon(
-                            Icons.Filled.Add,
-                            contentDescription = stringResource(id = R.string.description_add_lesson),
-                            Modifier
-                                .clickable(true, onClick = { detailViewModel.addVisitedLesson() })
-                                .weight(0.2f)
-                                .padding(end = 16.dp)
-                        )
-                    }
-
-                    if ((uiState.value.subscription?.lessons?.size ?: 0) > 0) {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-
-                            uiState.value.subscription?.lessons?.forEach {
-                                LessonRow(it, detailViewModel)
-                            }
-
-                        }
-                    } else {
-                        Text(
-                            text = stringResource(id = R.string.empty_visited_lessons),
-                            fontSize = 12.sp,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 16.dp, bottom = 8.dp),
-                        )
-                    }
-                }
-            }
-        }
-
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.TopEnd
-        ) {
-            Button(
-                onClick = {
-                    detailViewModel.save()
-                },
-
-                modifier = Modifier
-                    .padding(horizontal = 16.dp),
-                enabled = uiState.value.savingAvailable
-            ) {
-                Row {
-                    Text(stringResource(id = R.string.btn_save))
-                }
-            }
         }
     }
 }
@@ -241,22 +68,16 @@ fun Detail(
 fun LessonRow(item: Lesson, detailViewModel: DetailViewModel) {
     val expanded = remember { mutableStateOf(false) }
     Row(
-
         modifier = Modifier
             .padding(start = 8.dp, end = 8.dp, bottom = 4.dp)
             .shadow(
                 elevation = 1.dp,
-               // shape = RoundedCornerShape(4.dp)
             )
-
             .fillMaxWidth()
             .padding(12.dp)
             .pointerInput(Unit) {
                 detectTapGestures(
-                    onPress = { },
-                    onDoubleTap = { /* Called on Double Tap */ },
                     onLongPress = { expanded.value = true },
-                    onTap = { /* Called on Tap */ }
                 )
             },
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -271,6 +92,7 @@ fun LessonRow(item: Lesson, detailViewModel: DetailViewModel) {
                     .weight(1f)
             )
         })
+
     if (expanded.value) {
         val start = Calendar.getInstance()
         start.time = item.date
@@ -284,4 +106,222 @@ fun LessonRow(item: Lesson, detailViewModel: DetailViewModel) {
     }
 }
 
+@Composable
+private fun NameView(
+    uiState: State<DetailViewModel.DetailState>,
+    detailViewModel: DetailViewModel
+) {
+    TextField(
+        value = uiState.value.workshopName ?: "",
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        onValueChange = {
+            detailViewModel.checkNameWorkshop(it)
+        },
+        isError = uiState.value.nameError != null,
+        label = { Text(stringResource(id = R.string.label_name)) }
+    )
+    if (uiState.value.nameError != null) {
+        Text(
+            text = stringResource(id = uiState.value.nameError!!),
+            color = Color.Red,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+        )
+    }
+}
 
+@Composable
+private fun LabelView(
+    uiState: State<DetailViewModel.DetailState>,
+    detailViewModel: DetailViewModel
+) {
+    TextField(
+        value = uiState.value.subscription?.detail ?: "",
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        onValueChange = {
+            detailViewModel.acceptDetail(it)
+        },
+        label = { Text(stringResource(id = R.string.label_tag)) }
+    )
+}
+
+@Composable
+private fun LessonNumberView(
+    uiState: State<DetailViewModel.DetailState>,
+    detailViewModel: DetailViewModel
+) {
+    TextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        value = (uiState.value.subscription?.lessonNumbers ?: 0).toString(),
+        onValueChange = { detailViewModel.acceptNumber(it) },
+        label = { Text(stringResource(id = R.string.label_lesson_number)) }
+    )
+}
+
+@Composable
+private fun StartDateView(
+    uiState: State<DetailViewModel.DetailState>,
+    detailViewModel: DetailViewModel
+) {
+    val choseStartDate = remember { mutableStateOf(false) }
+    val startCalendar = Calendar.getInstance()
+    startCalendar.time = uiState.value.subscription?.startDate ?: Date()
+
+    FilledTonalButton(
+        onClick = { choseStartDate.value = true },
+        modifier = Modifier
+            .fillMaxWidth(1f)
+            .padding(start = 16.dp, top = 16.dp, end = 16.dp),
+    ) {
+        Row {
+            Text(stringResource(id = R.string.label_start_date))
+            Text(
+                text = parseCalendar(startCalendar),
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+        }
+    }
+    if (choseStartDate.value) {
+        ShowDatePicker(
+            startCalendar, onChanged = { newCalendar ->
+                detailViewModel.acceptStartCalendar(newCalendar)
+                choseStartDate.value = false
+            },
+            onDismiss = {
+                choseStartDate.value = false
+            },
+            R.string.label_start_date
+        )
+    }
+}
+
+@Composable
+private fun EndDateView(
+    uiState: State<DetailViewModel.DetailState>,
+    detailViewModel: DetailViewModel
+) {
+    val choseEndDate = remember { mutableStateOf(false) }
+    val endCalendar = Calendar.getInstance()
+    endCalendar.time = uiState.value.subscription?.endDate ?: Date()
+
+    FilledTonalButton(
+        onClick = { choseEndDate.value = true },
+        modifier = Modifier
+            .fillMaxWidth(1f)
+            .padding(horizontal = 16.dp),
+
+        ) {
+        Row {
+            Text(stringResource(id = R.string.label_end_date))
+            Text(
+                text = parseCalendar(endCalendar),
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+        }
+    }
+    if (choseEndDate.value) {
+        ShowDatePicker(endCalendar, onChanged = { newCalendar ->
+            run {
+                choseEndDate.value = false
+                detailViewModel.acceptEndCalendar(newCalendar)
+            }
+
+        }, onDismiss = {
+            choseEndDate.value = false
+        },
+            R.string.label_end_date
+        )
+    }
+}
+
+@Composable
+private fun LessonsView(
+    uiState: State<DetailViewModel.DetailState>,
+    detailViewModel: DetailViewModel
+) {
+    Card(
+        modifier = Modifier.padding(16.dp)
+    ) {
+        Column(modifier = Modifier.padding(vertical = 16.dp)) {
+            Row(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.visited_lessons),
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .weight(0.9f)
+                )
+
+                Icon(
+                    Icons.Filled.Add,
+                    contentDescription = stringResource(id = R.string.description_add_lesson),
+                    Modifier
+                        .clickable(true, onClick = { detailViewModel.addVisitedLesson() })
+                        .weight(0.2f)
+                        .padding(end = 16.dp)
+                )
+            }
+
+            if ((uiState.value.subscription?.lessons?.size ?: 0) > 0) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+
+                    uiState.value.subscription?.lessons?.forEach {
+                        LessonRow(it, detailViewModel)
+                    }
+                }
+            } else {
+                Text(
+                    text = stringResource(id = R.string.empty_visited_lessons),
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, bottom = 8.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProgressView(uiState: State<DetailViewModel.DetailState>) {
+    if (uiState.value.isLoading) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            CircularProgressIndicator()
+        }
+    }
+}
+
+@Composable
+private fun SaveButton(
+    uiState: State<DetailViewModel.DetailState>,
+    detailViewModel: DetailViewModel
+) {
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.TopEnd
+    ) {
+        Button(
+            onClick = {
+                detailViewModel.save()
+            },
+            modifier = Modifier
+                .padding(horizontal = 16.dp),
+            enabled = uiState.value.savingAvailable
+        ) {
+            Text(stringResource(id = R.string.btn_save))
+        }
+    }
+}

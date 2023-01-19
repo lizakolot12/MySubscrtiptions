@@ -38,8 +38,5 @@ abstract class SubscriptionDb : RoomDatabase() {
                 SubscriptionDb::class.java, "subscription.db"
             )
                 .build()
-
     }
-
-
 }

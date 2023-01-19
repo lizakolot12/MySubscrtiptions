@@ -17,7 +17,6 @@ class SubscriptionRepository(
     private val subscriptionDao: SubscriptionDao,
     private val workshopDao: WorkshopDao
 ) {
-
     val workshops: LiveData<List<Workshop>> = workshopDao.getAll()
 
     suspend fun createSubscription(subscription: Subscription): Long {
@@ -35,10 +34,6 @@ class SubscriptionRepository(
     suspend fun addLesson(subscriptionId: Long, lesson: Lesson): Long {
         val lessonEntity = LessonEntity(0, lesson.description, lesson.date, subscriptionId)
         return lessonDao.insert(lessonEntity)
-    }
-
-    suspend fun deleteLesson(lesson: Lesson) {
-        lessonDao.deleteByLessonId(lesson.lId)
     }
 
     suspend fun updateLesson(lesson: Lesson, newCalendar: Calendar, subscriptionId:Long) {
@@ -88,6 +83,4 @@ class SubscriptionRepository(
     }
 
     suspend fun createWorkshop(name: String) = workshopDao.insert(WorkshopEntity(name = name))
-
-
 }

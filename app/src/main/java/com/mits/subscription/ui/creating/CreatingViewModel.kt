@@ -82,14 +82,24 @@ class CreatingViewModel
         } else {
             viewModelState.value.nameError = null
         }
-        checkSaveAvailability()
+        checkSave()
+
     }
 
-    private fun checkSaveAvailability() {
-        viewModelState.value.savingAvailable =
-            viewModelState.value.nameError == null &&
-                    viewModelState.value.generalError == null
-                    && !viewModelState.value.isLoading
+    private fun checkSave() {
+        val currentState = CreatingState(viewModelState.value.defaultTagStrId)
+        currentState.nameError = viewModelState.value.nameError
+        currentState.savingAvailable = getSaveAvailability(viewModelState.value)
+        currentState.finished = viewModelState.value.finished
+        currentState.generalError = viewModelState.value.generalError
+        currentState.isLoading = viewModelState.value.isLoading
+        viewModelState.value = currentState
+    }
+
+    private fun getSaveAvailability(currentState: CreatingState): Boolean {
+        return currentState.nameError == null &&
+                currentState.generalError == null
+                && !currentState.isLoading
     }
 
     fun checkTag(text: String) {

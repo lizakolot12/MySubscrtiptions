@@ -13,7 +13,7 @@ import java.util.*
             childColumns = arrayOf("subscription_id"),
             onDelete = CASCADE
         )
-                  ],
+    ],
 )
 data class LessonEntity(
     @PrimaryKey(autoGenerate = true)

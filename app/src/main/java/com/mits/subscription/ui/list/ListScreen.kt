@@ -1,6 +1,5 @@
 package com.mits.subscription.ui.list
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.*
@@ -42,7 +41,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
 
-val DATE_FORMATTER = SimpleDateFormat("dd.MM.yyyy")
+val DATE_FORMATTER = SimpleDateFormat("dd.MM.yyyy", Locale.US)
 
 @Composable
 fun ListScreen(navController: NavController, listViewModel: ListViewModel) {
@@ -89,7 +88,7 @@ fun List(
                     )
 
                     val scrollStateHorizontal = rememberScrollState()
-                    AnimatedVisibility( ((item.workshop.subscriptions?.size ?: 0) > 1)) {
+                    AnimatedVisibility(((item.workshop.subscriptions?.size ?: 0) > 1)) {
                         Row(
                             Modifier
                                 .horizontalScroll(scrollStateHorizontal)
@@ -100,7 +99,6 @@ fun List(
                             }
                         }
                     }
-
                 })
         })
 
@@ -127,7 +125,6 @@ fun ListItemView(
         )
     ) {
         Row(modifier = Modifier.padding(4.dp)) {
-            val expanded = remember { mutableStateOf(false) }
             val activeElement = getItemById(item.activeElementId)
             Column(
                 modifier = Modifier
@@ -186,71 +183,80 @@ fun ListItemView(
                         text = "" + activeElement?.lessons?.size + " з " + activeElement?.lessonNumbers,
                     )
                 }
-                val scrollState = rememberScrollState()
 
                 if ((activeElement?.lessons?.size ?: 0) > 0) {
-                    Column(
-                        modifier = Modifier
-                            .padding(vertical = 16.dp)
-                            .heightIn(
-                                min = 0.dp,
-                                max = 200.dp
-                            )
-                            .verticalScroll(scrollState)
-                    ) {
-
-                        val columnCount = 2
-                        for (i in 0..(activeElement?.lessons?.size ?: 0) step columnCount) {
-                            Row {
-                                for (j in i until i + columnCount) {
-                                    if (j == (activeElement?.lessons?.size ?: 0)) {
-                                        activeElement?.let {
-                                            AddNewLessonView(
-                                                listViewModel,
-                                                it
-                                            )
-                                        }
-                                        break
-                                    }
-                                    LessonView(
-                                        activeElement?.lessons?.get(j),
-                                        activeElement?.id ?: -1,
-                                        listViewModel
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    activeElement?.let { VisitedLessonView(listViewModel, activeElement) }
                 } else {
-                    if (activeElement != null) {
-                        AddNewLessonView(listViewModel, activeElement)
-                    }
+                    activeElement?.let { AddNewLessonView(listViewModel, activeElement) }
+
                 }
 
-
             }
-            IconButton(
-                modifier = Modifier.size(24.dp),
-                onClick = { expanded.value = true }
-            ) {
-                Icon(
-                    Icons.Filled.MoreVert,
-                    "menu",
-                )
-            }
-            if ((item.workshop.subscriptions?.size
-                    ?: 0) > 0 && item.workshop.subscriptions?.get(0) != null
-            ) {
-                ContextMenu(listViewModel, item.workshop.subscriptions?.get(0)!!, expanded)
-            }
+            ContextMenuView(item, listViewModel)
         }
 
     }
 }
 
 @Composable
-fun LessonView(lesson: Lesson?, subscriptionId: Long, listViewModel: ListViewModel) {
+private fun ContextMenuView(
+    item: WorkshopViewItem,
+    listViewModel: ListViewModel,
+) {
+    val expanded = remember { mutableStateOf(false) }
+    IconButton(
+        modifier = Modifier.size(24.dp),
+        onClick = { expanded.value = true }
+    ) {
+        Icon(
+            Icons.Filled.MoreVert,
+            "menu",
+        )
+    }
+    if ((item.workshop.subscriptions?.size
+            ?: 0) > 0 && item.workshop.subscriptions?.get(0) != null
+    ) {
+        ContextMenu(listViewModel, item.workshop.subscriptions?.get(0)!!, expanded)
+    }
+}
 
+@Composable
+private fun VisitedLessonView(listViewModel: ListViewModel, activeElement: Subscription) {
+    val scrollState = rememberScrollState()
+    Column(
+        modifier = Modifier
+            .padding(vertical = 16.dp)
+            .heightIn(
+                min = 0.dp,
+                max = 200.dp
+            )
+            .verticalScroll(scrollState)
+    ) {
+
+        val columnCount = 2
+        for (i in 0..(activeElement.lessons?.size ?: 0) step columnCount) {
+            Row {
+                for (j in i until i + columnCount) {
+                    if (j == (activeElement.lessons?.size ?: 0)) {
+                        AddNewLessonView(
+                            listViewModel,
+                            activeElement
+                        )
+                        break
+                    }
+                    LessonView(
+                        activeElement.lessons?.get(j),
+                        activeElement.id,
+                        listViewModel
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun LessonView(lesson: Lesson?, subscriptionId: Long, listViewModel: ListViewModel) {
     val expanded = remember { mutableStateOf(false) }
     if (expanded.value) {
         val start = Calendar.getInstance()
@@ -422,7 +428,6 @@ fun ContextMenuSubscription(
             listViewModel.deleteSubscription(subscription)
             expanded.value = false
         },
-            /*  colors = MenuItemColors(textColor = md_theme_light_outline),*/
             text = { Text(stringResource(id = R.string.delete)) },
             leadingIcon = {
                 Icon(

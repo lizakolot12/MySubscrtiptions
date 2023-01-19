@@ -162,7 +162,6 @@ class DetailViewModel
 
     private fun isSavingAvailability(state: DetailState): Boolean {
         return state.nameError == null
-               // &&state.generalError == null
                 && !state.isLoading
     }
 

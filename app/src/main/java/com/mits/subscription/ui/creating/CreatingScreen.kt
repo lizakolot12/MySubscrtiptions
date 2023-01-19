@@ -36,18 +36,126 @@ fun CreatingScreen(
     val uiState = remember {
         createViewModel.uiState
     }
-
     CreatingScreenState(navController, uiState, createViewModel)
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun CreatingScreenState(
     navController: NavController,
     state: MutableState<CreatingViewModel.CreatingState>,
     createViewModel: CreatingViewModel
 ) {
+    LoadingView(state)
+    Column(modifier = Modifier.fillMaxWidth()) {
+        val name = remember { mutableStateOf(TextFieldValue()) }
+        NameView(name, state, createViewModel)
 
+        val tag = remember { mutableStateOf(TextFieldValue()) }
+        TagView(tag, state, createViewModel)
+
+        val number = remember { mutableStateOf("") }
+        PlannedNumberView(number)
+
+        val choseStartDate = remember { mutableStateOf(false) }
+        val startDate = remember { mutableStateOf(Calendar.getInstance()) }
+        val choseEndDate = remember { mutableStateOf(false) }
+        StartDateView(choseStartDate, startDate, choseEndDate)
+
+        val endDate = remember { mutableStateOf(Calendar.getInstance()) }
+        EndDateView(choseEndDate, endDate, choseStartDate)
+        SaveView(state) {
+            createViewModel.create(
+                name.value.text,
+                tag.value.text,
+                Integer.valueOf(
+                    number.value.ifBlank { "0" }
+                ),
+                startDate.value.time,
+                endDate.value.time,
+            )
+        }
+
+        if (state.value.finished) {
+            navController.navigateUp()
+        }
+    }
+}
+
+@Composable
+private fun SaveView(
+    state: MutableState<CreatingViewModel.CreatingState>,
+    onButtonClicked: () -> Unit
+) {
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.TopEnd
+    ) {
+        Button(
+            onClick = onButtonClicked,
+            modifier = Modifier.padding(horizontal = 16.dp),
+            enabled = state.value.savingAvailable
+        ) {
+            Row {
+                Text(stringResource(id = R.string.btn_save))
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+private fun PlannedNumberView(
+    number: MutableState<String>,
+) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    TextField(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        value = number.value,
+
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
+            .copy(keyboardType = KeyboardType.Number),
+        keyboardActions = KeyboardActions(
+            onDone = { keyboardController?.hide() }
+        ),
+        onValueChange = {
+            number.value = it.digits()
+        },
+        label = { Text(stringResource(id = R.string.label_lesson_number)) },
+    )
+}
+
+@Composable
+private fun TagView(
+    tag: MutableState<TextFieldValue>,
+    state: MutableState<CreatingViewModel.CreatingState>,
+    createViewModel: CreatingViewModel
+) {
+    state.value.defaultTagStrId?.let {
+        tag.value = TextFieldValue(stringResource(it))
+    }
+    TextField(
+        value = tag.value,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, top = 8.dp),
+        onValueChange = {
+            tag.value = it
+            createViewModel.checkTag(it.text)
+        },
+
+        label = { Text(stringResource(id = R.string.label_tag)) },
+        keyboardOptions = KeyboardOptions(
+            imeAction = ImeAction.Next,
+        ),
+    )
+}
+
+@Composable
+private fun LoadingView(state: MutableState<CreatingViewModel.CreatingState>) {
     if (state.value.isLoading) {
         Box(
             contentAlignment = Alignment.Center,
@@ -56,179 +164,120 @@ fun CreatingScreenState(
             CircularProgressIndicator()
         }
     }
+}
 
-    if (state.value.finished) {
-        navController.navigateUp()
+@Composable
+private fun NameView(
+    name: MutableState<TextFieldValue>,
+    state: MutableState<CreatingViewModel.CreatingState>,
+    createViewModel: CreatingViewModel
+) {
+    val focusRequester = remember { FocusRequester() }
+
+    TextField(
+        value = name.value,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 0.dp)
+            .focusRequester(focusRequester),
+        onValueChange = {
+            name.value = it
+            createViewModel.checkName(it.text)
+        },
+        isError = state.value.nameError != null,
+        label = { Text(stringResource(id = R.string.label_name)) },
+        keyboardOptions = KeyboardOptions(
+            imeAction = ImeAction.Next,
+        ),
+    )
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
+    state.value.nameError?.let {
+        Text(
+            text = stringResource(id = it),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 0.dp),
+            color = Red,
+            fontSize = 12.sp
+        )
+    }
+}
+
+@Composable
+private fun StartDateView(
+    choseStartDate: MutableState<Boolean>,
+    startDate: MutableState<Calendar>,
+    choseEndDate: MutableState<Boolean>
+) {
+    FilledTonalButton(
+        onClick = { choseStartDate.value = true },
+        modifier = Modifier
+            .fillMaxWidth(1f)
+            .padding(horizontal = 16.dp),
+    ) {
+        Row {
+            Text(stringResource(id = R.string.label_start_date))
+            Text(
+                text = parseCalendar(startDate.value),
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+        }
     }
 
-    Column(modifier = Modifier.fillMaxWidth()) {
-        val name = remember { mutableStateOf(TextFieldValue()) }
-        val focusRequester = remember { FocusRequester() }
-
-        TextField(
-            value = name.value,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 0.dp)
-                .focusRequester(focusRequester),
-            onValueChange = {
-                name.value = it
-                createViewModel.checkName(it.text)
+    if (choseStartDate.value) {
+        ShowDatePicker(
+            startDate.value, onChanged = {
+                choseStartDate.value = false
+                choseEndDate.value = true
+                startDate.value = it
             },
-            isError = state.value.nameError != null,
-            label = { Text(stringResource(id = R.string.label_name)) },
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Next,
-            ),
+            onDismiss = {
+                choseStartDate.value = false
+                choseEndDate.value = false
+            },
+            R.string.label_start_date
         )
-        LaunchedEffect(Unit) {
-            focusRequester.requestFocus()
-        }
-        if (state.value.nameError != null) {
+    }
+}
+
+@Composable
+private fun EndDateView(
+    choseEndDate: MutableState<Boolean>,
+    endDate: MutableState<Calendar>,
+    choseStartDate: MutableState<Boolean>
+) {
+    FilledTonalButton(
+        onClick = { choseEndDate.value = true },
+        modifier = Modifier
+            .fillMaxWidth(1f)
+            .padding(horizontal = 16.dp),
+
+        ) {
+        Row {
+            Text(stringResource(id = R.string.label_end_date))
             Text(
-                text = stringResource(id = state.value.nameError!!),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 0.dp),
-                color = Red,
-                fontSize = 12.sp
+                text = parseCalendar(endDate.value),
+                modifier = Modifier.padding(horizontal = 8.dp)
             )
         }
 
-        val tag = remember { mutableStateOf(TextFieldValue()) }
-        if (state.value.defaultTagStrId != null) {
-            tag.value = TextFieldValue(stringResource(id = state.value.defaultTagStrId!!))
-        }
-        TextField(
-            value = tag.value,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, top = 8.dp),
-            onValueChange = {
-                tag.value = it
-                createViewModel.checkTag(it.text)
-            },
+    }
 
-            label = { Text(stringResource(id = R.string.label_tag)) },
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Next,
-            ),
+    if (choseEndDate.value) {
+        ShowDatePicker(
+            endDate.value, onChanged = { newCalendar ->
+                choseEndDate.value = false
+                endDate.value = newCalendar
+
+            },
+            onDismiss = {
+                choseStartDate.value = false
+                choseEndDate.value = false
+            },
+            R.string.label_end_date
         )
-
-        val number = remember { mutableStateOf("") }
-        val keyboardController = LocalSoftwareKeyboardController.current
-        val choseStartDate = remember { mutableStateOf(false) }
-        TextField(
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            value = number.value,
-
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
-                .copy(keyboardType = KeyboardType.Number),
-            keyboardActions = KeyboardActions(
-                onDone = { keyboardController?.hide() }
-            ),
-            onValueChange = {
-                number.value = it.digits()
-            },
-            label = { Text(stringResource(id = R.string.label_lesson_number)) },
-
-            )
-
-        val startDate = remember { mutableStateOf(Calendar.getInstance()) }
-        FilledTonalButton(
-            onClick = { choseStartDate.value = true },
-            modifier = Modifier
-                .fillMaxWidth(1f)
-                .padding(horizontal = 16.dp),
-        ) {
-            Row {
-                Text(stringResource(id = R.string.label_start_date))
-                Text(
-                    text = parseCalendar(startDate.value),
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
-            }
-
-        }
-        val choseEndDate = remember { mutableStateOf(false) }
-        if (choseStartDate.value) {
-            ShowDatePicker(
-                startDate.value, onChanged = {
-                    choseStartDate.value = false
-                    choseEndDate.value = true
-                    startDate.value = it
-                },
-                onDismiss = {
-                    choseStartDate.value = false
-                    choseEndDate.value = false
-                },
-                R.string.label_start_date
-            )
-
-        }
-
-        val endDate =
-            remember { mutableStateOf(Calendar.getInstance()) }
-        FilledTonalButton(
-            onClick = { choseEndDate.value = true },
-            modifier = Modifier
-                .fillMaxWidth(1f)
-                .padding(horizontal = 16.dp),
-
-            ) {
-            Row {
-                Text(stringResource(id = R.string.label_end_date))
-                Text(
-                    text = parseCalendar(endDate.value),
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
-            }
-
-        }
-
-        if (choseEndDate.value) {
-            ShowDatePicker(
-                endDate.value, onChanged = { newCalendar ->
-                    choseEndDate.value = false
-                    endDate.value = newCalendar
-
-                },
-                onDismiss = {
-                    choseStartDate.value = false
-                    choseEndDate.value = false
-                },
-                R.string.label_end_date
-            )
-        }
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.TopEnd
-        ) {
-            Button(
-                onClick = {
-                    createViewModel.create(
-                        name.value.text,
-                        tag.value.text,
-                        Integer.valueOf(
-                            number.value.ifBlank { "0" }
-                        ),
-                        startDate.value.time,
-                        endDate.value.time,
-                    )
-                },
-
-                modifier = Modifier.padding(horizontal = 16.dp),
-                enabled = state.value.savingAvailable
-            ) {
-                Row {
-                    Text(stringResource(id = R.string.btn_save))
-                }
-
-            }
-        }
     }
 }
 
@@ -242,7 +291,6 @@ fun ShowDatePicker(
     titleId: Int? = null
 ) {
     val context = LocalContext.current
-
     val yearInit = initial.get(Calendar.YEAR)
     val monthInit = initial.get(Calendar.MONTH)
     val dayInit = initial.get(Calendar.DAY_OF_MONTH)
@@ -261,7 +309,6 @@ fun ShowDatePicker(
     }
 
     datePickerDialog.show()
-
 }
 
 

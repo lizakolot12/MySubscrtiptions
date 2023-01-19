@@ -66,8 +66,6 @@ fun Main(activity: ComponentActivity) {
                         color = md_theme_light_primary,
                         modifier = Modifier
                             .fillMaxWidth()
-
-                            //.padding(start = 45.dp),
                     )
                 },
 
@@ -76,9 +74,9 @@ fun Main(activity: ComponentActivity) {
                     if (!currentRoute.value?.destination?.route.equals(Navigation.LIST.route)) {
                         IconButton(
                             onClick = {
-                            navController.navigateUp()
-                        }) {
-                            Icon(Icons.Rounded.ArrowBack,  "", tint = md_theme_light_primary)
+                                navController.navigateUp()
+                            }) {
+                            Icon(Icons.Rounded.ArrowBack, "", tint = md_theme_light_primary)
                         }
 
                     }

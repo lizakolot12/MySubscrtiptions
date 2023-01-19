@@ -1,5 +1,7 @@
 package com.mits.subscription.ui.list
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -75,18 +77,19 @@ fun List(
                     .background(
                         md_theme_light_surfaceVariant,
                         shape = RoundedCornerShape(4.dp)
-                    ).padding(8.dp),
+                    )
+                    .padding(8.dp),
                 content = {
-                        ListItemView(
-                            item,
-                            listViewModel,
-                            onButtonClicked = {
-                                navController.navigate("detail/${item.activeElementId}")
-                            }
-                        )
-                    if ((item.workshop.subscriptions?.size ?: 0) > 1) {
-                        val scrollStateHorizontal = rememberScrollState()
+                    ListItemView(
+                        item,
+                        listViewModel,
+                        onButtonClicked = {
+                            navController.navigate("detail/${item.activeElementId}")
+                        }
+                    )
 
+                    val scrollStateHorizontal = rememberScrollState()
+                    AnimatedVisibility( ((item.workshop.subscriptions?.size ?: 0) > 1)) {
                         Row(
                             Modifier
                                 .horizontalScroll(scrollStateHorizontal)
@@ -97,6 +100,7 @@ fun List(
                             }
                         }
                     }
+
                 })
         })
 
@@ -112,136 +116,136 @@ fun ListItemView(
     fun getItemById(id: Long): Subscription? {
         return item.workshop.subscriptions?.firstOrNull { it.id == id }
     }
-            Card(
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onButtonClicked?.invoke() }
+            .animateContentSize()
+            .padding(8.dp),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 4.dp
+        )
+    ) {
+        Row(modifier = Modifier.padding(4.dp)) {
+            val expanded = remember { mutableStateOf(false) }
+            val activeElement = getItemById(item.activeElementId)
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onButtonClicked?.invoke() }
-                    .animateContentSize()
-                    .padding(8.dp)
-                ,
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 4.dp
-                )
+                    .padding(4.dp)
+                    .weight(0.8f)
             ) {
-                Row(modifier = Modifier.padding(4.dp)) {
-                    val expanded = remember { mutableStateOf(false) }
-                    val activeElement = getItemById(item.activeElementId)
+                Text(
+                    item.workshop.name,
+                    modifier = Modifier
+                        .padding(4.dp),
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(
+                    activeElement?.detail ?: "default",
+                    modifier = Modifier
+                        .padding(4.dp),
+                    fontWeight = FontWeight.Light,
+                )
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    Column {
+                        Text(
+                            stringResource(id = R.string.label_start_period),
+                            modifier = Modifier
+                                .padding(4.dp)
+                        )
+                        Text(
+                            stringResource(id = R.string.label_end_period),
+                            modifier = Modifier
+                                .padding(4.dp)
+                        )
+                    }
+                    Column {
+                        Text(
+                            DATE_FORMATTER.format(activeElement?.startDate ?: Date()),
+                            modifier = Modifier
+                                .padding(4.dp)
+                        )
+                        Text(
+                            DATE_FORMATTER.format(activeElement?.endDate ?: Date()),
+                            modifier = Modifier
+                                .padding(4.dp)
+                        )
+                    }
+                    val lesNum = activeElement?.lessons?.size ?: 0
+                    Text(
+                        fontSize = 22.sp,
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = if (((activeElement?.lessonNumbers ?: 0) - lesNum) < 2) {
+                            md_theme_light_error
+                        } else Color.Black,
+                        text = "" + activeElement?.lessons?.size + " з " + activeElement?.lessonNumbers,
+                    )
+                }
+                val scrollState = rememberScrollState()
+
+                if ((activeElement?.lessons?.size ?: 0) > 0) {
                     Column(
                         modifier = Modifier
-                            .padding(4.dp)
-                            .weight(0.8f)
-                    ) {
-                        Text(
-                            item.workshop.name,
-                            modifier = Modifier
-                                .padding(4.dp),
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                        Text(
-                            activeElement?.detail ?: "default",
-                            modifier = Modifier
-                                .padding(4.dp),
-                            fontWeight = FontWeight.Light,
-                        )
-                        Row(
-                            Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-
-                            Column {
-                                Text(
-                                    stringResource(id = R.string.label_start_period),
-                                    modifier = Modifier
-                                        .padding(4.dp)
-                                )
-                                Text(
-                                    stringResource(id = R.string.label_end_period),
-                                    modifier = Modifier
-                                        .padding(4.dp)
-                                )
-                            }
-                            Column {
-                                Text(
-                                    DATE_FORMATTER.format(activeElement?.startDate ?: Date()),
-                                    modifier = Modifier
-                                        .padding(4.dp)
-                                )
-                                Text(
-                                    DATE_FORMATTER.format(activeElement?.endDate ?: Date()),
-                                    modifier = Modifier
-                                        .padding(4.dp)
-                                )
-                            }
-                            val lesNum = activeElement?.lessons?.size ?: 0
-                            Text(
-                                fontSize = 22.sp,
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                color = if (((activeElement?.lessonNumbers ?: 0) - lesNum) < 2) {
-                                    md_theme_light_error
-                                } else Color.Black,
-                                text = "" + activeElement?.lessons?.size + " з " + activeElement?.lessonNumbers,
+                            .padding(vertical = 16.dp)
+                            .heightIn(
+                                min = 0.dp,
+                                max = 200.dp
                             )
-                        }
-                        val scrollState = rememberScrollState()
+                            .verticalScroll(scrollState)
+                    ) {
 
-                        if ((activeElement?.lessons?.size ?: 0) > 0) {
-                            Column(
-                                modifier = Modifier
-                                    .padding(vertical = 16.dp)
-                                    .heightIn(
-                                        min = 0.dp,
-                                        max = 200.dp
-                                    )
-                                    .verticalScroll(scrollState)
-                            ) {
-
-                                val columnCount = 2
-                                for (i in 0 .. (activeElement?.lessons?.size ?: 0) step columnCount) {
-                                    Row {
-                                        for (j in i until i + columnCount) {
-                                            if (j == (activeElement?.lessons?.size ?: 0)) {
-                                                activeElement?.let {
-                                                    AddNewLessonView(
-                                                        listViewModel,
-                                                        it
-                                                    )
-                                                }
-                                                break
-                                            }
-                                            LessonView(
-                                                activeElement?.lessons?.get(j),
-                                                activeElement?.id ?: -1,
-                                                listViewModel
+                        val columnCount = 2
+                        for (i in 0..(activeElement?.lessons?.size ?: 0) step columnCount) {
+                            Row {
+                                for (j in i until i + columnCount) {
+                                    if (j == (activeElement?.lessons?.size ?: 0)) {
+                                        activeElement?.let {
+                                            AddNewLessonView(
+                                                listViewModel,
+                                                it
                                             )
                                         }
-                                    }}
-                            }
-                        } else {
-                            if (activeElement != null) {
-                                AddNewLessonView(listViewModel, activeElement)
+                                        break
+                                    }
+                                    LessonView(
+                                        activeElement?.lessons?.get(j),
+                                        activeElement?.id ?: -1,
+                                        listViewModel
+                                    )
+                                }
                             }
                         }
-
-
                     }
-                    IconButton(
-                        modifier = Modifier.size(24.dp),
-                        onClick = { expanded.value = true }
-                    ) {
-                        Icon(
-                            Icons.Filled.MoreVert,
-                            "menu",
-                        )
-                    }
-                    if ((item.workshop.subscriptions?.size
-                            ?: 0) > 0 && item.workshop.subscriptions?.get(0) != null
-                    ) {
-                        ContextMenu(listViewModel, item.workshop.subscriptions?.get(0)!!, expanded)
+                } else {
+                    if (activeElement != null) {
+                        AddNewLessonView(listViewModel, activeElement)
                     }
                 }
 
+
             }
+            IconButton(
+                modifier = Modifier.size(24.dp),
+                onClick = { expanded.value = true }
+            ) {
+                Icon(
+                    Icons.Filled.MoreVert,
+                    "menu",
+                )
+            }
+            if ((item.workshop.subscriptions?.size
+                    ?: 0) > 0 && item.workshop.subscriptions?.get(0) != null
+            ) {
+                ContextMenu(listViewModel, item.workshop.subscriptions?.get(0)!!, expanded)
+            }
+        }
+
+    }
 }
 
 @Composable

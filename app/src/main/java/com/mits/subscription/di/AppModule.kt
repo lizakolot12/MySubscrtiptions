@@ -1,14 +1,13 @@
 package com.mits.subscription.di
 
 import android.content.Context
-import com.mits.subscription.data.repo.SubscriptionRepository
 import com.mits.subscription.data.db.SubscriptionDb
+import com.mits.subscription.data.repo.SubscriptionRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.Dispatchers
 import javax.inject.Singleton
 
 @Module

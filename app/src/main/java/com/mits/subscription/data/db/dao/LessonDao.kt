@@ -16,10 +16,6 @@ interface LessonDao {
     @Query("DELETE FROM lesson where lId=:lessonId")
     suspend fun deleteByLessonId(lessonId:Long)
 
-    @Query("SELECT * FROM lesson where subscription_id=:id")
-    @RewriteQueriesToDropUnusedColumns
-    suspend fun getAllById(id: Long): List<Lesson>
-
     @Query("DELETE FROM lesson where subscription_id=:id")
     @RewriteQueriesToDropUnusedColumns
     suspend fun deleteBySubscriptionId(id: Long)

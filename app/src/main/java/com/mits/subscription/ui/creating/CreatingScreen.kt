@@ -47,25 +47,41 @@ fun CreatingScreenState(
 ) {
     LoadingView(state)
     Column(modifier = Modifier.fillMaxWidth()) {
-        val name = remember { mutableStateOf(TextFieldValue()) }
-        NameView(name, state, createViewModel)
+        val name = remember { mutableStateOf(state.value.name) }
+        NameView(name, state) { newValue -> createViewModel.checkName(newValue) }
 
-        val tag = remember { mutableStateOf(TextFieldValue()) }
-        TagView(tag, state, createViewModel)
+        val tag = remember { mutableStateOf(TextFieldValue(state.value.tag)) }
+        TagView(tag, state) { newValue -> createViewModel.checkTag(newValue) }
 
-        val number = remember { mutableStateOf("") }
-        PlannedNumberView(number)
+        val number = remember { mutableStateOf(state.value.number.toString()) }
+        PlannedNumberView(number) { newValue ->
+            createViewModel.acceptNumber(
+                try {
+                    newValue.toInt()
+                } catch (ex: Exception) {
+                    0
+                }
+            )
+        }
 
         val choseStartDate = remember { mutableStateOf(false) }
-        val startDate = remember { mutableStateOf(Calendar.getInstance()) }
+        val startDate = remember { mutableStateOf(state.value.startDate) }
         val choseEndDate = remember { mutableStateOf(false) }
-        StartDateView(choseStartDate, startDate, choseEndDate)
+        StartDateView(choseStartDate, startDate, choseEndDate) { newValue ->
+            createViewModel.acceptStartDate(
+                newValue
+            )
+        }
 
-        val endDate = remember { mutableStateOf(Calendar.getInstance()) }
-        EndDateView(choseEndDate, endDate, choseStartDate)
+        val endDate = remember { mutableStateOf(state.value.endDate) }
+        EndDateView(choseEndDate, endDate, choseStartDate) { newValue ->
+            createViewModel.acceptEndDate(
+                newValue
+            )
+        }
         SaveView(state) {
             createViewModel.create(
-                name.value.text,
+                name.value,
                 tag.value.text,
                 Integer.valueOf(
                     number.value.ifBlank { "0" }
@@ -106,6 +122,7 @@ private fun SaveView(
 @Composable
 private fun PlannedNumberView(
     number: MutableState<String>,
+    onChanged: (newValue: String) -> Unit?
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -122,7 +139,10 @@ private fun PlannedNumberView(
             onDone = { keyboardController?.hide() }
         ),
         onValueChange = {
-            number.value = it.digits()
+            val digitValue = it.digits()
+            number.value = digitValue
+            onChanged(digitValue)
+
         },
         label = { Text(stringResource(id = R.string.label_lesson_number)) },
     )
@@ -132,7 +152,7 @@ private fun PlannedNumberView(
 private fun TagView(
     tag: MutableState<TextFieldValue>,
     state: MutableState<CreatingViewModel.CreatingState>,
-    createViewModel: CreatingViewModel
+    onTagChanged: (newValue: String) -> Unit?
 ) {
     state.value.defaultTagStrId?.let {
         tag.value = TextFieldValue(stringResource(it))
@@ -144,7 +164,7 @@ private fun TagView(
             .padding(start = 16.dp, end = 16.dp, top = 8.dp),
         onValueChange = {
             tag.value = it
-            createViewModel.checkTag(it.text)
+            onTagChanged.invoke(it.text)
         },
 
         label = { Text(stringResource(id = R.string.label_tag)) },
@@ -168,9 +188,9 @@ private fun LoadingView(state: MutableState<CreatingViewModel.CreatingState>) {
 
 @Composable
 private fun NameView(
-    name: MutableState<TextFieldValue>,
+    name: MutableState<String>,
     state: MutableState<CreatingViewModel.CreatingState>,
-    createViewModel: CreatingViewModel
+    onNameChanged: (newValue: String) -> Unit?
 ) {
     val focusRequester = remember { FocusRequester() }
 
@@ -182,7 +202,7 @@ private fun NameView(
             .focusRequester(focusRequester),
         onValueChange = {
             name.value = it
-            createViewModel.checkName(it.text)
+            onNameChanged(it)
         },
         isError = state.value.nameError != null,
         label = { Text(stringResource(id = R.string.label_name)) },
@@ -209,7 +229,8 @@ private fun NameView(
 private fun StartDateView(
     choseStartDate: MutableState<Boolean>,
     startDate: MutableState<Calendar>,
-    choseEndDate: MutableState<Boolean>
+    choseEndDate: MutableState<Boolean>,
+    onChanged: (newValue: Calendar) -> Unit?
 ) {
     FilledTonalButton(
         onClick = { choseStartDate.value = true },
@@ -232,6 +253,8 @@ private fun StartDateView(
                 choseStartDate.value = false
                 choseEndDate.value = true
                 startDate.value = it
+                onChanged.invoke(it)
+
             },
             onDismiss = {
                 choseStartDate.value = false
@@ -246,7 +269,8 @@ private fun StartDateView(
 private fun EndDateView(
     choseEndDate: MutableState<Boolean>,
     endDate: MutableState<Calendar>,
-    choseStartDate: MutableState<Boolean>
+    choseStartDate: MutableState<Boolean>,
+    onChanged: (newValue: Calendar) -> Unit?
 ) {
     FilledTonalButton(
         onClick = { choseEndDate.value = true },
@@ -270,6 +294,7 @@ private fun EndDateView(
             endDate.value, onChanged = { newCalendar ->
                 choseEndDate.value = false
                 endDate.value = newCalendar
+                onChanged(newCalendar)
 
             },
             onDismiss = {

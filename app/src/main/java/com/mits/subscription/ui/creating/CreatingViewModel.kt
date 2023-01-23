@@ -1,5 +1,6 @@
 package com.mits.subscription.ui.creating
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -20,10 +21,9 @@ class CreatingViewModel
 
     private val viewModelState = mutableStateOf(CreatingState())
 
-    fun init() {
+    init {
         val defaultTag = getDefaultTag()
         viewModelState.value = CreatingState(defaultTag)
-
     }
 
     private fun getDefaultTag(): Int? {
@@ -82,12 +82,20 @@ class CreatingViewModel
         } else {
             viewModelState.value.nameError = null
         }
+        val newState = viewModelState.value
+        newState.name = name
+        newState.defaultTagStrId = null
+        viewModelState.value = newState
         checkSave()
-
     }
 
     private fun checkSave() {
         val currentState = CreatingState(viewModelState.value.defaultTagStrId)
+        currentState.name = viewModelState.value.name
+        currentState.tag = viewModelState.value.tag
+        currentState.number = viewModelState.value.number
+        currentState.startDate = viewModelState.value.startDate
+        currentState.endDate = viewModelState.value.endDate
         currentState.nameError = viewModelState.value.nameError
         currentState.savingAvailable = getSaveAvailability(viewModelState.value)
         currentState.finished = viewModelState.value.finished
@@ -105,12 +113,36 @@ class CreatingViewModel
     fun checkTag(text: String) {
         if (text.isNotBlank()) {
             val newState = viewModelState.value
+            newState.tag = text
             newState.defaultTagStrId = null
             viewModelState.value = newState
         }
     }
 
+    fun acceptStartDate(date:Calendar) {
+            val newState = viewModelState.value
+            newState.startDate = date
+            viewModelState.value = newState
+    }
+
+    fun acceptEndDate(date:Calendar) {
+        val newState = viewModelState.value
+        newState.endDate = date
+        viewModelState.value = newState
+    }
+
+    fun acceptNumber(number:Int) {
+        val newState = viewModelState.value
+        newState.number = number
+        viewModelState.value = newState
+    }
+
     class CreatingState(var defaultTagStrId: Int? = null) {
+        var name:String = ""
+        var tag:String = ""
+        var number:Int = 0
+        var startDate:Calendar = Calendar.getInstance()
+        var endDate:Calendar = Calendar.getInstance()
         var nameError: Int? = null
         var savingAvailable: Boolean = false
         var finished: Boolean = false

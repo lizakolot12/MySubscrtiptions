@@ -50,11 +50,11 @@ android {
 
     lintOptions {
         warningsAsErrors true
-    /*    abortOnError true
-        ignoreWarnings true
-        checkAllWarnings true
-        // if true, treat all warnings as errors
-        warningsAsErrors true*/
+        /*    abortOnError true
+            ignoreWarnings true
+            checkAllWarnings true
+            // if true, treat all warnings as errors
+            warningsAsErrors true*/
     }
 
     compileOptions {
@@ -127,5 +127,6 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
     implementation "com.google.dagger:hilt-android:2.44.2"
     kapt "com.google.dagger:hilt-compiler:2.44.2"
+    implementation "androidx.hilt:hilt-navigation-compose:1.0.0"
 
 }

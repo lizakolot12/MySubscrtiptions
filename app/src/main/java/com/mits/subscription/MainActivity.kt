@@ -18,6 +18,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -109,8 +111,7 @@ fun Main(activity: ComponentActivity) {
                 }
 
                 composable(Navigation.NEW.route) {
-                    val createViewModel: CreatingViewModel by activity.viewModels()
-                    createViewModel.init()
+                    val createViewModel: CreatingViewModel = hiltViewModel()
                     CreatingScreen(navController, createViewModel)
                 }
 
@@ -119,6 +120,7 @@ fun Main(activity: ComponentActivity) {
                     arguments = listOf(navArgument("subscriptionId") { type = NavType.LongType })
                 ) {
                     val detailViewModel: DetailViewModel by activity.viewModels()
+
                     detailViewModel.init(it.arguments?.getLong("subscriptionId"))
                     DetailScreen(navController, detailViewModel)
                 }

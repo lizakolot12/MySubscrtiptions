@@ -3,7 +3,6 @@ package com.mits.subscription
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,7 +18,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -42,7 +40,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             SubscriptionTheme {
-                Main(this)
+                Main()
             }
         }
     }
@@ -50,7 +48,7 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Main(activity: ComponentActivity) {
+fun Main() {
     val navController = rememberNavController()
     val currentRoute = navController
         .currentBackStackEntryFlow
@@ -132,6 +130,6 @@ fun Main(activity: ComponentActivity) {
 @Composable
 fun DefaultPreview() {
     SubscriptionTheme {
-        Main(MainActivity())
+        Main()
     }
 }

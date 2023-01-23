@@ -105,7 +105,7 @@ fun Main(activity: ComponentActivity) {
             NavHost(navController = navController, startDestination = Navigation.LIST.route) {
 
                 composable(Navigation.LIST.route) {
-                    val listViewModel: ListViewModel by activity.viewModels()
+                    val listViewModel: ListViewModel = hiltViewModel()
                     ListScreen(navController, listViewModel)
 
                 }
@@ -119,9 +119,8 @@ fun Main(activity: ComponentActivity) {
                     Navigation.DETAIL.route + "/{subscriptionId}",
                     arguments = listOf(navArgument("subscriptionId") { type = NavType.LongType })
                 ) {
-                    val detailViewModel: DetailViewModel by activity.viewModels()
 
-                    detailViewModel.init(it.arguments?.getLong("subscriptionId"))
+                    val detailViewModel: DetailViewModel = hiltViewModel()
                     DetailScreen(navController, detailViewModel)
                 }
             }

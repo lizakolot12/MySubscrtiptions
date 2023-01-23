@@ -1,5 +1,7 @@
 package com.mits.subscription.ui.detail
 
+import android.util.Log
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mits.subscription.R
@@ -19,16 +21,19 @@ import javax.inject.Inject
 @HiltViewModel
 class DetailViewModel
 @Inject constructor(
-    private val repository: SubscriptionRepository
+    private val repository: SubscriptionRepository,
+    state: SavedStateHandle
 ) : ViewModel() {
+
     private val _uiState = MutableStateFlow(DetailState(null, null))
     val uiState = _uiState.asStateFlow()
 
-    fun init(id: Long?) {
+    init {
+        val id = state.get<Long>("subscriptionId") ?: 0L
         _uiState.value = DetailState(null, null)
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                val subscription = repository.getSubscription(id ?: 0)
+                val subscription = repository.getSubscription(id)
                 val workshop = repository.getWorkshop(subscription.workshopId)
                 val newState = DetailState(subscription, workshop.name)
                 _uiState.value = newState
@@ -98,11 +103,17 @@ class DetailViewModel
         }
     }
 
-    private fun copy(subscription: Subscription?): Subscription?{
+    private fun copy(subscription: Subscription?): Subscription? {
         return subscription?.let {
             Subscription(
-                it.id, subscription.detail,subscription.startDate,subscription.endDate,subscription.lessonNumbers,
-            subscription.lessons,subscription.workshopId)
+                it.id,
+                subscription.detail,
+                subscription.startDate,
+                subscription.endDate,
+                subscription.lessonNumbers,
+                subscription.lessons,
+                subscription.workshopId
+            )
         }
     }
 
@@ -179,7 +190,8 @@ class DetailViewModel
         updateCurrentState(currentState)
     }
 
-    data class DetailState(var subscription: Subscription?, var workshopName: String?,
+    data class DetailState(
+        var subscription: Subscription?, var workshopName: String?,
         var nameError: Int? = null,
         var savingAvailable: Boolean = true,
         var finished: Boolean = false,

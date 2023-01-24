@@ -15,10 +15,19 @@ import kotlinx.coroutines.withContext
 import java.util.*
 import javax.inject.Inject
 
-data class WorkshopViewItem(
+class WorkshopViewItem(
     val workshop: Workshop,
     var activeElementId: Long
-)
+) {
+    fun getActiveElement(): Subscription? {
+        if((workshop.subscriptions?.size ?: 0) == 0) return null
+        val current =  workshop.subscriptions?.firstOrNull { it.id == activeElementId }
+        if (current == null && (workshop.subscriptions?.size ?: 0) > 0) {
+            return workshop.subscriptions?.get(0)
+        }
+        return current
+    }
+}
 
 @HiltViewModel
 class ListViewModel @Inject constructor(

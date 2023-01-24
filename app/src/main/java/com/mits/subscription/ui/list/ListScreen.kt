@@ -80,6 +80,14 @@ fun List(
                     .padding(8.dp),
                 content = {
                     ListItemView(
+                        {
+                            item.getActiveElement()?.let { listViewModel.addVisitedLesson(it) }
+                        },
+                        {
+                            item.getActiveElement()?.let { listViewModel.copy(it) }
+                        }, {
+                            item.getActiveElement()?.let { listViewModel.deleteWorkshop(it) }
+                        },
                         item,
                         listViewModel,
                         onButtonClicked = {
@@ -107,13 +115,14 @@ fun List(
 
 @Composable
 fun ListItemView(
+    addVisitedLessonListener: () -> Unit?,
+    copySubscriptionListener: () -> Unit?,
+    deleteWorkshopListener: () -> Unit?,
     item: WorkshopViewItem,
     listViewModel: ListViewModel,
     onButtonClicked: (() -> Unit)? = null
 ) {
-    fun getItemById(id: Long): Subscription? {
-        return item.workshop.subscriptions?.firstOrNull { it.id == id }
-    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -125,7 +134,7 @@ fun ListItemView(
         )
     ) {
         Row(modifier = Modifier.padding(4.dp)) {
-            val activeElement = getItemById(item.activeElementId)
+            val activeElement = item.getActiveElement()
             Column(
                 modifier = Modifier
                     .padding(4.dp)
@@ -192,7 +201,11 @@ fun ListItemView(
                 }
 
             }
-            ContextMenuView(item, listViewModel)
+            ContextMenuView(
+                addVisitedLessonListener,
+                copySubscriptionListener,
+                deleteWorkshopListener
+            )
         }
 
     }
@@ -200,8 +213,9 @@ fun ListItemView(
 
 @Composable
 private fun ContextMenuView(
-    item: WorkshopViewItem,
-    listViewModel: ListViewModel,
+    addVisitedLessonListener: () -> Unit?,
+    copySubscriptionListener: () -> Unit?,
+    deleteWorkshopListener: () -> Unit?,
 ) {
     val expanded = remember { mutableStateOf(false) }
     IconButton(
@@ -213,11 +227,12 @@ private fun ContextMenuView(
             "menu",
         )
     }
-    if ((item.workshop.subscriptions?.size
-            ?: 0) > 0 && item.workshop.subscriptions?.get(0) != null
-    ) {
-        ContextMenu(listViewModel, item.workshop.subscriptions?.get(0)!!, expanded)
-    }
+    ContextMenu(
+        addVisitedLessonListener,
+        copySubscriptionListener,
+        deleteWorkshopListener,
+        expanded
+    )
 }
 
 @Composable
@@ -364,8 +379,9 @@ fun SubscriptionSmall(
 
 @Composable
 fun ContextMenu(
-    listViewModel: ListViewModel,
-    subscription: Subscription,
+    addVisitedLessonListener: () -> Unit?,
+    copySubscriptionListener: () -> Unit?,
+    deleteWorkshopListener: () -> Unit?,
     expanded: MutableState<Boolean>
 ) {
     DropdownMenu(
@@ -375,7 +391,7 @@ fun ContextMenu(
     ) {
         DropdownMenuItem(
             onClick = {
-                listViewModel.addVisitedLesson(subscription)
+                addVisitedLessonListener()
                 expanded.value = false
             },
             text = { Text(stringResource(id = R.string.description_add_lesson)) },
@@ -387,7 +403,7 @@ fun ContextMenu(
             }
         )
         DropdownMenuItem(onClick = {
-            listViewModel.copy(subscription)
+            copySubscriptionListener()
             expanded.value = false
         },
             text = { Text(stringResource(id = R.string.copy_subscription)) },
@@ -401,7 +417,7 @@ fun ContextMenu(
         DropdownMenuItem(
             text = { Text(stringResource(id = R.string.delete)) },
             onClick = {
-                listViewModel.deleteWorkshop(subscription)
+                deleteWorkshopListener()
                 expanded.value = false
             },
             leadingIcon = {

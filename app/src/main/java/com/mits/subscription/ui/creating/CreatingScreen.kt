@@ -100,14 +100,14 @@ fun CreatingScreenState(
 @Composable
 private fun SaveButton(
     state: MutableState<CreatingViewModel.CreatingState>,
-    onButtonClicked: () -> Unit
+    onButtonClick: () -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = Alignment.TopEnd
     ) {
         Button(
-            onClick = onButtonClicked,
+            onClick = onButtonClick,
             modifier = Modifier.padding(horizontal = 16.dp),
             enabled = state.value.savingAvailable
         ) {
@@ -122,7 +122,7 @@ private fun SaveButton(
 @Composable
 private fun PlannedNumber(
     number: MutableState<String>,
-    onChanged: (newValue: String) -> Unit?
+    onChange: (newValue: String) -> Unit?
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -141,7 +141,7 @@ private fun PlannedNumber(
         onValueChange = {
             val digitValue = it.digits()
             number.value = digitValue
-            onChanged(digitValue)
+            onChange(digitValue)
 
         },
         label = { Text(stringResource(id = R.string.label_lesson_number)) },
@@ -152,7 +152,7 @@ private fun PlannedNumber(
 private fun Detail(
     tag: MutableState<TextFieldValue>,
     state: MutableState<CreatingViewModel.CreatingState>,
-    onTagChanged: (newValue: String) -> Unit?
+    onTagChange: (newValue: String) -> Unit?
 ) {
     state.value.defaultDetailStrId?.let {
         tag.value = TextFieldValue(stringResource(it))
@@ -164,7 +164,7 @@ private fun Detail(
             .padding(start = 16.dp, end = 16.dp, top = 8.dp),
         onValueChange = {
             tag.value = it
-            onTagChanged.invoke(it.text)
+            onTagChange.invoke(it.text)
         },
 
         label = { Text(stringResource(id = R.string.label_tag)) },
@@ -190,7 +190,7 @@ private fun LoadingIndicator(state: MutableState<CreatingViewModel.CreatingState
 private fun Name(
     name: MutableState<String>,
     state: MutableState<CreatingViewModel.CreatingState>,
-    onNameChanged: (newValue: String) -> Unit?
+    onNameChange: (newValue: String) -> Unit?
 ) {
     val focusRequester = remember { FocusRequester() }
 
@@ -202,7 +202,7 @@ private fun Name(
             .focusRequester(focusRequester),
         onValueChange = {
             name.value = it
-            onNameChanged(it)
+            onNameChange(it)
         },
         isError = state.value.nameError != null,
         label = { Text(stringResource(id = R.string.label_name)) },
@@ -230,7 +230,7 @@ private fun StartDate(
     choseStartDate: MutableState<Boolean>,
     startDate: MutableState<Calendar>,
     choseEndDate: MutableState<Boolean>,
-    onChanged: (newValue: Calendar) -> Unit?
+    onChange: (newValue: Calendar) -> Unit?
 ) {
     FilledTonalButton(
         onClick = { choseStartDate.value = true },
@@ -249,11 +249,11 @@ private fun StartDate(
 
     if (choseStartDate.value) {
         ShowDatePicker(
-            startDate.value, onChanged = {
+            startDate.value, onChange = {
                 choseStartDate.value = false
                 choseEndDate.value = true
                 startDate.value = it
-                onChanged.invoke(it)
+                onChange.invoke(it)
 
             },
             onDismiss = {
@@ -270,7 +270,7 @@ private fun EndDate(
     choseEndDate: MutableState<Boolean>,
     endDate: MutableState<Calendar>,
     choseStartDate: MutableState<Boolean>,
-    onChanged: (newValue: Calendar) -> Unit?
+    onChange: (newValue: Calendar) -> Unit?
 ) {
     FilledTonalButton(
         onClick = { choseEndDate.value = true },
@@ -291,10 +291,10 @@ private fun EndDate(
 
     if (choseEndDate.value) {
         ShowDatePicker(
-            endDate.value, onChanged = { newCalendar ->
+            endDate.value, onChange = { newCalendar ->
                 choseEndDate.value = false
                 endDate.value = newCalendar
-                onChanged(newCalendar)
+                onChange(newCalendar)
 
             },
             onDismiss = {
@@ -311,7 +311,7 @@ private fun String.digits() = filter { it.isDigit() }
 @Composable
 fun ShowDatePicker(
     initial: Calendar,
-    onChanged: (m: Calendar) -> Unit,
+    onChange: (m: Calendar) -> Unit,
     onDismiss: (() -> Unit)? = null,
     titleId: Int? = null
 ) {
@@ -325,7 +325,7 @@ fun ShowDatePicker(
         { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
             val calendar = Calendar.getInstance()
             calendar.set(year, month, dayOfMonth)
-            onChanged.invoke(calendar)
+            onChange.invoke(calendar)
         }, yearInit, monthInit, dayInit
     )
     datePickerDialog.setOnDismissListener { onDismiss?.invoke() }

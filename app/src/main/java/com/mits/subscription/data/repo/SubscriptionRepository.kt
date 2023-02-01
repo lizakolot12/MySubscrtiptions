@@ -36,8 +36,9 @@ class SubscriptionRepository(
         return lessonDao.insert(lessonEntity)
     }
 
-    suspend fun updateLesson(lesson: Lesson, newCalendar: Calendar, subscriptionId:Long) {
-        val lessonEntity = LessonEntity(lesson.lId, lesson.description, newCalendar.time, subscriptionId)
+    suspend fun updateLesson(lesson: Lesson, newCalendar: Calendar, subscriptionId: Long) {
+        val lessonEntity =
+            LessonEntity(lesson.lId, lesson.description, newCalendar.time, subscriptionId)
         lessonDao.updateLesson(lessonEntity)
     }
 
@@ -49,24 +50,32 @@ class SubscriptionRepository(
         return workshopDao.getById(workshopId)
     }
 
-    suspend fun update(subscription: Subscription, workshopName: String?) {
+    suspend fun update(subscription: Subscription) {
         lessonDao.deleteBySubscriptionId(subscription.id)
         subscription.lessons?.forEach {
             lessonDao.insert(LessonEntity(0, it.description, it.date, subscription.id))
         }
-        workshopDao.updateWorkshop(WorkshopEntity(subscription.workshopId, workshopName))
         return subscriptionDao.updateSubscription(convert(subscription))
     }
+
+    suspend fun updateWorkshop(workshopId: Long, workshopName: String?) {
+        workshopDao.updateWorkshop(WorkshopEntity(workshopId, workshopName))
+    }
+
 
     suspend fun deleteWorkshop(subscription: Subscription) {
         workshopDao.deleteById(subscription.workshopId)
     }
 
+    suspend fun deleteLesson(lesson: Lesson) {
+        lessonDao.deleteByLessonId(lesson.lId)
+    }
+
     suspend fun deleteSubscription(subscription: Subscription) {
         val currentWorkshop = workshopDao.getById(subscription.workshopId)
-        if((currentWorkshop.subscriptions?.size ?: 0) > 1) {
+        if ((currentWorkshop.subscriptions?.size ?: 0) > 1) {
             subscriptionDao.deleteById(subscription.id)
-        } else{
+        } else {
             deleteWorkshop(subscription)
         }
     }

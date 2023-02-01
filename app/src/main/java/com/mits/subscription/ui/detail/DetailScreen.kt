@@ -56,7 +56,6 @@ fun Detail(
         StartDateView(uiState, detailViewModel)
         EndDateView(uiState, detailViewModel)
         LessonsView(uiState, detailViewModel)
-        SaveButton(uiState, detailViewModel)
 
         if (uiState.value.finished) {
             navController.navigateUp()
@@ -117,7 +116,7 @@ private fun NameView(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         onValueChange = {
-            detailViewModel.checkNameWorkshop(it)
+            detailViewModel.acceptNameWorkshop(it)
         },
         isError = uiState.value.nameError != null,
         label = { Text(stringResource(id = R.string.label_name)) }
@@ -300,28 +299,6 @@ private fun ProgressView(uiState: State<DetailViewModel.DetailState>) {
             modifier = Modifier.fillMaxSize()
         ) {
             CircularProgressIndicator()
-        }
-    }
-}
-
-@Composable
-private fun SaveButton(
-    uiState: State<DetailViewModel.DetailState>,
-    detailViewModel: DetailViewModel
-) {
-    Box(
-        modifier = Modifier.fillMaxWidth(),
-        contentAlignment = Alignment.TopEnd
-    ) {
-        Button(
-            onClick = {
-                detailViewModel.save()
-            },
-            modifier = Modifier
-                .padding(horizontal = 16.dp),
-            enabled = uiState.value.savingAvailable
-        ) {
-            Text(stringResource(id = R.string.btn_save))
         }
     }
 }

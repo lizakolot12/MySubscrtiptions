@@ -1,6 +1,5 @@
 package com.mits.subscription.ui.detail
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,7 +11,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
@@ -27,80 +25,70 @@ class DetailViewModel
 
     private val _uiState = MutableStateFlow(DetailState(null, null))
     val uiState = _uiState.asStateFlow()
+    private val subscriptionId: Long
 
     init {
-        val id = state.get<Long>("subscriptionId") ?: 0L
+        subscriptionId = state.get<Long>("subscriptionId") ?: 0L
         _uiState.value = DetailState(null, null)
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                val subscription = repository.getSubscription(id)
-                val workshop = repository.getWorkshop(subscription.workshopId)
-                val newState = DetailState(subscription, workshop.name)
-                _uiState.value = newState
-            }
+            withContext(Dispatchers.IO) { updateCurrentState() }
         }
     }
 
-    private fun updateCurrentState(state: DetailState) {
-        state.savingAvailable = isSavingAvailability(state)
-        _uiState.update { state }
-    }
-
-    fun deleteLesson(lesson: Lesson) {
-        val subscription = copy(uiState.value.subscription)
-        val array = subscription?.lessons?.toMutableList()
-        array?.remove(lesson)
-        subscription?.lessons = array
-        val currentState = currentStateCopy()
-        currentState.subscription = subscription
-        updateCurrentState(currentState)
-    }
-
-    fun save() {
-        val newState = DetailState(_uiState.value.subscription, uiState.value.workshopName)
-        newState.isLoading = true
-        _uiState.value = newState
-        viewModelScope.launch {
-            val endedState = DetailState(_uiState.value.subscription, uiState.value.workshopName)
-            uiState.value.subscription?.let { repository.update(it, uiState.value.workshopName) }
-            endedState.isLoading = false
-            endedState.finished = true
-            _uiState.value = endedState
-        }
-    }
-
-    fun checkNameWorkshop(name: String) {
-        val error = if (name.isBlank()) {
+    private suspend fun updateCurrentState() {
+        val subscription = repository.getSubscription(subscriptionId)
+        val workshop = repository.getWorkshop(subscription.workshopId)
+        val newState = DetailState(subscription, workshop.name)
+        val error = if (workshop.name.isBlank()) {
             R.string.name_error
         } else {
             null
         }
-        val currentState = currentStateCopy()
-        currentState.workshopName = name
-        currentState.nameError = error
-        updateCurrentState(currentState)
+        newState.nameError = error
+        _uiState.value = newState
+    }
+
+    fun deleteLesson(lesson: Lesson) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.deleteLesson(lesson)
+            updateCurrentState()
+        }
+    }
+
+    fun acceptNameWorkshop(name: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val currentState = currentStateCopy()
+            repository.updateWorkshop(
+                currentState.subscription?.workshopId ?: -1,
+                name
+            )
+            updateCurrentState()
+        }
     }
 
     fun acceptDetail(detail: String) {
-        val currentState = currentStateCopy()
-        val subscription = copy(currentState.subscription)
-        subscription?.detail = detail
-        currentState.subscription = subscription
-        updateCurrentState(currentState)
+        viewModelScope.launch(Dispatchers.IO) {
+            val currentSubscription = uiState.value.subscription
+            currentSubscription?.detail = detail
+            currentSubscription?.let { repository.update(currentSubscription) }
+            updateCurrentState()
+        }
     }
 
     fun acceptNumber(numStr: String) {
-        try {
-            val currentState = currentStateCopy()
-            val subscription = copy(currentState.subscription)
-            subscription?.lessonNumbers = numStr.toInt()
-            currentState.subscription = subscription
-            updateCurrentState(currentState)
-        } catch (ex: Exception) {
-            val newState = currentStateCopy()
-            newState.generalError = ex.message
-            _uiState.value = newState
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val currentSubscription = _uiState.value.subscription
+                currentSubscription?.lessonNumbers = numStr.toInt()
+                currentSubscription?.let { repository.update(currentSubscription) }
+                updateCurrentState()
+            } catch (ex: Exception) {
+                val newState = currentStateCopy()
+                newState.generalError = ex.message
+                _uiState.value = newState
+            }
         }
+
     }
 
     private fun copy(subscription: Subscription?): Subscription? {
@@ -121,7 +109,6 @@ class DetailViewModel
         val state = uiState.value
         val newState = DetailState(state.subscription, state.workshopName)
         newState.nameError = state.nameError
-        newState.savingAvailable = state.savingAvailable
         newState.finished = state.finished
         newState.generalError = state.generalError
         newState.isLoading = state.isLoading
@@ -135,9 +122,10 @@ class DetailViewModel
             if ((subscription?.endDate ?: Date()) < (subscription?.startDate ?: Date())) {
                 subscription?.endDate = subscription?.startDate
             }
-            val currentState = currentStateCopy()
-            currentState.subscription = subscription
-            updateCurrentState(currentState)
+            viewModelScope.launch(Dispatchers.IO) {
+                subscription?.let { repository.update(subscription) }
+                updateCurrentState()
+            }
         } catch (ex: Exception) {
             val newState = currentStateCopy()
             newState.generalError = ex.message
@@ -151,7 +139,10 @@ class DetailViewModel
             subscription?.endDate = calendar.time
             val currentState = currentStateCopy()
             currentState.subscription = subscription
-            updateCurrentState(currentState)
+            viewModelScope.launch(Dispatchers.IO) {
+                subscription?.let { repository.update(subscription) }
+                updateCurrentState()
+            }
         } catch (ex: Exception) {
             val newState = currentStateCopy()
             newState.generalError = ex.message
@@ -160,40 +151,24 @@ class DetailViewModel
     }
 
     fun addVisitedLesson() {
-        viewModelScope.launch {
-            val subscription = copy(uiState.value.subscription)
-            val array = subscription?.lessons?.toMutableList()
-            array?.add(Lesson(-1, "", Date()))
-            subscription?.lessons = array
-            val currentState = currentStateCopy()
-            currentState.subscription = subscription
-            updateCurrentState(currentState)
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.addLesson(subscriptionId, Lesson(-1, "", Date()))
+            updateCurrentState()
         }
-    }
-
-    private fun isSavingAvailability(state: DetailState): Boolean {
-        return state.nameError == null
-                && !state.isLoading
     }
 
     fun changeLessonDate(item: Lesson, newCalendar: Calendar) {
-        val subscription = uiState.value.subscription
-        val array = subscription?.lessons?.toMutableList()
-        array?.forEach {
-            if (item.lId == it.lId) {
-                item.date = newCalendar.time
-            }
+        viewModelScope.launch(Dispatchers.IO) {
+            item.date = newCalendar.time
+            repository.updateLesson(item, newCalendar, subscriptionId)
+            updateCurrentState()
         }
-        subscription?.lessons = array
-        val currentState = currentStateCopy()
-        currentState.subscription = subscription
-        updateCurrentState(currentState)
+
     }
 
     data class DetailState(
         var subscription: Subscription?, var workshopName: String?,
         var nameError: Int? = null,
-        var savingAvailable: Boolean = true,
         var finished: Boolean = false,
         var generalError: String? = null,
         var isLoading: Boolean = false

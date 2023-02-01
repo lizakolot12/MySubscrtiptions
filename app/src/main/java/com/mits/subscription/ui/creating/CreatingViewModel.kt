@@ -1,6 +1,5 @@
 package com.mits.subscription.ui.creating
 
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -22,11 +21,11 @@ class CreatingViewModel
     private val viewModelState = mutableStateOf(CreatingState())
 
     init {
-        val defaultTag = getDefaultTag()
-        viewModelState.value = CreatingState(defaultTag)
+        val defaultDetail = getDefaultDetail()
+        viewModelState.value = CreatingState(defaultDetail)
     }
 
-    private fun getDefaultTag(): Int? {
+    private fun getDefaultDetail(): Int? {
         val currentDate = Calendar.getInstance()
         return when (currentDate.get(Calendar.MONTH)) {
             0 -> R.string.january
@@ -84,15 +83,15 @@ class CreatingViewModel
         }
         val newState = viewModelState.value
         newState.name = name
-        newState.defaultTagStrId = null
+        newState.defaultDetailStrId = null
         viewModelState.value = newState
         checkSave()
     }
 
     private fun checkSave() {
-        val currentState = CreatingState(viewModelState.value.defaultTagStrId)
+        val currentState = CreatingState(viewModelState.value.defaultDetailStrId)
         currentState.name = viewModelState.value.name
-        currentState.tag = viewModelState.value.tag
+        currentState.detail = viewModelState.value.detail
         currentState.number = viewModelState.value.number
         currentState.startDate = viewModelState.value.startDate
         currentState.endDate = viewModelState.value.endDate
@@ -110,11 +109,11 @@ class CreatingViewModel
                 && !currentState.isLoading
     }
 
-    fun checkTag(text: String) {
+    fun checkDetail(text: String) {
         if (text.isNotBlank()) {
             val newState = viewModelState.value
-            newState.tag = text
-            newState.defaultTagStrId = null
+            newState.detail = text
+            newState.defaultDetailStrId = null
             viewModelState.value = newState
         }
     }
@@ -137,9 +136,9 @@ class CreatingViewModel
         viewModelState.value = newState
     }
 
-    class CreatingState(var defaultTagStrId: Int? = null) {
+    class CreatingState(var defaultDetailStrId: Int? = null) {
         var name:String = ""
-        var tag:String = ""
+        var detail:String = ""
         var number:Int = 0
         var startDate:Calendar = Calendar.getInstance()
         var endDate:Calendar = Calendar.getInstance()

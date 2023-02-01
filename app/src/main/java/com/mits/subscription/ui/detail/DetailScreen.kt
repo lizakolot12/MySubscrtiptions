@@ -49,13 +49,13 @@ fun Detail(
             .fillMaxHeight(1f)
             .fillMaxWidth()
     ) {
-        ProgressView(uiState)
-        NameView(uiState, detailViewModel)
-        LabelView(uiState, detailViewModel)
-        LessonNumberView(uiState, detailViewModel)
-        StartDateView(uiState, detailViewModel)
-        EndDateView(uiState, detailViewModel)
-        LessonsView(uiState, detailViewModel)
+        ProgressIndicator(uiState)
+        Name(uiState, detailViewModel)
+        Detail(uiState, detailViewModel)
+        LessonNumber(uiState, detailViewModel)
+        StartDate(uiState, detailViewModel)
+        EndDate(uiState, detailViewModel)
+        Lessons(uiState, detailViewModel)
 
         if (uiState.value.finished) {
             navController.navigateUp()
@@ -106,7 +106,7 @@ fun LessonRow(item: Lesson, detailViewModel: DetailViewModel) {
 }
 
 @Composable
-private fun NameView(
+private fun Name(
     uiState: State<DetailViewModel.DetailState>,
     detailViewModel: DetailViewModel
 ) {
@@ -133,7 +133,7 @@ private fun NameView(
 }
 
 @Composable
-private fun LabelView(
+private fun Detail(
     uiState: State<DetailViewModel.DetailState>,
     detailViewModel: DetailViewModel
 ) {
@@ -150,7 +150,7 @@ private fun LabelView(
 }
 
 @Composable
-private fun LessonNumberView(
+private fun LessonNumber(
     uiState: State<DetailViewModel.DetailState>,
     detailViewModel: DetailViewModel
 ) {
@@ -165,7 +165,7 @@ private fun LessonNumberView(
 }
 
 @Composable
-private fun StartDateView(
+private fun StartDate(
     uiState: State<DetailViewModel.DetailState>,
     detailViewModel: DetailViewModel
 ) {
@@ -202,7 +202,7 @@ private fun StartDateView(
 }
 
 @Composable
-private fun EndDateView(
+private fun EndDate(
     uiState: State<DetailViewModel.DetailState>,
     detailViewModel: DetailViewModel
 ) {
@@ -241,7 +241,7 @@ private fun EndDateView(
 }
 
 @Composable
-private fun LessonsView(
+private fun Lessons(
     uiState: State<DetailViewModel.DetailState>,
     detailViewModel: DetailViewModel
 ) {
@@ -292,7 +292,7 @@ private fun LessonsView(
 }
 
 @Composable
-private fun ProgressView(uiState: State<DetailViewModel.DetailState>) {
+private fun ProgressIndicator(uiState: State<DetailViewModel.DetailState>) {
     if (uiState.value.isLoading) {
         Box(
             contentAlignment = Alignment.Center,

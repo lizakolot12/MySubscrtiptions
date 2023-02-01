@@ -45,16 +45,16 @@ fun CreatingScreenState(
     state: MutableState<CreatingViewModel.CreatingState>,
     createViewModel: CreatingViewModel
 ) {
-    LoadingView(state)
+    LoadingIndicator(state)
     Column(modifier = Modifier.fillMaxWidth()) {
         val name = remember { mutableStateOf(state.value.name) }
-        NameView(name, state) { newValue -> createViewModel.checkName(newValue) }
+        Name(name, state) { newValue -> createViewModel.checkName(newValue) }
 
-        val tag = remember { mutableStateOf(TextFieldValue(state.value.tag)) }
-        TagView(tag, state) { newValue -> createViewModel.checkTag(newValue) }
+        val detail = remember { mutableStateOf(TextFieldValue(state.value.detail)) }
+        Detail(detail, state) { newValue -> createViewModel.checkDetail(newValue) }
 
         val number = remember { mutableStateOf(state.value.number.toString()) }
-        PlannedNumberView(number) { newValue ->
+        PlannedNumber(number) { newValue ->
             createViewModel.acceptNumber(
                 try {
                     newValue.toInt()
@@ -67,22 +67,22 @@ fun CreatingScreenState(
         val choseStartDate = remember { mutableStateOf(false) }
         val startDate = remember { mutableStateOf(state.value.startDate) }
         val choseEndDate = remember { mutableStateOf(false) }
-        StartDateView(choseStartDate, startDate, choseEndDate) { newValue ->
+        StartDate(choseStartDate, startDate, choseEndDate) { newValue ->
             createViewModel.acceptStartDate(
                 newValue
             )
         }
 
         val endDate = remember { mutableStateOf(state.value.endDate) }
-        EndDateView(choseEndDate, endDate, choseStartDate) { newValue ->
+        EndDate(choseEndDate, endDate, choseStartDate) { newValue ->
             createViewModel.acceptEndDate(
                 newValue
             )
         }
-        SaveView(state) {
+        SaveButton(state) {
             createViewModel.create(
                 name.value,
-                tag.value.text,
+                detail.value.text,
                 Integer.valueOf(
                     number.value.ifBlank { "0" }
                 ),
@@ -98,7 +98,7 @@ fun CreatingScreenState(
 }
 
 @Composable
-private fun SaveView(
+private fun SaveButton(
     state: MutableState<CreatingViewModel.CreatingState>,
     onButtonClicked: () -> Unit
 ) {
@@ -120,7 +120,7 @@ private fun SaveView(
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-private fun PlannedNumberView(
+private fun PlannedNumber(
     number: MutableState<String>,
     onChanged: (newValue: String) -> Unit?
 ) {
@@ -149,12 +149,12 @@ private fun PlannedNumberView(
 }
 
 @Composable
-private fun TagView(
+private fun Detail(
     tag: MutableState<TextFieldValue>,
     state: MutableState<CreatingViewModel.CreatingState>,
     onTagChanged: (newValue: String) -> Unit?
 ) {
-    state.value.defaultTagStrId?.let {
+    state.value.defaultDetailStrId?.let {
         tag.value = TextFieldValue(stringResource(it))
     }
     TextField(
@@ -175,7 +175,7 @@ private fun TagView(
 }
 
 @Composable
-private fun LoadingView(state: MutableState<CreatingViewModel.CreatingState>) {
+private fun LoadingIndicator(state: MutableState<CreatingViewModel.CreatingState>) {
     if (state.value.isLoading) {
         Box(
             contentAlignment = Alignment.Center,
@@ -187,7 +187,7 @@ private fun LoadingView(state: MutableState<CreatingViewModel.CreatingState>) {
 }
 
 @Composable
-private fun NameView(
+private fun Name(
     name: MutableState<String>,
     state: MutableState<CreatingViewModel.CreatingState>,
     onNameChanged: (newValue: String) -> Unit?
@@ -226,7 +226,7 @@ private fun NameView(
 }
 
 @Composable
-private fun StartDateView(
+private fun StartDate(
     choseStartDate: MutableState<Boolean>,
     startDate: MutableState<Calendar>,
     choseEndDate: MutableState<Boolean>,
@@ -266,7 +266,7 @@ private fun StartDateView(
 }
 
 @Composable
-private fun EndDateView(
+private fun EndDate(
     choseEndDate: MutableState<Boolean>,
     endDate: MutableState<Calendar>,
     choseStartDate: MutableState<Boolean>,

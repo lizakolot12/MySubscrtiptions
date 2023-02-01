@@ -79,7 +79,7 @@ fun List(
                     )
                     .padding(8.dp),
                 content = {
-                    ListItemView(
+                    Workshop(
                         {
                             item.getActiveElement()?.let { listViewModel.addVisitedLesson(it) }
                         },
@@ -114,7 +114,7 @@ fun List(
 }
 
 @Composable
-fun ListItemView(
+fun Workshop(
     addVisitedLessonListener: () -> Unit?,
     copySubscriptionListener: () -> Unit?,
     deleteWorkshopListener: () -> Unit?,
@@ -194,14 +194,14 @@ fun ListItemView(
                 }
 
                 if ((activeElement?.lessons?.size ?: 0) > 0) {
-                    activeElement?.let { VisitedLessonView(listViewModel, activeElement) }
+                    activeElement?.let { VisitedLesson(listViewModel, activeElement) }
                 } else {
-                    activeElement?.let { AddNewLessonView(listViewModel, activeElement) }
+                    activeElement?.let { AddNewLesson(listViewModel, activeElement) }
 
                 }
 
             }
-            ContextMenuView(
+            ContextMenu(
                 addVisitedLessonListener,
                 copySubscriptionListener,
                 deleteWorkshopListener
@@ -212,7 +212,7 @@ fun ListItemView(
 }
 
 @Composable
-private fun ContextMenuView(
+private fun ContextMenu(
     addVisitedLessonListener: () -> Unit?,
     copySubscriptionListener: () -> Unit?,
     deleteWorkshopListener: () -> Unit?,
@@ -236,7 +236,7 @@ private fun ContextMenuView(
 }
 
 @Composable
-private fun VisitedLessonView(listViewModel: ListViewModel, activeElement: Subscription) {
+private fun VisitedLesson(listViewModel: ListViewModel, activeElement: Subscription) {
     val scrollState = rememberScrollState()
     Column(
         modifier = Modifier
@@ -253,13 +253,13 @@ private fun VisitedLessonView(listViewModel: ListViewModel, activeElement: Subsc
             Row {
                 for (j in i until i + columnCount) {
                     if (j == (activeElement.lessons?.size ?: 0)) {
-                        AddNewLessonView(
+                        AddNewLesson(
                             listViewModel,
                             activeElement
                         )
                         break
                     }
-                    LessonView(
+                    Lesson(
                         activeElement.lessons?.get(j),
                         activeElement.id,
                         listViewModel
@@ -271,7 +271,7 @@ private fun VisitedLessonView(listViewModel: ListViewModel, activeElement: Subsc
 }
 
 @Composable
-fun LessonView(lesson: Lesson?, subscriptionId: Long, listViewModel: ListViewModel) {
+fun Lesson(lesson: Lesson?, subscriptionId: Long, listViewModel: ListViewModel) {
     val expanded = remember { mutableStateOf(false) }
     if (expanded.value) {
         val start = Calendar.getInstance()
@@ -294,7 +294,7 @@ fun LessonView(lesson: Lesson?, subscriptionId: Long, listViewModel: ListViewMod
 }
 
 @Composable
-fun AddNewLessonView(listViewModel: ListViewModel, subscription: Subscription) {
+fun AddNewLesson(listViewModel: ListViewModel, subscription: Subscription) {
     ElevatedButton(
         onClick = { listViewModel.addVisitedLesson(subscription) },
         contentPadding = ButtonDefaults.ButtonWithIconContentPadding,

@@ -95,7 +95,7 @@ fun LessonRow(item: Lesson, detailViewModel: DetailViewModel) {
     if (expanded.value) {
         val start = Calendar.getInstance()
         start.time = item.date
-        ShowDatePicker(start, onChanged = { newCalendar ->
+        ShowDatePicker(start, onChange = { newCalendar ->
             detailViewModel.changeLessonDate(item, newCalendar)
             expanded.value = false
         },
@@ -189,7 +189,7 @@ private fun StartDate(
     }
     if (choseStartDate.value) {
         ShowDatePicker(
-            startCalendar, onChanged = { newCalendar ->
+            startCalendar, onChange = { newCalendar ->
                 detailViewModel.acceptStartCalendar(newCalendar)
                 choseStartDate.value = false
             },
@@ -226,7 +226,7 @@ private fun EndDate(
         }
     }
     if (choseEndDate.value) {
-        ShowDatePicker(endCalendar, onChanged = { newCalendar ->
+        ShowDatePicker(endCalendar, onChange = { newCalendar ->
             run {
                 choseEndDate.value = false
                 detailViewModel.acceptEndCalendar(newCalendar)

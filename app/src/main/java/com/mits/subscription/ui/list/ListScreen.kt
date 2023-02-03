@@ -276,7 +276,7 @@ fun Lesson(lesson: Lesson?, subscriptionId: Long, listViewModel: ListViewModel) 
     if (expanded.value) {
         val start = Calendar.getInstance()
         start.time = lesson?.date ?: Date()
-        ShowDatePicker(start, onChanged = { newCalendar ->
+        ShowDatePicker(start, onChange = { newCalendar ->
             lesson?.let { listViewModel.changeLessonDate(it, newCalendar, subscriptionId) }
             expanded.value = false
         },

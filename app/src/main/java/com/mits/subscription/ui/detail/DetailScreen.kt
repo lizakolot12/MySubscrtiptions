@@ -2,6 +2,7 @@
 
 package com.mits.subscription.ui.detail
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -34,14 +35,25 @@ fun DetailScreen(
     detailViewModel: DetailViewModel
 ) {
     val uiState = detailViewModel.uiState.collectAsState()
-    Detail(uiState, navController, detailViewModel)
+    Detail(uiState, navController, detailViewModel,
+        { detailViewModel.acceptNameWorkshop(it) },
+        { detailViewModel.acceptDetail(it) },
+        { detailViewModel.acceptNumber(it) },
+        { detailViewModel.acceptStartCalendar(it) },
+        { detailViewModel.acceptEndCalendar(it) }
+    )
 }
 
 @Composable
 fun Detail(
     uiState: State<DetailViewModel.DetailState>,
     navController: NavController,
-    detailViewModel: DetailViewModel
+    detailViewModel: DetailViewModel,
+    onNameChange: (newName: String) -> Unit?,
+    onDetailChange: (newName: String) -> Unit?,
+    onNumberChange: (newNumber: String) -> Unit?,
+    onStartCalendarChange: (newValue: Calendar) -> Unit?,
+    onEndCalendarChange: (newValue: Calendar) -> Unit?
 ) {
     Column(
         modifier = Modifier
@@ -49,13 +61,15 @@ fun Detail(
             .fillMaxHeight(1f)
             .fillMaxWidth()
     ) {
-        ProgressIndicator(uiState)
-        Name(uiState, detailViewModel)
-        Detail(uiState, detailViewModel)
-        LessonNumber(uiState, detailViewModel)
-        StartDate(uiState, detailViewModel)
-        EndDate(uiState, detailViewModel)
-        Lessons(uiState, detailViewModel)
+        Log.e("TEST", "Main column ")
+        val uiStateCurrent = uiState.value
+        ProgressIndicator(uiStateCurrent.isLoading)
+        Name(uiStateCurrent.workshopName, uiStateCurrent.nameError, onNameChange)
+        Detail(uiStateCurrent.subscription?.detail, onDetailChange)
+        LessonNumber(uiStateCurrent.subscription?.lessonNumbers, onNumberChange)
+        StartDate(uiStateCurrent.subscription?.startDate, onStartCalendarChange)
+        EndDate(uiStateCurrent.subscription?.endDate, onEndCalendarChange)
+        Lessons(uiStateCurrent.subscription?.lessons, detailViewModel)
 
         if (uiState.value.finished) {
             navController.navigateUp()
@@ -65,6 +79,7 @@ fun Detail(
 
 @Composable
 fun LessonRow(item: Lesson, detailViewModel: DetailViewModel) {
+    Log.e("TEST", "Lesson row ")
     val expanded = remember { mutableStateOf(false) }
     Row(
         modifier = Modifier
@@ -107,23 +122,25 @@ fun LessonRow(item: Lesson, detailViewModel: DetailViewModel) {
 
 @Composable
 private fun Name(
-    uiState: State<DetailViewModel.DetailState>,
-    detailViewModel: DetailViewModel
+    name: String?, nameError: Int?,
+    onNameChange: (newName: String) -> Unit?
+    //  detailViewModel: DetailViewModel
 ) {
+    Log.e("TEST", "Name ")
     TextField(
-        value = uiState.value.workshopName ?: "",
+        value = name ?: "",
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         onValueChange = {
-            detailViewModel.acceptNameWorkshop(it)
+            onNameChange(it)
         },
-        isError = uiState.value.nameError != null,
+        isError = nameError != null,
         label = { Text(stringResource(id = R.string.label_name)) }
     )
-    if (uiState.value.nameError != null) {
+    if (nameError != null) {
         Text(
-            text = stringResource(id = uiState.value.nameError!!),
+            text = stringResource(id = nameError),
             color = Color.Red,
             modifier = Modifier
                 .fillMaxWidth()
@@ -134,16 +151,17 @@ private fun Name(
 
 @Composable
 private fun Detail(
-    uiState: State<DetailViewModel.DetailState>,
-    detailViewModel: DetailViewModel
+    detail: String?,
+    onNameChange: (newName: String) -> Unit?
 ) {
+    Log.e("TEST", "Detail ")
     TextField(
-        value = uiState.value.subscription?.detail ?: "",
+        value = detail ?: "",
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
         onValueChange = {
-            detailViewModel.acceptDetail(it)
+            onNameChange(it)
         },
         label = { Text(stringResource(id = R.string.label_tag)) }
     )
@@ -151,27 +169,29 @@ private fun Detail(
 
 @Composable
 private fun LessonNumber(
-    uiState: State<DetailViewModel.DetailState>,
-    detailViewModel: DetailViewModel
+    lessonsNumber: Int?,
+    onNumberChange: (newNumber: String) -> Unit?
 ) {
+    Log.e("TEST", "Lesson number ")
     TextField(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        value = (uiState.value.subscription?.lessonNumbers ?: 0).toString(),
-        onValueChange = { detailViewModel.acceptNumber(it) },
+        value = (lessonsNumber ?: 0).toString(),
+        onValueChange = { onNumberChange(it) },
         label = { Text(stringResource(id = R.string.label_lesson_number)) }
     )
 }
 
 @Composable
 private fun StartDate(
-    uiState: State<DetailViewModel.DetailState>,
-    detailViewModel: DetailViewModel
+    startDate: Date?,
+    onCalendarChange: (newValue: Calendar) -> Unit?
 ) {
+    Log.e("TEST", "Start Date ")
     val choseStartDate = remember { mutableStateOf(false) }
     val startCalendar = Calendar.getInstance()
-    startCalendar.time = uiState.value.subscription?.startDate ?: Date()
+    startCalendar.time = startDate ?: Date()
 
     FilledTonalButton(
         onClick = { choseStartDate.value = true },
@@ -190,7 +210,7 @@ private fun StartDate(
     if (choseStartDate.value) {
         ShowDatePicker(
             startCalendar, onChange = { newCalendar ->
-                detailViewModel.acceptStartCalendar(newCalendar)
+                onCalendarChange(newCalendar)
                 choseStartDate.value = false
             },
             onDismiss = {
@@ -203,12 +223,13 @@ private fun StartDate(
 
 @Composable
 private fun EndDate(
-    uiState: State<DetailViewModel.DetailState>,
-    detailViewModel: DetailViewModel
+    endDate: Date?,
+    onCalendarChange: (newValue: Calendar) -> Unit?
 ) {
+    Log.e("TEST", "EndDate ")
     val choseEndDate = remember { mutableStateOf(false) }
     val endCalendar = Calendar.getInstance()
-    endCalendar.time = uiState.value.subscription?.endDate ?: Date()
+    endCalendar.time = endDate ?: Date()
 
     FilledTonalButton(
         onClick = { choseEndDate.value = true },
@@ -229,7 +250,7 @@ private fun EndDate(
         ShowDatePicker(endCalendar, onChange = { newCalendar ->
             run {
                 choseEndDate.value = false
-                detailViewModel.acceptEndCalendar(newCalendar)
+                onCalendarChange(newCalendar)
             }
 
         }, onDismiss = {
@@ -242,9 +263,10 @@ private fun EndDate(
 
 @Composable
 private fun Lessons(
-    uiState: State<DetailViewModel.DetailState>,
+    lessons: List<Lesson>?,
     detailViewModel: DetailViewModel
 ) {
+    Log.e("TEST", "Lessons ")
     Card(
         modifier = Modifier.padding(16.dp)
     ) {
@@ -269,12 +291,12 @@ private fun Lessons(
                 )
             }
 
-            if ((uiState.value.subscription?.lessons?.size ?: 0) > 0) {
+            if ((lessons?.size ?: 0) > 0) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
 
-                    uiState.value.subscription?.lessons?.forEach {
+                    lessons?.forEach {
                         LessonRow(it, detailViewModel)
                     }
                 }
@@ -292,8 +314,9 @@ private fun Lessons(
 }
 
 @Composable
-private fun ProgressIndicator(uiState: State<DetailViewModel.DetailState>) {
-    if (uiState.value.isLoading) {
+private fun ProgressIndicator(isLoading: Boolean) {
+    Log.e("TEST", "ProgressIndicator ")
+    if (isLoading) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.fillMaxSize()

@@ -67,8 +67,8 @@ fun Detail(
         Name(uiStateCurrent.workshopName, uiStateCurrent.nameError, onNameChange)
         Detail(uiStateCurrent.subscription?.detail, onDetailChange)
         LessonNumber(uiStateCurrent.subscription?.lessonNumbers, onNumberChange)
-        StartDate(uiStateCurrent.subscription?.startDate, onStartCalendarChange)
-        EndDate(uiStateCurrent.subscription?.endDate, onEndCalendarChange)
+        StartDate(uiStateCurrent.subscription?.startDate?.time?:0, onStartCalendarChange)
+        EndDate(uiStateCurrent.subscription?.endDate?.time?:0, onEndCalendarChange)
         Lessons(uiStateCurrent.subscription?.lessons, detailViewModel)
 
         if (uiState.value.finished) {
@@ -185,13 +185,13 @@ private fun LessonNumber(
 
 @Composable
 private fun StartDate(
-    startDate: Date?,
+    startDate: Long,
     onCalendarChange: (newValue: Calendar) -> Unit?
 ) {
     Log.e("TEST", "Start Date ")
     val choseStartDate = remember { mutableStateOf(false) }
     val startCalendar = Calendar.getInstance()
-    startCalendar.time = startDate ?: Date()
+    startCalendar.time = Date(startDate)
 
     FilledTonalButton(
         onClick = { choseStartDate.value = true },
@@ -223,13 +223,13 @@ private fun StartDate(
 
 @Composable
 private fun EndDate(
-    endDate: Date?,
+    endDate: Long,
     onCalendarChange: (newValue: Calendar) -> Unit?
 ) {
     Log.e("TEST", "EndDate ")
     val choseEndDate = remember { mutableStateOf(false) }
     val endCalendar = Calendar.getInstance()
-    endCalendar.time = endDate ?: Date()
+    endCalendar.time = Date(endDate)
 
     FilledTonalButton(
         onClick = { choseEndDate.value = true },

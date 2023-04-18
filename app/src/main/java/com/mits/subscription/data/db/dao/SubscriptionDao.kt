@@ -9,7 +9,7 @@ import com.mits.subscription.model.Subscription
 interface SubscriptionDao {
 
     @Insert
-    suspend fun insert(subscriptionEntity: SubscriptionEntity):Long
+    suspend fun insert(subscriptionEntity: SubscriptionEntity): Long
 
     @Delete
     suspend fun delete(subscriptionEntity: SubscriptionEntity)
@@ -25,6 +25,14 @@ interface SubscriptionDao {
     @Query("SELECT * FROM subscription where sub_id = :id")
     @Transaction
     suspend fun getById(id: Long): Subscription
+
+    @Query(
+        "UPDATE subscription " +
+                "SET message = :mes " +
+                "WHERE sub_id = :id "
+    )
+    @Transaction
+    suspend fun updateMessage(id: Long, mes: String?): Int
 
     @Update
     suspend fun updateSubscription(subscriptionEntity: SubscriptionEntity)

@@ -26,7 +26,8 @@ class SubscriptionRepository(
             subscription.startDate,
             subscription.endDate,
             subscription.lessonNumbers,
-            subscription.workshopId
+            subscription.workshopId,
+            subscription.message
         )
         return subscriptionDao.insert(subscriptionEntity)
     }
@@ -87,9 +88,14 @@ class SubscriptionRepository(
             subscription.startDate,
             subscription.endDate,
             subscription.lessonNumbers,
-            subscription.workshopId
+            subscription.workshopId,
+            subscription.message
         )
     }
 
     suspend fun createWorkshop(name: String) = workshopDao.insert(WorkshopEntity(name = name))
+
+    suspend fun addMessage(id: Long, message: String?) {
+        subscriptionDao.updateMessage(id, message)
+    }
 }

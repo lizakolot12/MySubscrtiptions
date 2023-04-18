@@ -11,8 +11,11 @@ import com.mits.subscription.data.db.entity.SubscriptionEntity
 
 @Database(
     entities = [WorkshopEntity::class, SubscriptionEntity::class, LessonEntity::class],
-    version = 1,
-    exportSchema = true
+    version = 2,
+    exportSchema = true,
+    autoMigrations = [
+        AutoMigration (from = 1, to = 2)
+    ]
 )
 
 @TypeConverters(DateConverter::class)

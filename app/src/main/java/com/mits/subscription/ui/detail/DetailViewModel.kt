@@ -102,7 +102,8 @@ class DetailViewModel
                 endDate ?: subscription.endDate,
                 lessonsNumber ?: subscription.lessonNumbers,
                 lessons ?: subscription.lessons,
-                subscription.workshopId
+                subscription.workshopId,
+                subscription.message
             )
         }
     }

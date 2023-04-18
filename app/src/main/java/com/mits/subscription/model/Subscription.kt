@@ -21,5 +21,7 @@ data class Subscription(
     val lessons: List<Lesson>? = null,
 
     @ColumnInfo(name="workshop_id")
-    val workshopId:Long
+    val workshopId:Long,
+
+    val message:String?
 )

@@ -20,8 +20,8 @@ class WorkshopViewItem(
     var activeElementId: Long
 ) {
     fun getActiveElement(): Subscription? {
-        if((workshop.subscriptions?.size ?: 0) == 0) return null
-        val current =  workshop.subscriptions?.firstOrNull { it.id == activeElementId }
+        if ((workshop.subscriptions?.size ?: 0) == 0) return null
+        val current = workshop.subscriptions?.firstOrNull { it.id == activeElementId }
         if (current == null && (workshop.subscriptions?.size ?: 0) > 0) {
             return workshop.subscriptions?.get(0)
         }
@@ -54,14 +54,14 @@ class ListViewModel @Inject constructor(
         }
 
         return list.map {
+            val sorted = it.subscriptions?.sortedByDescending { sub -> sub.startDate }
+            it.subscriptions = sorted
             var currentActive = getCurrentActiveId(it)
             val currentActiveInNewCollection =
                 it.subscriptions?.firstOrNull { sub -> sub.id == currentActive }
             if (currentActiveInNewCollection == null) {
                 currentActive = it.subscriptions?.get(0)?.id ?: -1
             }
-            val sorted = it.subscriptions?.sortedByDescending { sub -> sub.startDate }
-            it.subscriptions = sorted
             WorkshopViewItem(
                 it,
                 currentActive
@@ -93,6 +93,18 @@ class ListViewModel @Inject constructor(
         }
     }
 
+    fun addMessage(message: String?, subscription: Subscription) {
+        viewModelScope.launch {
+            repository.addMessage(subscription.id, message)
+        }
+    }
+
+    fun removeMessage(subscription: Subscription) {
+        viewModelScope.launch {
+            repository.addMessage(subscription.id, null)
+        }
+    }
+
     fun deleteWorkshop(subscription: Subscription) {
         viewModelScope.launch {
             repository.deleteWorkshop(subscription)
@@ -108,8 +120,14 @@ class ListViewModel @Inject constructor(
     fun copy(subscription: Subscription) {
         viewModelScope.launch {
             val newSubscription = Subscription(
-                0, subscription.detail + "_copy",
-                Date(), Date(), subscription.lessonNumbers, emptyList(), subscription.workshopId
+                0,
+                subscription.detail + "_copy",
+                Date(),
+                Date(),
+                subscription.lessonNumbers,
+                emptyList(),
+                subscription.workshopId,
+                null
             )
             repository.createSubscription(newSubscription)
         }

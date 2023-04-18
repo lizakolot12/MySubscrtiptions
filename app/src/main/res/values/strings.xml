@@ -8,8 +8,11 @@
     <string name="label_start_date">Дата старту </string>
     <string name="label_end_date">Дата кінця </string>
     <string name="btn_save">Зберегти</string>
+    <string name="btn_cancel">Відмінити</string>
     <string name="name_error">Не вказана назва</string>
     <string name="delete">Видалити</string>
+    <string name="warning_message">Увага</string>
+    <string name="add_message">Додати повідомлення</string>
     <string name="description_add_lesson">Відвідано заняття</string>
     <string name="copy_subscription">Копія абонементу</string>
     <string name="visited_lessons">Відвідані заняття</string>

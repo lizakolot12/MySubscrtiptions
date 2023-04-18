@@ -12,10 +12,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -23,7 +25,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -33,10 +37,7 @@ import com.mits.subscription.R
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.model.Subscription
 import com.mits.subscription.ui.creating.ShowDatePicker
-import com.mits.subscription.ui.theme.md_theme_light_background
-import com.mits.subscription.ui.theme.md_theme_light_error
-import com.mits.subscription.ui.theme.md_theme_light_primaryContainer
-import com.mits.subscription.ui.theme.md_theme_light_surfaceVariant
+import com.mits.subscription.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
@@ -61,6 +62,7 @@ fun List(
     navController: NavController,
     listViewModel: ListViewModel
 ) {
+
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(
@@ -79,21 +81,34 @@ fun List(
                     )
                     .padding(8.dp),
                 content = {
+                    val openDialog = remember { mutableStateOf(false) }
+
+                    val listener = { openDialog.value = true }
+
+                    if (openDialog.value) {
+                        InputMessage(openDialog = openDialog, addMessageWorkshopListener = {
+                            item.getActiveElement()
+                                ?.let { it1 -> listViewModel.addMessage(it, it1) }
+                        })
+                    }
                     Workshop(
                         {
                             item.getActiveElement()?.let { listViewModel.addVisitedLesson(it) }
                         },
                         {
                             item.getActiveElement()?.let { listViewModel.copy(it) }
-                        }, {
+                        },
+                        {
                             item.getActiveElement()?.let { listViewModel.deleteWorkshop(it) }
                         },
+                        {
+                            listener.invoke()
+                        },
                         item,
-                        listViewModel,
-                        onButtonClicked = {
-                            navController.navigate("detail/${item.activeElementId}")
-                        }
-                    )
+                        listViewModel
+                    ) {
+                        navController.navigate("detail/${item.activeElementId}")
+                    }
 
                     val scrollStateHorizontal = rememberScrollState()
                     AnimatedVisibility(((item.workshop.subscriptions?.size ?: 0) > 1)) {
@@ -113,11 +128,64 @@ fun List(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun InputMessage(
+    openDialog: MutableState<Boolean>,
+    addMessageWorkshopListener: (message: String) -> Unit?
+) {
+    val initValue = stringResource(id = R.string.warning_message)
+    var text by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(
+            TextFieldValue(
+                text = initValue, TextRange(0, 7)
+            )
+        )
+    }
+
+    AlertDialog(
+        onDismissRequest = {
+            openDialog.value = false
+        },
+        title = {
+            Text(text = stringResource(id = R.string.add_message))
+        },
+        text = {
+            TextField(
+                value = text,
+                onValueChange = { text = it },
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    openDialog.value = false
+                    addMessageWorkshopListener.invoke(text.text)
+                }
+            ) {
+                Text(stringResource(id = R.string.btn_save))
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    openDialog.value = false
+                }
+            ) {
+                Text(stringResource(id = R.string.btn_cancel))
+            }
+        }
+    )
+}
+
+
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Workshop(
     addVisitedLessonListener: () -> Unit?,
     copySubscriptionListener: () -> Unit?,
     deleteWorkshopListener: () -> Unit?,
+    addMessageWorkshopListener: () -> Unit?,
     item: WorkshopViewItem,
     listViewModel: ListViewModel,
     onButtonClicked: (() -> Unit)? = null
@@ -137,7 +205,7 @@ fun Workshop(
             val activeElement = item.getActiveElement()
             Column(
                 modifier = Modifier
-                    .padding(4.dp)
+                    .padding(8.dp)
                     .weight(0.8f)
             ) {
                 Text(
@@ -199,12 +267,38 @@ fun Workshop(
                     activeElement?.let { AddNewLesson(listViewModel, activeElement) }
 
                 }
+                if (item.getActiveElement()?.message != null) {
+                    val textValue = item.getActiveElement()?.message ?: ""
+                    val expanded = remember { mutableStateOf(false) }
+                    Text(
+                        textValue,
+                        maxLines = 1,
+                        color = md_theme_dark_onError,
+                        modifier = Modifier
+                            .basicMarquee()
+                            .clickable {
+                                item
+                                    .getActiveElement()
+                                    ?.let {
+                                        expanded.value = true
+
+                                    }
+                            })
+                    item.getActiveElement()?.let {
+                        ContextMenuMessage(
+                            listViewModel = listViewModel,
+                            subscription = it,
+                            expanded = expanded
+                        )
+                    }
+                }
 
             }
             ContextMenu(
                 addVisitedLessonListener,
                 copySubscriptionListener,
-                deleteWorkshopListener
+                deleteWorkshopListener,
+                addMessageWorkshopListener,
             )
         }
 
@@ -216,6 +310,7 @@ private fun ContextMenu(
     addVisitedLessonListener: () -> Unit?,
     copySubscriptionListener: () -> Unit?,
     deleteWorkshopListener: () -> Unit?,
+    addMessageWorkshopListener: () -> Unit?,
 ) {
     val expanded = remember { mutableStateOf(false) }
     IconButton(
@@ -231,6 +326,7 @@ private fun ContextMenu(
         addVisitedLessonListener,
         copySubscriptionListener,
         deleteWorkshopListener,
+        addMessageWorkshopListener,
         expanded
     )
 }
@@ -382,6 +478,7 @@ fun ContextMenu(
     addVisitedLessonListener: () -> Unit?,
     copySubscriptionListener: () -> Unit?,
     deleteWorkshopListener: () -> Unit?,
+    addMessageWorkshopListener: () -> Unit?,
     expanded: MutableState<Boolean>
 ) {
     DropdownMenu(
@@ -426,6 +523,19 @@ fun ContextMenu(
                     contentDescription = null
                 )
             })
+
+        DropdownMenuItem(
+            text = { Text(stringResource(id = R.string.add_message)) },
+            onClick = {
+                addMessageWorkshopListener()
+                expanded.value = false
+            },
+            leadingIcon = {
+                Icon(
+                    Icons.Filled.Notifications,
+                    contentDescription = null
+                )
+            })
     }
 }
 
@@ -442,6 +552,31 @@ fun ContextMenuSubscription(
     ) {
         DropdownMenuItem(onClick = {
             listViewModel.deleteSubscription(subscription)
+            expanded.value = false
+        },
+            text = { Text(stringResource(id = R.string.delete)) },
+            leadingIcon = {
+                Icon(
+                    Icons.Filled.Delete,
+                    contentDescription = null
+                )
+            })
+    }
+}
+
+@Composable
+fun ContextMenuMessage(
+    listViewModel: ListViewModel,
+    subscription: Subscription,
+    expanded: MutableState<Boolean>
+) {
+    DropdownMenu(
+        expanded = expanded.value,
+        onDismissRequest = { expanded.value = false },
+        modifier = Modifier.fillMaxWidth(0.7f)
+    ) {
+        DropdownMenuItem(onClick = {
+            listViewModel.removeMessage(subscription)
             expanded.value = false
         },
             text = { Text(stringResource(id = R.string.delete)) },

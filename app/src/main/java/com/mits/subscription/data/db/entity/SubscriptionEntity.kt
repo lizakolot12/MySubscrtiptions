@@ -28,5 +28,7 @@ data class SubscriptionEntity(
     val lessonNumbers: Int,
 
     @ColumnInfo(name = "workshop_id", index = true)
-    val workshopId: Long
+    val workshopId: Long,
+
+    val message:String?
 )

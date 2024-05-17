@@ -4,10 +4,10 @@ import androidx.room.ColumnInfo
 import androidx.room.Relation
 import com.mits.subscription.data.db.entity.SubscriptionEntity
 
-data class Workshop(
+class Workshop(
     @ColumnInfo(name = "workshop_id")
-    var id: Long,
-    var name: String,
+    override var id: Long,
+    override var name: String,
 
     @Relation(
         parentColumn = "workshop_id",
@@ -15,4 +15,4 @@ data class Workshop(
         entity = SubscriptionEntity::class
     )
     var subscriptions: List<Subscription>? = null
-)
+):WorkshopBase(id, name)

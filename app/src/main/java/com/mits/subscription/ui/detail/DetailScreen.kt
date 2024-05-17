@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.mits.subscription.ui.detail
 
 import android.util.Log
@@ -19,9 +17,11 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mits.subscription.R
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.parseCalendar
@@ -31,29 +31,35 @@ import java.util.*
 
 @Composable
 fun DetailScreen(
-    navController: NavController,
-    detailViewModel: DetailViewModel
+    onSave: () -> Unit,
+    detailViewModel: DetailViewModel = hiltViewModel()
 ) {
-    val uiState = detailViewModel.uiState.collectAsState()
-    Detail(uiState, navController, detailViewModel,
-        { detailViewModel.acceptNameWorkshop(it) },
-        { detailViewModel.acceptDetail(it) },
-        { detailViewModel.acceptNumber(it) },
-        { detailViewModel.acceptStartCalendar(it) },
-        { detailViewModel.acceptEndCalendar(it) }
+    val uiState = detailViewModel.uiState.collectAsState().value
+    Detail(
+        uiState, onSave,
+        onNameChange = detailViewModel::acceptNameWorkshop,
+        onDetailChange = detailViewModel::acceptDetail,
+        onNumberChange = detailViewModel::acceptNumber,
+        onStartCalendarChange = detailViewModel::acceptStartCalendar,
+        onEndCalendarChange = detailViewModel::acceptEndCalendar,
+        onDeleteLesson = detailViewModel::deleteLesson,
+        onChangeLessonDate = detailViewModel::changeLessonDate,
+        addVisitedLesson = detailViewModel::addVisitedLesson
     )
 }
 
 @Composable
 fun Detail(
-    uiState: State<DetailViewModel.DetailState>,
-    navController: NavController,
-    detailViewModel: DetailViewModel,
-    onNameChange: (newName: String) -> Unit?,
-    onDetailChange: (newName: String) -> Unit?,
-    onNumberChange: (newNumber: String) -> Unit?,
-    onStartCalendarChange: (newValue: Calendar) -> Unit?,
-    onEndCalendarChange: (newValue: Calendar) -> Unit?
+    uiState: DetailViewModel.DetailState,
+    onSave: () -> Unit,
+    onNameChange: (newName: String) -> Unit,
+    onDetailChange: (newName: String) -> Unit,
+    onNumberChange: (newNumber: String) -> Unit,
+    onStartCalendarChange: (newValue: Calendar) -> Unit,
+    onEndCalendarChange: (newValue: Calendar) -> Unit,
+    onDeleteLesson: (item: Lesson) -> Unit,
+    onChangeLessonDate: (item: Lesson, calendar: Calendar) -> Unit,
+    addVisitedLesson: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -62,23 +68,25 @@ fun Detail(
             .fillMaxWidth()
     ) {
         Log.e("TEST", "Main column ")
-        val uiStateCurrent = uiState.value
-        ProgressIndicator(uiStateCurrent.isLoading)
-        Name(uiStateCurrent.workshopName, uiStateCurrent.nameError, onNameChange)
-        Detail(uiStateCurrent.subscription?.detail, onDetailChange)
-        LessonNumber(uiStateCurrent.subscription?.lessonNumbers, onNumberChange)
-        StartDate(uiStateCurrent.subscription?.startDate?.time?:0, onStartCalendarChange)
-        EndDate(uiStateCurrent.subscription?.endDate?.time?:0, onEndCalendarChange)
-        Lessons(uiStateCurrent.subscription?.lessons, detailViewModel)
+        ProgressIndicator(uiState.isLoading)
+        Name(uiState.subscription?.workshop?.name?:"", uiState.nameError, onNameChange)
+        Detail(uiState.subscription?.detail, onDetailChange)
+        LessonNumber(uiState.subscription?.lessonNumbers, onNumberChange)
+        StartDate(uiState.subscription?.startDate?.time ?: 0, onStartCalendarChange)
+        EndDate(uiState.subscription?.endDate?.time ?: 0, onEndCalendarChange)
+        Lessons(uiState.subscription?.lessons, onDeleteLesson, onChangeLessonDate, addVisitedLesson)
 
-        if (uiState.value.finished) {
-            navController.navigateUp()
+        if (uiState.finished) {
+            onSave.invoke()
         }
     }
 }
 
 @Composable
-fun LessonRow(item: Lesson, detailViewModel: DetailViewModel) {
+fun LessonRow(
+    item: Lesson, onDeleteLesson: () -> Unit,
+    onChangeLessonDate: (calwendar: Calendar) -> Unit
+) {
     Log.e("TEST", "Lesson row ")
     val expanded = remember { mutableStateOf(false) }
     Row(
@@ -102,7 +110,7 @@ fun LessonRow(item: Lesson, detailViewModel: DetailViewModel) {
                 Icons.Filled.Delete,
                 contentDescription = stringResource(id = R.string.delete),
                 Modifier
-                    .clickable(true, onClick = { detailViewModel.deleteLesson(item) })
+                    .clickable(true, onClick = onDeleteLesson)
                     .weight(1f)
             )
         })
@@ -111,7 +119,7 @@ fun LessonRow(item: Lesson, detailViewModel: DetailViewModel) {
         val start = Calendar.getInstance()
         start.time = item.date
         ShowDatePicker(start, onChange = { newCalendar ->
-            detailViewModel.changeLessonDate(item, newCalendar)
+            onChangeLessonDate(newCalendar)
             expanded.value = false
         },
             onDismiss = {
@@ -122,13 +130,13 @@ fun LessonRow(item: Lesson, detailViewModel: DetailViewModel) {
 
 @Composable
 private fun Name(
-    name: String?, nameError: Int?,
-    onNameChange: (newName: String) -> Unit?
-    //  detailViewModel: DetailViewModel
+    name: String,
+    nameError: Int?,
+    onNameChange:((String) -> Unit)
 ) {
     Log.e("TEST", "Name ")
     TextField(
-        value = name ?: "",
+        value = name,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
@@ -138,6 +146,7 @@ private fun Name(
         isError = nameError != null,
         label = { Text(stringResource(id = R.string.label_name)) }
     )
+
     if (nameError != null) {
         Text(
             text = stringResource(id = nameError),
@@ -152,7 +161,7 @@ private fun Name(
 @Composable
 private fun Detail(
     detail: String?,
-    onNameChange: (newName: String) -> Unit?
+    onNameChange: (String) -> Unit
 ) {
     Log.e("TEST", "Detail ")
     TextField(
@@ -160,9 +169,7 @@ private fun Detail(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
-        onValueChange = {
-            onNameChange(it)
-        },
+        onValueChange = onNameChange,
         label = { Text(stringResource(id = R.string.label_tag)) }
     )
 }
@@ -170,7 +177,7 @@ private fun Detail(
 @Composable
 private fun LessonNumber(
     lessonsNumber: Int?,
-    onNumberChange: (newNumber: String) -> Unit?
+    onNumberChange: (newNumber: String) -> Unit
 ) {
     Log.e("TEST", "Lesson number ")
     TextField(
@@ -178,7 +185,7 @@ private fun LessonNumber(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         value = (lessonsNumber ?: 0).toString(),
-        onValueChange = { onNumberChange(it) },
+        onValueChange = onNumberChange,
         label = { Text(stringResource(id = R.string.label_lesson_number)) }
     )
 }
@@ -186,7 +193,7 @@ private fun LessonNumber(
 @Composable
 private fun StartDate(
     startDate: Long,
-    onCalendarChange: (newValue: Calendar) -> Unit?
+    onCalendarChange: (newValue: Calendar) -> Unit
 ) {
     Log.e("TEST", "Start Date ")
     val choseStartDate = remember { mutableStateOf(false) }
@@ -264,7 +271,9 @@ private fun EndDate(
 @Composable
 private fun Lessons(
     lessons: List<Lesson>?,
-    detailViewModel: DetailViewModel
+    onDeleteLesson: (item: Lesson) -> Unit,
+    onChangeLessonDate: (item: Lesson, calendar: Calendar) -> Unit,
+    addVisitedLesson: () -> Unit,
 ) {
     Log.e("TEST", "Lessons ")
     Card(
@@ -285,7 +294,7 @@ private fun Lessons(
                     Icons.Filled.Add,
                     contentDescription = stringResource(id = R.string.description_add_lesson),
                     Modifier
-                        .clickable(true, onClick = { detailViewModel.addVisitedLesson() })
+                        .clickable(true, onClick = addVisitedLesson)
                         .weight(0.2f)
                         .padding(end = 16.dp)
                 )
@@ -297,7 +306,12 @@ private fun Lessons(
                 ) {
 
                     lessons?.forEach {
-                        LessonRow(it, detailViewModel)
+                        LessonRow(
+                            item = it,
+                            onDeleteLesson = { onDeleteLesson(it) },
+                            onChangeLessonDate = { calendar -> onChangeLessonDate(it, calendar) }
+                        )
+
                     }
                 }
             } else {

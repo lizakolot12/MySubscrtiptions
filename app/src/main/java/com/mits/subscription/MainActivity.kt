@@ -117,9 +117,7 @@ fun Main() {
                     Navigation.DETAIL.route + "/{subscriptionId}",
                     arguments = listOf(navArgument("subscriptionId") { type = NavType.LongType })
                 ) {
-
-                    val detailViewModel: DetailViewModel = hiltViewModel()
-                    DetailScreen(navController, detailViewModel)
+                    DetailScreen(onSave = { navController.navigateUp() })
                 }
             }
         }

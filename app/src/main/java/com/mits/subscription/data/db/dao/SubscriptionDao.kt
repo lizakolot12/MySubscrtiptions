@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.mits.subscription.data.db.entity.SubscriptionEntity
 import com.mits.subscription.model.Subscription
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SubscriptionDao {
@@ -24,7 +25,7 @@ interface SubscriptionDao {
 
     @Query("SELECT * FROM subscription where sub_id = :id")
     @Transaction
-    suspend fun getById(id: Long): Subscription
+    fun getById(id: Long): Flow<Subscription?>
 
     @Query(
         "UPDATE subscription " +

@@ -3,7 +3,9 @@ package com.mits.subscription.model
 import androidx.room.ColumnInfo
 import androidx.room.Relation
 import com.mits.subscription.data.db.entity.LessonEntity
-import java.util.*
+import com.mits.subscription.data.db.entity.WorkshopEntity
+import java.util.Date
+
 
 data class Subscription(
     @ColumnInfo(name="sub_id")
@@ -19,6 +21,13 @@ data class Subscription(
         entity = LessonEntity::class
     )
     val lessons: List<Lesson>? = null,
+
+    @Relation(
+        parentColumn = "workshop_id",
+        entityColumn = "workshop_id",
+        entity = WorkshopEntity::class
+    )
+    val workshop:WorkshopBase? = null,
 
     @ColumnInfo(name="workshop_id")
     val workshopId:Long,

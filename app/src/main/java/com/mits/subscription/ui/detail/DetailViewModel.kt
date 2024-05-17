@@ -1,9 +1,9 @@
 package com.mits.subscription.ui.detail
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mits.subscription.R
 import com.mits.subscription.data.repo.SubscriptionRepository
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.model.Subscription
@@ -11,57 +11,50 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.util.*
+import java.util.Calendar
+import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
 class DetailViewModel
 @Inject constructor(
     private val repository: SubscriptionRepository,
-    state: SavedStateHandle
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    private val subscriptionId = savedStateHandle.get<Long>("subscriptionId") ?: 0L
 
     private val _uiState = MutableStateFlow(DetailState(null, null))
     val uiState = _uiState.asStateFlow()
-    private val subscriptionId: Long
+
 
     init {
-        subscriptionId = state.get<Long>("subscriptionId") ?: 0L
-        _uiState.value = DetailState(null, null)
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) { updateCurrentState() }
-        }
-    }
-
-    private suspend fun updateCurrentState() {
-        val subscription = repository.getSubscription(subscriptionId)
-        val workshop = repository.getWorkshop(subscription.workshopId)
-        val error = if (workshop.name.isBlank()) {
-            R.string.name_error
-        } else {
-            null
-        }
-        val newState = DetailState(subscription, workshop.name, nameError = error)
-        _uiState.value = newState
+        repository.getSubscription(subscriptionId)
+            .filterNotNull()
+            .onEach {
+                _uiState.value = createNewFromCurrent(it)
+            }
+            .launchIn(viewModelScope)
     }
 
     fun deleteLesson(lesson: Lesson) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.deleteLesson(lesson)
-            updateCurrentState()
         }
     }
 
     fun acceptNameWorkshop(name: String) {
+        Log.e("TEST", "name =  $name")
         viewModelScope.launch(Dispatchers.IO) {
-            val currentState = _uiState.value
+            val currentState = uiState.value
             repository.updateWorkshop(
-                currentState.subscription?.workshopId ?: -1,
+                currentState.subscription?.workshop?.id ?: -1,
                 name
             )
-            updateCurrentState()
         }
     }
 
@@ -69,16 +62,15 @@ class DetailViewModel
         viewModelScope.launch(Dispatchers.IO) {
             val currentSubscription = copyAndUpdate(uiState.value.subscription, detail = detail)
             currentSubscription?.let { repository.update(currentSubscription) }
-            updateCurrentState()
         }
     }
 
     fun acceptNumber(numStr: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val currentSubscription = copyAndUpdate(_uiState.value.subscription, lessonsNumber = numStr.toInt())
+                val currentSubscription =
+                    copyAndUpdate(uiState.value.subscription, lessonsNumber = numStr.toInt())
                 currentSubscription?.let { repository.update(currentSubscription) }
-                updateCurrentState()
             } catch (ex: Exception) {
                 val newState = createNewFromCurrent(generalError = ex.message)
                 _uiState.value = newState
@@ -102,22 +94,21 @@ class DetailViewModel
                 endDate ?: subscription.endDate,
                 lessonsNumber ?: subscription.lessonNumbers,
                 lessons ?: subscription.lessons,
-                subscription.workshopId,
-                subscription.message
+                workshopId = subscription.workshopId,
+                workshop = subscription.workshop,
+                message = subscription.message
             )
         }
     }
 
     private fun createNewFromCurrent(
         subscription: Subscription? = null,
-        workshopName: String? = null,
         nameError: Int? = null,
         finished: Boolean? = null, generalError: String? = null, isLoading: Boolean? = null
     ): DetailState {
         val state = uiState.value
         return DetailState(
             subscription ?: state.subscription,
-            workshopName ?: state.workshopName,
             nameError = nameError ?: state.nameError,
             finished = finished ?: state.finished,
             generalError = generalError ?: state.generalError,
@@ -129,14 +120,13 @@ class DetailViewModel
         try {
             val old = uiState.value.subscription
             val newStartDate = calendar.time
-            var endDate:Date? = null
+            var endDate: Date? = null
             if ((old?.endDate ?: Date()) < (newStartDate ?: Date())) {
                 endDate = old?.startDate
             }
             val new = copyAndUpdate(old, startDate = newStartDate, endDate = endDate)
             viewModelScope.launch(Dispatchers.IO) {
                 new?.let { repository.update(new) }
-                updateCurrentState()
             }
         } catch (ex: Exception) {
             val newState = createNewFromCurrent(generalError = ex.message)
@@ -146,11 +136,10 @@ class DetailViewModel
 
     fun acceptEndCalendar(calendar: Calendar) {
         try {
-            var endDate = calendar.time
+            val endDate = calendar.time
             val subscription = copyAndUpdate(uiState.value.subscription, endDate = endDate)
             viewModelScope.launch(Dispatchers.IO) {
                 subscription?.let { repository.update(subscription) }
-                updateCurrentState()
             }
         } catch (ex: Exception) {
             val newState = createNewFromCurrent(generalError = ex.message)
@@ -161,7 +150,6 @@ class DetailViewModel
     fun addVisitedLesson() {
         viewModelScope.launch(Dispatchers.IO) {
             repository.addLesson(subscriptionId, Lesson(-1, "", Date()))
-            updateCurrentState()
         }
     }
 
@@ -169,13 +157,12 @@ class DetailViewModel
         viewModelScope.launch(Dispatchers.IO) {
             item.date = newCalendar.time
             repository.updateLesson(item, newCalendar, subscriptionId)
-            updateCurrentState()
         }
 
     }
 
     data class DetailState(
-        val subscription: Subscription?, val workshopName: String?,
+        val subscription: Subscription? = null,
         val nameError: Int? = null,
         val finished: Boolean = false,
         val generalError: String? = null,

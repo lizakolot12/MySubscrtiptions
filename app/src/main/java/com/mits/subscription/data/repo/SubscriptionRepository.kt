@@ -10,6 +10,7 @@ import com.mits.subscription.data.db.entity.WorkshopEntity
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.model.Subscription
 import com.mits.subscription.model.Workshop
+import kotlinx.coroutines.flow.Flow
 import java.util.*
 
 class SubscriptionRepository(
@@ -43,7 +44,7 @@ class SubscriptionRepository(
         lessonDao.updateLesson(lessonEntity)
     }
 
-    suspend fun getSubscription(subscriptionId: Long): Subscription {
+    fun getSubscription(subscriptionId: Long): Flow<Subscription?> {
         return subscriptionDao.getById(subscriptionId)
     }
 

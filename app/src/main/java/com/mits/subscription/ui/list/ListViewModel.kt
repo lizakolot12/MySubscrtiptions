@@ -126,8 +126,8 @@ class ListViewModel @Inject constructor(
                 Date(),
                 subscription.lessonNumbers,
                 emptyList(),
-                subscription.workshopId,
-                null
+                workshopId = subscription.workshopId,
+                message = null
             )
             repository.createSubscription(newSubscription)
         }

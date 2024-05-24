@@ -28,7 +28,7 @@ class DetailViewModel
 
     private val subscriptionId = savedStateHandle.get<Long>("subscriptionId") ?: 0L
 
-    private val _uiState = MutableStateFlow(DetailState(null, null))
+    private val _uiState = MutableStateFlow<DetailState>(DetailState.Loading)
     val uiState = _uiState.asStateFlow()
 
 
@@ -36,6 +36,7 @@ class DetailViewModel
         repository.getSubscription(subscriptionId)
             .filterNotNull()
             .onEach {
+                Log.e("TEST", "lesson " + it.lessons?.size)
                 _uiState.value = createNewFromCurrent(it)
             }
             .launchIn(viewModelScope)
@@ -51,99 +52,97 @@ class DetailViewModel
         Log.e("TEST", "name =  $name")
         viewModelScope.launch(Dispatchers.IO) {
             val currentState = uiState.value
-            repository.updateWorkshop(
-                currentState.subscription?.workshop?.id ?: -1,
-                name
-            )
+            if (currentState is DetailState.Success)
+                repository.updateWorkshop(
+                    currentState.subscription.workshop?.id ?: -1,
+                    name
+                )
         }
     }
 
     fun acceptDetail(detail: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val currentSubscription = copyAndUpdate(uiState.value.subscription, detail = detail)
-            currentSubscription?.let { repository.update(currentSubscription) }
+            val currentState = uiState.value
+            if (currentState is DetailState.Success) {
+                repository.updateDetail(currentState.subscription.id, detail)
+            }
         }
     }
 
     fun acceptNumber(numStr: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val currentSubscription =
-                    copyAndUpdate(uiState.value.subscription, lessonsNumber = numStr.toInt())
-                currentSubscription?.let { repository.update(currentSubscription) }
-            } catch (ex: Exception) {
-                val newState = createNewFromCurrent(generalError = ex.message)
-                _uiState.value = newState
+                val currentState = uiState.value
+                if (currentState is DetailState.Success) {
+                    repository.updateLessonsNumber(currentState.subscription.id, numStr.toInt())
+                }
+            } catch (_: Exception) {
             }
-        }
-
-    }
-
-    private fun copyAndUpdate(
-        subscription: Subscription?,
-        detail: String? = null,
-        startDate: Date? = null,
-        endDate: Date? = null,
-        lessonsNumber: Int? = null, lessons: List<Lesson>? = null,
-    ): Subscription? {
-        return subscription?.let {
-            Subscription(
-                it.id,
-                detail ?: subscription.detail,
-                startDate ?: subscription.startDate,
-                endDate ?: subscription.endDate,
-                lessonsNumber ?: subscription.lessonNumbers,
-                lessons ?: subscription.lessons,
-                workshopId = subscription.workshopId,
-                workshop = subscription.workshop,
-                message = subscription.message
-            )
         }
     }
 
     private fun createNewFromCurrent(
         subscription: Subscription? = null,
-        nameError: Int? = null,
-        finished: Boolean? = null, generalError: String? = null, isLoading: Boolean? = null
     ): DetailState {
-        val state = uiState.value
-        return DetailState(
-            subscription ?: state.subscription,
-            nameError = nameError ?: state.nameError,
-            finished = finished ?: state.finished,
-            generalError = generalError ?: state.generalError,
-            isLoading = isLoading ?: state.isLoading
-        )
+        val old =
+            if (_uiState.value is DetailState.Success) (_uiState.value as DetailState.Success).subscription else null
+        return if (subscription != null) {
+            Log.e("TEST", "!!!!!!!" + ((old?.lessons != subscription.lessons)))
+            val new = Subscription(
+                id = if (old?.id != subscription.id) subscription.id else old.id,
+                detail = if (old?.detail != subscription.detail) subscription.detail else old?.detail,
+                startDate = if (old?.startDate?.time != subscription.startDate?.time) subscription.startDate else old?.startDate,
+                endDate = if (old?.endDate?.time != subscription.endDate?.time) subscription.endDate else old?.endDate,
+                lessonNumbers = if (old?.lessonNumbers != subscription.lessonNumbers) subscription.lessonNumbers else old.lessonNumbers,
+                lessons = if (compareLists(old?.lessons?: emptyList(),subscription.lessons?: emptyList())) old?.lessons else subscription.lessons ,
+                workshop = if (old?.workshop != subscription.workshop) subscription.workshop else old?.workshop,
+                workshopId = if (old?.workshopId != subscription.workshopId) subscription.workshopId else old.workshopId,
+                message = if (old?.message != subscription.message) subscription.message else old?.message
+            )
+            Log.e(
+                "TEST",
+                "compare " + (compareLists(old?.lessons ?: emptyList(), new.lessons ?: emptyList()))
+            )
+            Log.e("TEST", "" + old)
+            Log.e("TEST", "" + new)
+            DetailState.Success(
+                new
+            )
+        } else DetailState.Loading
+    }
+
+    fun compareLists(list1: List<Lesson>, list2: List<Lesson>): Boolean {
+        Log.e("TEST", " size " + list1.size + "   " + list2.size)
+        if (list1.size != list2.size) return false
+        for (i in list1.indices) {
+            if (list1[i] != list2[i]) return false
+        }
+        return true
     }
 
     fun acceptStartCalendar(calendar: Calendar) {
         try {
-            val old = uiState.value.subscription
-            val newStartDate = calendar.time
-            var endDate: Date? = null
-            if ((old?.endDate ?: Date()) < (newStartDate ?: Date())) {
-                endDate = old?.startDate
+            val currentState = uiState.value
+            if (currentState is DetailState.Success) {
+                val newStartDate = calendar.time ?: Date()
+                viewModelScope.launch(Dispatchers.IO) {
+                    repository.updateStartDate(currentState.subscription.id, newStartDate)
+                }
             }
-            val new = copyAndUpdate(old, startDate = newStartDate, endDate = endDate)
-            viewModelScope.launch(Dispatchers.IO) {
-                new?.let { repository.update(new) }
-            }
-        } catch (ex: Exception) {
-            val newState = createNewFromCurrent(generalError = ex.message)
-            _uiState.value = newState
+        } catch (_: Exception) {
         }
     }
 
     fun acceptEndCalendar(calendar: Calendar) {
         try {
-            val endDate = calendar.time
-            val subscription = copyAndUpdate(uiState.value.subscription, endDate = endDate)
-            viewModelScope.launch(Dispatchers.IO) {
-                subscription?.let { repository.update(subscription) }
+            val currentState = uiState.value
+            if (currentState is DetailState.Success) {
+                val newEndDate = calendar.time ?: Date()
+                viewModelScope.launch(Dispatchers.IO) {
+                    repository.updateEndDate(currentState.subscription.id, newEndDate)
+                }
             }
-        } catch (ex: Exception) {
-            val newState = createNewFromCurrent(generalError = ex.message)
-            _uiState.value = newState
+        } catch (_: Exception) {
         }
     }
 
@@ -161,11 +160,12 @@ class DetailViewModel
 
     }
 
-    data class DetailState(
-        val subscription: Subscription? = null,
-        val nameError: Int? = null,
-        val finished: Boolean = false,
-        val generalError: String? = null,
-        val isLoading: Boolean = false
-    )
+    sealed class DetailState {
+        data class Success(
+            val subscription: Subscription,
+            val messageId: Int? = null,
+        ) : DetailState()
+
+        object Loading : DetailState()
+    }
 }

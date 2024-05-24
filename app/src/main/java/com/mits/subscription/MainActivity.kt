@@ -103,21 +103,18 @@ fun Main() {
             NavHost(navController = navController, startDestination = Navigation.LIST.route) {
 
                 composable(Navigation.LIST.route) {
-                    val listViewModel: ListViewModel = hiltViewModel()
-                    ListScreen(navController, listViewModel)
-
+                    ListScreen(navController)
                 }
 
                 composable(Navigation.NEW.route) {
-                    val createViewModel: CreatingViewModel = hiltViewModel()
-                    CreatingScreen(navController, createViewModel)
+                    CreatingScreen(navController)
                 }
 
                 composable(
                     Navigation.DETAIL.route + "/{subscriptionId}",
                     arguments = listOf(navArgument("subscriptionId") { type = NavType.LongType })
                 ) {
-                    DetailScreen(onSave = { navController.navigateUp() })
+                    DetailScreen()
                 }
             }
         }

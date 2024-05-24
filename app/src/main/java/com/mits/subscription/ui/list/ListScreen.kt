@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.mits.subscription.R
 import com.mits.subscription.model.Lesson
@@ -45,7 +46,7 @@ import kotlin.math.roundToInt
 val DATE_FORMATTER = SimpleDateFormat("dd.MM.yyyy", Locale.US)
 
 @Composable
-fun ListScreen(navController: NavController, listViewModel: ListViewModel) {
+fun ListScreen(navController: NavController, listViewModel: ListViewModel = hiltViewModel()) {
     if ((listViewModel.workshop.value?.size ?: 0) == 0) {
         Image(
             painterResource(id = R.drawable.background), contentDescription = "Фон",

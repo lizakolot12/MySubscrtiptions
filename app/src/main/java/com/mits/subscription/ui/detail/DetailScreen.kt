@@ -3,55 +3,72 @@ package com.mits.subscription.ui.detail
 import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mits.subscription.R
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.parseCalendar
 import com.mits.subscription.parseDate
 import com.mits.subscription.ui.creating.ShowDatePicker
-import java.util.*
+import java.util.Calendar
+import java.util.Date
 
 @Composable
 fun DetailScreen(
-    onSave: () -> Unit,
     detailViewModel: DetailViewModel = hiltViewModel()
 ) {
     val uiState = detailViewModel.uiState.collectAsState().value
     Detail(
-        uiState, onSave,
-        onNameChange = detailViewModel::acceptNameWorkshop,
-        onDetailChange = detailViewModel::acceptDetail,
-        onNumberChange = detailViewModel::acceptNumber,
-        onStartCalendarChange = detailViewModel::acceptStartCalendar,
-        onEndCalendarChange = detailViewModel::acceptEndCalendar,
-        onDeleteLesson = detailViewModel::deleteLesson,
-        onChangeLessonDate = detailViewModel::changeLessonDate,
-        addVisitedLesson = detailViewModel::addVisitedLesson
+        uiState,
+        onNameChange = remember { detailViewModel::acceptNameWorkshop },
+        onDetailChange = remember { detailViewModel::acceptDetail },
+        onNumberChange = remember { detailViewModel::acceptNumber },
+        onStartCalendarChange = remember { detailViewModel::acceptStartCalendar },
+        onEndCalendarChange = remember { detailViewModel::acceptEndCalendar },
+        onDeleteLesson = remember { detailViewModel::deleteLesson },
+        onChangeLessonDate = remember { detailViewModel::changeLessonDate },
+        addVisitedLesson = remember { detailViewModel::addVisitedLesson }
     )
 }
 
 @Composable
 fun Detail(
     uiState: DetailViewModel.DetailState,
-    onSave: () -> Unit,
     onNameChange: (newName: String) -> Unit,
     onDetailChange: (newName: String) -> Unit,
     onNumberChange: (newNumber: String) -> Unit,
@@ -67,17 +84,22 @@ fun Detail(
             .fillMaxHeight(1f)
             .fillMaxWidth()
     ) {
-        Log.e("TEST", "Main column ")
-        ProgressIndicator(uiState.isLoading)
-        Name(uiState.subscription?.workshop?.name?:"", uiState.nameError, onNameChange)
-        Detail(uiState.subscription?.detail, onDetailChange)
-        LessonNumber(uiState.subscription?.lessonNumbers, onNumberChange)
-        StartDate(uiState.subscription?.startDate?.time ?: 0, onStartCalendarChange)
-        EndDate(uiState.subscription?.endDate?.time ?: 0, onEndCalendarChange)
-        Lessons(uiState.subscription?.lessons, onDeleteLesson, onChangeLessonDate, addVisitedLesson)
-
-        if (uiState.finished) {
-            onSave.invoke()
+        Log.e("TEST", "Main column " + onDetailChange.hashCode())
+        when (uiState) {
+            DetailViewModel.DetailState.Loading -> ProgressIndicator()
+            is DetailViewModel.DetailState.Success -> {
+                Name(uiState.subscription.workshop?.name ?: "", onNameChange)
+                Detail(uiState.subscription.detail?:"", onDetailChange)
+                LessonNumber(uiState.subscription.lessonNumbers, onNumberChange)
+                StartDate(uiState.subscription.startDate?.time ?: 0, onStartCalendarChange)
+                EndDate(uiState.subscription.endDate?.time ?: 0, onEndCalendarChange)
+                Lessons(
+                    uiState.subscription.lessons?: emptyList(),
+                    onDeleteLesson,
+                    onChangeLessonDate,
+                    addVisitedLesson
+                )
+            }
         }
     }
 }
@@ -85,7 +107,7 @@ fun Detail(
 @Composable
 fun LessonRow(
     item: Lesson, onDeleteLesson: () -> Unit,
-    onChangeLessonDate: (calwendar: Calendar) -> Unit
+    onChangeLessonDate: (calendar: Calendar) -> Unit
 ) {
     Log.e("TEST", "Lesson row ")
     val expanded = remember { mutableStateOf(false) }
@@ -131,61 +153,81 @@ fun LessonRow(
 @Composable
 private fun Name(
     name: String,
-    nameError: Int?,
-    onNameChange:((String) -> Unit)
+    onNameChange: (String) -> Unit
 ) {
-    Log.e("TEST", "Name ")
+    Log.e("TEST", "Name " + name)
+    var text by remember { mutableStateOf(TextFieldValue(name)) }
+
+    LaunchedEffect(name) {
+        if (name != text.text) {
+            text = TextFieldValue(name, text.selection)
+        }
+    }
+
     TextField(
-        value = name,
+        value = text,
+        onValueChange = {
+            text = it
+            onNameChange(it.text)
+        },
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        onValueChange = {
-            onNameChange(it)
-        },
-        isError = nameError != null,
-        label = { Text(stringResource(id = R.string.label_name)) }
+        label = { Text(stringResource(id = R.string.label_name)) },
     )
-
-    if (nameError != null) {
-        Text(
-            text = stringResource(id = nameError),
-            color = Color.Red,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-        )
-    }
 }
 
 @Composable
 private fun Detail(
-    detail: String?,
+    name: String,
     onNameChange: (String) -> Unit
 ) {
     Log.e("TEST", "Detail ")
+    var text by remember { mutableStateOf(TextFieldValue(name)) }
+
+    LaunchedEffect(name) {
+        if (name != text.text) {
+            text = TextFieldValue(name, text.selection)
+        }
+    }
+
     TextField(
-        value = detail ?: "",
+        value = text,
+        onValueChange = {
+            text = it
+            onNameChange(it.text)
+        },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        onValueChange = onNameChange,
+            .padding(horizontal = 16.dp),
         label = { Text(stringResource(id = R.string.label_tag)) }
     )
 }
 
 @Composable
 private fun LessonNumber(
-    lessonsNumber: Int?,
+    lessonsNumber: Int,
     onNumberChange: (newNumber: String) -> Unit
 ) {
     Log.e("TEST", "Lesson number ")
+    val lessonsNumberStr = lessonsNumber.toString()
+    var text by remember { mutableStateOf(TextFieldValue(lessonsNumberStr)) }
+
+    LaunchedEffect(lessonsNumberStr) {
+        if (lessonsNumberStr != text.text) {
+            text = TextFieldValue(lessonsNumberStr, text.selection)
+        }
+    }
     TextField(
+        value = text,
+        onValueChange = {
+            text = it
+            onNumberChange(it.text)
+        },
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        value = (lessonsNumber ?: 0).toString(),
-        onValueChange = onNumberChange,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         label = { Text(stringResource(id = R.string.label_lesson_number)) }
     )
 }
@@ -270,7 +312,7 @@ private fun EndDate(
 
 @Composable
 private fun Lessons(
-    lessons: List<Lesson>?,
+    lessons: List<Lesson>,
     onDeleteLesson: (item: Lesson) -> Unit,
     onChangeLessonDate: (item: Lesson, calendar: Calendar) -> Unit,
     addVisitedLesson: () -> Unit,
@@ -300,12 +342,12 @@ private fun Lessons(
                 )
             }
 
-            if ((lessons?.size ?: 0) > 0) {
+            if (lessons.isNotEmpty()) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
 
-                    lessons?.forEach {
+                    lessons.forEach {
                         LessonRow(
                             item = it,
                             onDeleteLesson = { onDeleteLesson(it) },
@@ -328,14 +370,11 @@ private fun Lessons(
 }
 
 @Composable
-private fun ProgressIndicator(isLoading: Boolean) {
-    Log.e("TEST", "ProgressIndicator ")
-    if (isLoading) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            CircularProgressIndicator()
-        }
+private fun ProgressIndicator() {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        CircularProgressIndicator()
     }
 }

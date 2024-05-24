@@ -48,23 +48,25 @@ class SubscriptionRepository(
         return subscriptionDao.getById(subscriptionId)
     }
 
-    suspend fun getWorkshop(workshopId: Long): Workshop {
-        return workshopDao.getById(workshopId)
-    }
-
-    suspend fun update(subscription: Subscription) {
-        lessonDao.deleteBySubscriptionId(subscription.id)
-        subscription.lessons?.forEach {
-            lessonDao.insert(LessonEntity(0, it.description, it.date, subscription.id))
-        }
-        return subscriptionDao.updateSubscription(convert(subscription))
-    }
-
     suspend fun updateWorkshop(workshopId: Long, workshopName: String?) {
         workshopDao.updateWorkshop(WorkshopEntity(workshopId, workshopName))
     }
 
+    suspend fun updateDetail(subscriptionId: Long, detail: String?) {
+        subscriptionDao.updateDetail(subscriptionId, detail)
+    }
 
+    suspend fun updateLessonsNumber(subscriptionId: Long, number:Int) {
+        subscriptionDao.updateLessonsNumber(subscriptionId, number)
+    }
+
+    suspend fun updateStartDate(subscriptionId: Long, startDate:Date) {
+        subscriptionDao.updateStartDate(subscriptionId, startDate)
+    }
+
+    suspend fun updateEndDate(subscriptionId: Long, endDate:Date) {
+        subscriptionDao.updateEndDate(subscriptionId, endDate)
+    }
     suspend fun deleteWorkshop(subscription: Subscription) {
         workshopDao.deleteById(subscription.workshopId)
     }

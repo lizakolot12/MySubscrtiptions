@@ -83,19 +83,7 @@ class SubscriptionRepository(
             deleteWorkshop(subscription)
         }
     }
-
-    private fun convert(subscription: Subscription): SubscriptionEntity {
-        return SubscriptionEntity(
-            subscription.id,
-            subscription.detail,
-            subscription.startDate,
-            subscription.endDate,
-            subscription.lessonNumbers,
-            subscription.workshopId,
-            subscription.message
-        )
-    }
-
+    
     suspend fun createWorkshop(name: String) = workshopDao.insert(WorkshopEntity(name = name))
 
     suspend fun addMessage(id: Long, message: String?) {

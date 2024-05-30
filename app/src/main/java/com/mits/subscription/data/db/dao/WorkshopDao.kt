@@ -1,9 +1,14 @@
 package com.mits.subscription.data.db.dao
 
-import androidx.lifecycle.LiveData
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.Query
+import androidx.room.Transaction
+import androidx.room.Update
 import com.mits.subscription.data.db.entity.WorkshopEntity
 import com.mits.subscription.model.Workshop
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface WorkshopDao {
@@ -19,7 +24,7 @@ interface WorkshopDao {
 
     @Transaction
     @Query("SELECT * FROM workshop")
-    fun getAll(): LiveData<List<Workshop>>
+    fun getAll(): Flow<List<Workshop>>
 
     @Query("SELECT * FROM workshop where workshop_id = :id")
     @Transaction

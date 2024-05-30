@@ -1,7 +1,8 @@
 package com.mits.subscription.ui.list
 
+import android.util.Log
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mits.subscription.data.repo.SubscriptionRepository
@@ -12,7 +13,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.*
+import java.util.Calendar
+import java.util.Date
 import javax.inject.Inject
 
 class WorkshopViewItem(
@@ -20,10 +22,10 @@ class WorkshopViewItem(
     var activeElementId: Long
 ) {
     fun getActiveElement(): Subscription? {
-        if ((workshop.subscriptions?.size ?: 0) == 0) return null
-        val current = workshop.subscriptions?.firstOrNull { it.id == activeElementId }
-        if (current == null && (workshop.subscriptions?.size ?: 0) > 0) {
-            return workshop.subscriptions?.get(0)
+        if ((workshop.subscriptions.size) == 0) return null
+        val current = workshop.subscriptions.firstOrNull { it.id == activeElementId }
+        if (current == null && workshop.subscriptions.isNotEmpty()) {
+            return workshop.subscriptions.firstOrNull()
         }
         return current
     }
@@ -34,12 +36,13 @@ class ListViewModel @Inject constructor(
     private val repository: SubscriptionRepository
 ) :
     ViewModel() {
-    private val _workshops: MediatorLiveData<List<WorkshopViewItem>> = MediatorLiveData()
+    private val _workshops: MutableLiveData<List<WorkshopViewItem>> = MutableLiveData()
     val workshop: LiveData<List<WorkshopViewItem>> = _workshops
 
     init {
-        _workshops.addSource(repository.workshops) { newList ->
-            run {
+        Log.e("TEST", "init " + this.hashCode())
+        viewModelScope.launch {
+            repository.workshops.collect { newList ->
                 updateWorkshops(transform(newList))
             }
         }
@@ -50,17 +53,17 @@ class ListViewModel @Inject constructor(
 
         fun getCurrentActiveId(workshop: Workshop): Long {
             return currentList?.firstOrNull { it.workshop.id == workshop.id }?.activeElementId
-                ?: workshop.subscriptions?.get(0)?.id ?: -1
+                ?: workshop.subscriptions.firstOrNull()?.id ?: -1
         }
 
         return list.map {
-            val sorted = it.subscriptions?.sortedByDescending { sub -> sub.startDate }
+            val sorted = it.subscriptions.sortedByDescending { sub -> sub.startDate }
             it.subscriptions = sorted
             var currentActive = getCurrentActiveId(it)
             val currentActiveInNewCollection =
-                it.subscriptions?.firstOrNull { sub -> sub.id == currentActive }
+                it.subscriptions.firstOrNull { sub -> sub.id == currentActive }
             if (currentActiveInNewCollection == null) {
-                currentActive = it.subscriptions?.get(0)?.id ?: -1
+                currentActive = it.subscriptions.firstOrNull()?.id ?: -1
             }
             WorkshopViewItem(
                 it,
@@ -84,6 +87,7 @@ class ListViewModel @Inject constructor(
 
     @Synchronized
     private fun updateWorkshops(newList: List<WorkshopViewItem>) {
+        Log.e("TEST", "updateWorkshops " + newList.size)
         _workshops.value = newList
     }
 

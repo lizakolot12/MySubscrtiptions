@@ -7,6 +7,9 @@ import android.widget.DatePicker
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,12 +24,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.mits.subscription.Navigation
 import com.mits.subscription.R
 import com.mits.subscription.parseCalendar
+import com.mits.subscription.ui.theme.md_theme_light_primary
 import java.util.*
 
 @Composable
@@ -37,7 +44,43 @@ fun CreatingScreen(
     val uiState = remember {
         createViewModel.uiState
     }
-    CreatingScreenState(navController, uiState, createViewModel)
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        text = stringResource(R.string.title),
+                        textAlign = TextAlign.Center,
+                        color = md_theme_light_primary,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            navController.navigateUp()
+                        }) {
+                        Icon(
+                            Icons.AutoMirrored.Rounded.ArrowBack,
+                            "",
+                            tint = md_theme_light_primary
+                        )
+                    }
+                },
+            )
+        },
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .padding(padding)
+        ) {
+            CreatingScreenState(navController, uiState, createViewModel)
+        }
+    }
 }
 
 @Composable
@@ -119,7 +162,6 @@ private fun SaveButton(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun PlannedNumber(
     number: MutableState<String>,

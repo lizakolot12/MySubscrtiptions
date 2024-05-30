@@ -70,18 +70,8 @@ class CreatingViewModel
     }
 
     private fun checkSave() {
-        val currentState = CreatingState(viewModelState.value.defaultDetailStrId)
-        currentState.name = viewModelState.value.name
-        currentState.detail = viewModelState.value.detail
-        currentState.number = viewModelState.value.number
-        currentState.startDate = viewModelState.value.startDate
-        currentState.endDate = viewModelState.value.endDate
-        currentState.nameError = viewModelState.value.nameError
-        currentState.savingAvailable = getSaveAvailability(viewModelState.value)
-        currentState.finished = viewModelState.value.finished
-        currentState.generalError = viewModelState.value.generalError
-        currentState.isLoading = viewModelState.value.isLoading
-        viewModelState.value = currentState
+        viewModelState.value =
+            viewModelState.value.copy(savingAvailable = getSaveAvailability(viewModelState.value))
     }
 
     private fun getSaveAvailability(currentState: CreatingState): Boolean {
@@ -117,16 +107,16 @@ class CreatingViewModel
         viewModelState.value = newState
     }
 
-    class CreatingState(var defaultDetailStrId: Int? = null) {
-        var name:String = ""
-        var detail:String = ""
-        var number:Int = 0
-        var startDate:Calendar = Calendar.getInstance()
-        var endDate:Calendar = Calendar.getInstance()
-        var nameError: Int? = null
-        var savingAvailable: Boolean = false
-        var finished: Boolean = false
-        var generalError: Int? = null
-        var isLoading: Boolean = false
-    }
+    data class CreatingState(var defaultDetailStrId: Int? = null,
+        var name:String = "",
+        var detail:String = "",
+        var number:Int = 0,
+        var startDate:Calendar = Calendar.getInstance(),
+        var endDate:Calendar = Calendar.getInstance(),
+        var nameError: Int? = null,
+        var savingAvailable: Boolean = false,
+        var finished: Boolean = false,
+        var generalError: Int? = null,
+        var isLoading: Boolean = false)
+
 }

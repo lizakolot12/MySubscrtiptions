@@ -18,7 +18,7 @@ class SubscriptionRepository(
     private val subscriptionDao: SubscriptionDao,
     private val workshopDao: WorkshopDao
 ) {
-    val workshops: LiveData<List<Workshop>> = workshopDao.getAll()
+    val workshops: Flow<List<Workshop>> = workshopDao.getAll()
 
     suspend fun createSubscription(subscription: Subscription): Long {
         val subscriptionEntity = SubscriptionEntity(
@@ -83,7 +83,7 @@ class SubscriptionRepository(
             deleteWorkshop(subscription)
         }
     }
-    
+
     suspend fun createWorkshop(name: String) = workshopDao.insert(WorkshopEntity(name = name))
 
     suspend fun addMessage(id: Long, message: String?) {

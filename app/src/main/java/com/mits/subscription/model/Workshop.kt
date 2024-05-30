@@ -14,5 +14,5 @@ class Workshop(
         entityColumn = "workshop_id",
         entity = SubscriptionEntity::class
     )
-    var subscriptions: List<Subscription>? = null
+    var subscriptions: List<Subscription>
 ):WorkshopBase(id, name)

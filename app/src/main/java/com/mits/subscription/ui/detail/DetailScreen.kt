@@ -15,12 +15,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -37,23 +42,29 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.mits.subscription.R
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.parseCalendar
 import com.mits.subscription.parseDate
 import com.mits.subscription.ui.creating.ShowDatePicker
+import com.mits.subscription.ui.theme.md_theme_light_primary
 import java.util.Calendar
 import java.util.Date
 
 @Composable
 fun DetailScreen(
+    navController: NavController,
     detailViewModel: DetailViewModel = hiltViewModel()
 ) {
     val uiState = detailViewModel.uiState.collectAsState().value
     Detail(
+        navController,
         uiState,
         onNameChange = remember { detailViewModel::acceptNameWorkshop },
         onDetailChange = remember { detailViewModel::acceptDetail },
@@ -66,8 +77,10 @@ fun DetailScreen(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Detail(
+    navController: NavController,
     uiState: DetailViewModel.DetailState,
     onNameChange: (newName: String) -> Unit,
     onDetailChange: (newName: String) -> Unit,
@@ -78,27 +91,58 @@ fun Detail(
     onChangeLessonDate: (item: Lesson, calendar: Calendar) -> Unit,
     addVisitedLesson: () -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .verticalScroll(rememberScrollState())
-            .fillMaxHeight(1f)
-            .fillMaxWidth()
-    ) {
-        Log.e("TEST", "Main column " + onDetailChange.hashCode())
-        when (uiState) {
-            DetailViewModel.DetailState.Loading -> ProgressIndicator()
-            is DetailViewModel.DetailState.Success -> {
-                Name(uiState.subscription.workshop?.name ?: "", onNameChange)
-                Detail(uiState.subscription.detail?:"", onDetailChange)
-                LessonNumber(uiState.subscription.lessonNumbers, onNumberChange)
-                StartDate(uiState.subscription.startDate?.time ?: 0, onStartCalendarChange)
-                EndDate(uiState.subscription.endDate?.time ?: 0, onEndCalendarChange)
-                Lessons(
-                    uiState.subscription.lessons?: emptyList(),
-                    onDeleteLesson,
-                    onChangeLessonDate,
-                    addVisitedLesson
-                )
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        text = stringResource(R.string.title),
+                        textAlign = TextAlign.Center,
+                        color = md_theme_light_primary,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            navController.navigateUp()
+                        }) {
+                        Icon(
+                            Icons.AutoMirrored.Rounded.ArrowBack,
+                            "",
+                            tint = md_theme_light_primary
+                        )
+                    }
+                },
+            )
+        },
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .fillMaxHeight(1f)
+                .fillMaxWidth()
+        ) {
+            when (uiState) {
+                DetailViewModel.DetailState.Loading -> ProgressIndicator()
+                is DetailViewModel.DetailState.Success -> {
+                    Name(uiState.subscription.workshop?.name ?: "", onNameChange)
+                    Detail(uiState.subscription.detail ?: "", onDetailChange)
+                    LessonNumber(uiState.subscription.lessonNumbers, onNumberChange)
+                    StartDate(uiState.subscription.startDate?.time ?: 0, onStartCalendarChange)
+                    EndDate(uiState.subscription.endDate?.time ?: 0, onEndCalendarChange)
+                    Lessons(
+                        uiState.subscription.lessons ?: emptyList(),
+                        onDeleteLesson,
+                        onChangeLessonDate,
+                        addVisitedLesson
+                    )
+                }
             }
         }
     }
@@ -109,7 +153,6 @@ fun LessonRow(
     item: Lesson, onDeleteLesson: () -> Unit,
     onChangeLessonDate: (calendar: Calendar) -> Unit
 ) {
-    Log.e("TEST", "Lesson row ")
     val expanded = remember { mutableStateOf(false) }
     Row(
         modifier = Modifier
@@ -155,7 +198,6 @@ private fun Name(
     name: String,
     onNameChange: (String) -> Unit
 ) {
-    Log.e("TEST", "Name " + name)
     var text by remember { mutableStateOf(TextFieldValue(name)) }
 
     LaunchedEffect(name) {
@@ -172,7 +214,7 @@ private fun Name(
         },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .padding(16.dp),
         label = { Text(stringResource(id = R.string.label_name)) },
     )
 }
@@ -182,7 +224,6 @@ private fun Detail(
     name: String,
     onNameChange: (String) -> Unit
 ) {
-    Log.e("TEST", "Detail ")
     var text by remember { mutableStateOf(TextFieldValue(name)) }
 
     LaunchedEffect(name) {
@@ -199,7 +240,7 @@ private fun Detail(
         },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .padding(16.dp),
         label = { Text(stringResource(id = R.string.label_tag)) }
     )
 }
@@ -317,7 +358,6 @@ private fun Lessons(
     onChangeLessonDate: (item: Lesson, calendar: Calendar) -> Unit,
     addVisitedLesson: () -> Unit,
 ) {
-    Log.e("TEST", "Lessons ")
     Card(
         modifier = Modifier.padding(16.dp)
     ) {

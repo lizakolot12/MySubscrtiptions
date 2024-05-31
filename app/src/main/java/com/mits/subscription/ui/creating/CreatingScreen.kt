@@ -241,7 +241,7 @@ private fun Name(
         value = name.value,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 0.dp)
+            .padding(horizontal = 16.dp,)
             .focusRequester(focusRequester),
         onValueChange = {
             name.value = it

@@ -37,7 +37,7 @@ abstract class SubscriptionDb : RoomDatabase() {
 
         private fun buildDatabase(context: Context) =
             Room.databaseBuilder(
-                context.applicationContext,
+                context,
                 SubscriptionDb::class.java, "subscription.db"
             )
                 .build()

@@ -40,7 +40,7 @@ class ListViewModel @Inject constructor(
     val workshop: LiveData<List<WorkshopViewItem>> = _workshops
 
     init {
-        Log.e("TEST", "init " + this.hashCode())
+        Log.e("TEST", "init ")
         viewModelScope.launch {
             repository.workshops.collect { newList ->
                 updateWorkshops(transform(newList))

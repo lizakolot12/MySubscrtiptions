@@ -4,16 +4,33 @@ package com.mits.subscription.ui.creating
 
 import android.app.DatePickerDialog
 import android.widget.DatePicker
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -23,27 +40,26 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.mits.subscription.Navigation
 import com.mits.subscription.R
 import com.mits.subscription.parseCalendar
 import com.mits.subscription.ui.theme.md_theme_light_primary
-import java.util.*
+import java.util.Calendar
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreatingScreen(
     navController: NavController,
     createViewModel: CreatingViewModel = hiltViewModel()
 ) {
-    val uiState = remember {
-        createViewModel.uiState
-    }
+    val uiState by createViewModel.uiState.collectAsStateWithLifecycle()
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -86,19 +102,20 @@ fun CreatingScreen(
 @Composable
 fun CreatingScreenState(
     navController: NavController,
-    state: MutableState<CreatingViewModel.CreatingState>,
+    state: CreatingViewModel.CreatingState,
     createViewModel: CreatingViewModel
 ) {
     LoadingIndicator(state)
     Column(modifier = Modifier.fillMaxWidth()) {
-        val name = remember { mutableStateOf(state.value.name) }
-        Name(name, state) { newValue -> createViewModel.checkName(newValue) }
+        Name(state.name, state.nameError) { newValue -> createViewModel.checkName(newValue) }
 
-        val detail = remember { mutableStateOf(TextFieldValue(state.value.detail)) }
-        Detail(detail, state) { newValue -> createViewModel.checkDetail(newValue) }
+        Detail(state.detail, state.defaultDetailStrId) { newValue ->
+            createViewModel.checkDetail(
+                newValue
+            )
+        }
 
-        val number = remember { mutableStateOf(state.value.number.toString()) }
-        PlannedNumber(number) { newValue ->
+        PlannedNumber(state.number.toString()) { newValue ->
             createViewModel.acceptNumber(
                 try {
                     newValue.toInt()
@@ -109,33 +126,25 @@ fun CreatingScreenState(
         }
 
         val choseStartDate = remember { mutableStateOf(false) }
-        val startDate = remember { mutableStateOf(state.value.startDate) }
+
         val choseEndDate = remember { mutableStateOf(false) }
-        StartDate(choseStartDate, startDate, choseEndDate) { newValue ->
+        StartDate(choseStartDate, state.startDate, choseEndDate) { newValue ->
             createViewModel.acceptStartDate(
                 newValue
             )
         }
 
-        val endDate = remember { mutableStateOf(state.value.endDate) }
-        EndDate(choseEndDate, endDate, choseStartDate) { newValue ->
+
+        EndDate(choseEndDate, state.endDate, choseStartDate) { newValue ->
             createViewModel.acceptEndDate(
                 newValue
             )
         }
-        SaveButton(state) {
-            createViewModel.create(
-                name.value,
-                detail.value.text,
-                Integer.valueOf(
-                    number.value.ifBlank { "0" }
-                ),
-                startDate.value.time,
-                endDate.value.time,
-            )
+        SaveButton(state.savingAvailable) {
+            createViewModel.create()
         }
 
-        if (state.value.finished) {
+        if (state.finished) {
             navController.navigateUp()
         }
     }
@@ -143,7 +152,7 @@ fun CreatingScreenState(
 
 @Composable
 private fun SaveButton(
-    state: MutableState<CreatingViewModel.CreatingState>,
+    savingAvailable: Boolean,
     onButtonClick: () -> Unit
 ) {
     Box(
@@ -153,7 +162,7 @@ private fun SaveButton(
         Button(
             onClick = onButtonClick,
             modifier = Modifier.padding(horizontal = 16.dp),
-            enabled = state.value.savingAvailable
+            enabled = savingAvailable
         ) {
             Row {
                 Text(stringResource(id = R.string.btn_save))
@@ -164,7 +173,7 @@ private fun SaveButton(
 
 @Composable
 private fun PlannedNumber(
-    number: MutableState<String>,
+    number: String,
     onChange: (newValue: String) -> Unit?
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -174,7 +183,7 @@ private fun PlannedNumber(
             .padding(horizontal = 16.dp)
             .fillMaxWidth()
             .padding(vertical = 8.dp),
-        value = number.value,
+        value = number,
 
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
             .copy(keyboardType = KeyboardType.Number),
@@ -183,7 +192,6 @@ private fun PlannedNumber(
         ),
         onValueChange = {
             val digitValue = it.digits()
-            number.value = digitValue
             onChange(digitValue)
 
         },
@@ -193,21 +201,17 @@ private fun PlannedNumber(
 
 @Composable
 private fun Detail(
-    tag: MutableState<TextFieldValue>,
-    state: MutableState<CreatingViewModel.CreatingState>,
+    tag: String?,
+    defaultDetailStrId: Int,
     onTagChange: (newValue: String) -> Unit?
 ) {
-    state.value.defaultDetailStrId?.let {
-        tag.value = TextFieldValue(stringResource(it))
-    }
     TextField(
-        value = tag.value,
+        value = if(tag?.isNotBlank() == true) tag else stringResource(id = defaultDetailStrId),
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp, top = 8.dp),
         onValueChange = {
-            tag.value = it
-            onTagChange.invoke(it.text)
+            onTagChange.invoke(it)
         },
 
         label = { Text(stringResource(id = R.string.label_tag)) },
@@ -218,8 +222,8 @@ private fun Detail(
 }
 
 @Composable
-private fun LoadingIndicator(state: MutableState<CreatingViewModel.CreatingState>) {
-    if (state.value.isLoading) {
+private fun LoadingIndicator(state: CreatingViewModel.CreatingState) {
+    if (state.isLoading) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.fillMaxSize()
@@ -231,23 +235,22 @@ private fun LoadingIndicator(state: MutableState<CreatingViewModel.CreatingState
 
 @Composable
 private fun Name(
-    name: MutableState<String>,
-    state: MutableState<CreatingViewModel.CreatingState>,
+    name: String,
+    nameError: Int?,
     onNameChange: (newValue: String) -> Unit?
 ) {
     val focusRequester = remember { FocusRequester() }
 
     TextField(
-        value = name.value,
+        value = name,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp,)
+            .padding(horizontal = 16.dp)
             .focusRequester(focusRequester),
         onValueChange = {
-            name.value = it
             onNameChange(it)
         },
-        isError = state.value.nameError != null,
+        isError = nameError != null,
         label = { Text(stringResource(id = R.string.label_name)) },
         keyboardOptions = KeyboardOptions(
             imeAction = ImeAction.Next,
@@ -256,7 +259,7 @@ private fun Name(
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
     }
-    state.value.nameError?.let {
+    nameError?.let {
         Text(
             text = stringResource(id = it),
             modifier = Modifier
@@ -271,7 +274,7 @@ private fun Name(
 @Composable
 private fun StartDate(
     choseStartDate: MutableState<Boolean>,
-    startDate: MutableState<Calendar>,
+    startDate: Calendar,
     choseEndDate: MutableState<Boolean>,
     onChange: (newValue: Calendar) -> Unit?
 ) {
@@ -284,7 +287,7 @@ private fun StartDate(
         Row {
             Text(stringResource(id = R.string.label_start_date))
             Text(
-                text = parseCalendar(startDate.value),
+                text = parseCalendar(startDate),
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
         }
@@ -292,10 +295,9 @@ private fun StartDate(
 
     if (choseStartDate.value) {
         ShowDatePicker(
-            startDate.value, onChange = {
+            startDate, onChange = {
                 choseStartDate.value = false
                 choseEndDate.value = true
-                startDate.value = it
                 onChange.invoke(it)
 
             },
@@ -311,7 +313,7 @@ private fun StartDate(
 @Composable
 private fun EndDate(
     choseEndDate: MutableState<Boolean>,
-    endDate: MutableState<Calendar>,
+    endDate: Calendar,
     choseStartDate: MutableState<Boolean>,
     onChange: (newValue: Calendar) -> Unit?
 ) {
@@ -325,7 +327,7 @@ private fun EndDate(
         Row {
             Text(stringResource(id = R.string.label_end_date))
             Text(
-                text = parseCalendar(endDate.value),
+                text = parseCalendar(endDate),
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
         }
@@ -334,9 +336,8 @@ private fun EndDate(
 
     if (choseEndDate.value) {
         ShowDatePicker(
-            endDate.value, onChange = { newCalendar ->
+            endDate, onChange = { newCalendar ->
                 choseEndDate.value = false
-                endDate.value = newCalendar
                 onChange(newCalendar)
 
             },

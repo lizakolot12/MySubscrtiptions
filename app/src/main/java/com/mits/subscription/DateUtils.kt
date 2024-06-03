@@ -15,7 +15,7 @@ fun parseDate(date: Date): String {
     return formatter.format(date)
 }
 
-fun getDefaultDetail(): Int? {
+fun getDefaultDetail(): Int {
     val currentDate = Calendar.getInstance()
     return when (currentDate.get(Calendar.MONTH)) {
         0 -> R.string.january
@@ -31,7 +31,7 @@ fun getDefaultDetail(): Int? {
         10 -> R.string.november
         11 -> R.string.december
         else -> {
-            null
+            R.string.january
         }
     }
 }

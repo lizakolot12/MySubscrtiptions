@@ -1,6 +1,5 @@
 package com.mits.subscription.ui.creating
 
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mits.subscription.R
@@ -8,6 +7,8 @@ import com.mits.subscription.data.repo.SubscriptionRepository
 import com.mits.subscription.getDefaultDetail
 import com.mits.subscription.model.Subscription
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Date
@@ -19,104 +20,76 @@ class CreatingViewModel
     private val repository: SubscriptionRepository
 ) : ViewModel() {
 
-    private val viewModelState = mutableStateOf(CreatingState())
+    private val viewModelState = MutableStateFlow(CreatingState())
+    val uiState: StateFlow<CreatingState> = viewModelState
 
     init {
-        val defaultDetail = getDefaultDetail()
-        viewModelState.value = CreatingState(defaultDetail)
+        viewModelState.value = CreatingState()
     }
 
-    val uiState = viewModelState
-    fun create(
-        name: String,
-        detail: String? = null,
-        lessonNumbers: Int,
-        startDate: Date,
-        endDate: Date
-    ) {
-        val copy = CreatingState()
-        copy.isLoading = true
-        viewModelState.value = copy
+    fun create() {
+        viewModelState.value = viewModelState.value.copy(isLoading = true)
         viewModelScope.launch {
-            val workshopId = repository.createWorkshop(name)
+            val workshopId = repository.createWorkshop(uiState.value.name)
             val newSubscription = Subscription(
                 -1,
-                detail = detail,
-                startDate = startDate,
-                endDate = endDate,
-                lessonNumbers = lessonNumbers,
+                detail = uiState.value.detail,
+                startDate = uiState.value.startDate.time,
+                endDate = uiState.value.endDate.time,
+                lessonNumbers = uiState.value.number,
                 workshopId = workshopId,
                 message = null
             )
             repository.createSubscription(newSubscription)
-            val newState = CreatingState()
-            newState.isLoading = false
-            newState.finished = true
-            viewModelState.value = newState
+            viewModelState.value = viewModelState.value.copy(isLoading = false, finished = true)
         }
     }
 
     fun checkName(name: String) {
-        if (name.isBlank()) {
-            viewModelState.value.nameError = R.string.name_error
-        } else {
-            viewModelState.value.nameError = null
-        }
-        val newState = viewModelState.value
-        newState.name = name
-        newState.defaultDetailStrId = null
-        viewModelState.value = newState
-        checkSave()
+        viewModelState.value = viewModelState.value.copy(
+            nameError = if (name.isBlank()) R.string.name_error else null,
+            name = name,
+            savingAvailable = name.isNotBlank()
+        )
     }
 
-    private fun checkSave() {
-        viewModelState.value =
-            viewModelState.value.copy(savingAvailable = getSaveAvailability(viewModelState.value))
-    }
-
-    private fun getSaveAvailability(currentState: CreatingState): Boolean {
-        return currentState.nameError == null &&
-                currentState.generalError == null
-                && !currentState.isLoading
-    }
 
     fun checkDetail(text: String) {
-        if (text.isNotBlank()) {
-            val newState = viewModelState.value
-            newState.detail = text
-            newState.defaultDetailStrId = null
-            viewModelState.value = newState
-        }
+        viewModelState.value = viewModelState.value.copy(
+            detail = text
+        )
     }
 
-    fun acceptStartDate(date:Calendar) {
-            val newState = viewModelState.value
-            newState.startDate = date
-            viewModelState.value = newState
+    fun acceptStartDate(date: Calendar) {
+        viewModelState.value = viewModelState.value.copy(
+            startDate = date
+        )
     }
 
-    fun acceptEndDate(date:Calendar) {
-        val newState = viewModelState.value
-        newState.endDate = date
-        viewModelState.value = newState
+    fun acceptEndDate(date: Calendar) {
+        viewModelState.value = viewModelState.value.copy(
+            endDate = date
+        )
     }
 
-    fun acceptNumber(number:Int) {
-        val newState = viewModelState.value
-        newState.number = number
-        viewModelState.value = newState
+    fun acceptNumber(number: Int) {
+        viewModelState.value = viewModelState.value.copy(
+            number = number
+        )
     }
 
-    data class CreatingState(var defaultDetailStrId: Int? = null,
-        var name:String = "",
-        var detail:String = "",
-        var number:Int = 0,
-        var startDate:Calendar = Calendar.getInstance(),
-        var endDate:Calendar = Calendar.getInstance(),
+    data class CreatingState(
+        val defaultDetailStrId: Int = getDefaultDetail(),
+        var name: String = "",
+        var detail: String = "",
+        var number: Int = 0,
+        var startDate: Calendar = Calendar.getInstance(),
+        var endDate: Calendar = Calendar.getInstance(),
         var nameError: Int? = null,
         var savingAvailable: Boolean = false,
         var finished: Boolean = false,
         var generalError: Int? = null,
-        var isLoading: Boolean = false)
+        var isLoading: Boolean = false
+    )
 
 }

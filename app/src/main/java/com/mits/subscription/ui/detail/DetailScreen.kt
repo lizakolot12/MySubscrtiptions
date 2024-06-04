@@ -64,8 +64,8 @@ fun DetailScreen(
 ) {
     val uiState = detailViewModel.uiState.collectAsState().value
     Detail(
-        navController,
         uiState,
+        onBack =  {navController.navigateUp()},
         onNameChange = remember { detailViewModel::acceptNameWorkshop },
         onDetailChange = remember { detailViewModel::acceptDetail },
         onNumberChange = remember { detailViewModel::acceptNumber },
@@ -80,14 +80,14 @@ fun DetailScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Detail(
-    navController: NavController,
     uiState: DetailViewModel.DetailState,
+    onBack:() -> Unit,
     onNameChange: (newName: String) -> Unit,
     onDetailChange: (newName: String) -> Unit,
     onNumberChange: (newNumber: String) -> Unit,
     onStartCalendarChange: (newValue: Calendar) -> Unit,
     onEndCalendarChange: (newValue: Calendar) -> Unit,
-    onDeleteLesson: (item: Lesson) -> Unit,
+    onDeleteLesson: (item: Long) -> Unit,
     onChangeLessonDate: (item: Lesson, calendar: Calendar) -> Unit,
     addVisitedLesson: () -> Unit,
 ) {
@@ -109,7 +109,7 @@ fun Detail(
                 navigationIcon = {
                     IconButton(
                         onClick = {
-                            navController.navigateUp()
+                            onBack.invoke()
                         }) {
                         Icon(
                             Icons.AutoMirrored.Rounded.ArrowBack,
@@ -354,8 +354,8 @@ private fun EndDate(
 @Composable
 private fun Lessons(
     lessons: List<Lesson>,
-    onDeleteLesson: (item: Lesson) -> Unit,
-    onChangeLessonDate: (item: Lesson, calendar: Calendar) -> Unit,
+    onDeleteLesson: (lessonId:Long) -> Unit,
+    onChangeLessonDate: (lesson:Lesson, calendar: Calendar) -> Unit,
     addVisitedLesson: () -> Unit,
 ) {
     Card(
@@ -390,7 +390,7 @@ private fun Lessons(
                     lessons.forEach {
                         LessonRow(
                             item = it,
-                            onDeleteLesson = { onDeleteLesson(it) },
+                            onDeleteLesson = { onDeleteLesson(it.lId) },
                             onChangeLessonDate = { calendar -> onChangeLessonDate(it, calendar) }
                         )
 

@@ -101,7 +101,7 @@ val DATE_FORMATTER = SimpleDateFormat("dd.MM.yyyy", Locale.US)
 @Composable
 fun ListScreen(navController: NavController) {
     val listViewModel: ListViewModel = hiltViewModel()
-    val workshops by listViewModel.workshop.observeAsState()
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -133,13 +133,14 @@ fun ListScreen(navController: NavController) {
             modifier = Modifier
                 .padding(padding)
         ) {
-            if (workshops.isNullOrEmpty()) {
+            val isEmpty = listViewModel.emptyList.observeAsState()
+            if (isEmpty.value != false) {
                 Image(
                     painterResource(id = R.drawable.background), contentDescription = "Фон",
                     Modifier.fillMaxSize()
                 )
             } else {
-                List(workshops ?: emptyList(), navController, listViewModel)
+                List(navController, listViewModel)
             }
         }
     }
@@ -147,11 +148,10 @@ fun ListScreen(navController: NavController) {
 
 @Composable
 fun List(
-    workshops: List<WorkshopViewItem>,
     navController: NavController,
     listViewModel: ListViewModel
 ) {
-
+    val workshops by listViewModel.workshop.observeAsState()
     LazyColumn(
         contentPadding = PaddingValues(
             bottom = 88.dp
@@ -159,7 +159,7 @@ fun List(
     ) {
 
         itemsIndexed(
-            items = workshops,
+            items = workshops?: emptyList(),
             itemContent = { _, item ->
 
                 Column(
@@ -177,18 +177,18 @@ fun List(
                         if (openDialog.value) {
                             InputMessage(openDialog = openDialog, addMessageWorkshopListener = {
                                 item.getActiveElement()
-                                    ?.let { it1 -> listViewModel.addMessage(it, it1) }
+                                    ?.let { it1 -> listViewModel.addMessage(it, it1.id) }
                             })
                         }
                         Workshop(
                             {
-                                item.getActiveElement()?.let { listViewModel.addVisitedLesson(it) }
+                                item.getActiveElement()?.let { listViewModel.addVisitedLesson(it.id) }
                             },
                             {
                                 item.getActiveElement()?.let { listViewModel.copy(it) }
                             },
                             {
-                                item.getActiveElement()?.let { listViewModel.deleteWorkshop(it) }
+                                item.getActiveElement()?.let { listViewModel.deleteWorkshop(it.workshopId) }
                             },
                             {
                                 listener.invoke()
@@ -483,7 +483,7 @@ fun Lesson(lesson: Lesson?, subscriptionId: Long, listViewModel: ListViewModel) 
 @Composable
 fun AddNewLesson(listViewModel: ListViewModel, subscription: Subscription) {
     ElevatedButton(
-        onClick = { listViewModel.addVisitedLesson(subscription) },
+        onClick = { listViewModel.addVisitedLesson(subscription.id) },
         contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
         modifier = Modifier.padding(8.dp)
     ) {
@@ -667,7 +667,7 @@ fun ContextMenuMessage(
         modifier = Modifier.fillMaxWidth(0.7f)
     ) {
         DropdownMenuItem(onClick = {
-            listViewModel.removeMessage(subscription)
+            listViewModel.removeMessage(subscription.id)
             expanded.value = false
         },
             text = { Text(stringResource(id = R.string.delete)) },

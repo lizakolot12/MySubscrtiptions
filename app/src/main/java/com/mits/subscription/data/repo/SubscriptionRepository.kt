@@ -1,6 +1,5 @@
 package com.mits.subscription.data.repo
 
-import androidx.lifecycle.LiveData
 import com.mits.subscription.data.db.dao.LessonDao
 import com.mits.subscription.data.db.dao.SubscriptionDao
 import com.mits.subscription.data.db.dao.WorkshopDao
@@ -11,7 +10,8 @@ import com.mits.subscription.model.Lesson
 import com.mits.subscription.model.Subscription
 import com.mits.subscription.model.Workshop
 import kotlinx.coroutines.flow.Flow
-import java.util.*
+import java.util.Calendar
+import java.util.Date
 
 class SubscriptionRepository(
     private val lessonDao: LessonDao,
@@ -67,12 +67,12 @@ class SubscriptionRepository(
     suspend fun updateEndDate(subscriptionId: Long, endDate:Date) {
         subscriptionDao.updateEndDate(subscriptionId, endDate)
     }
-    suspend fun deleteWorkshop(subscription: Subscription) {
-        workshopDao.deleteById(subscription.workshopId)
+    suspend fun deleteWorkshop(workshopId: Long) {
+        workshopDao.deleteById(workshopId)
     }
 
-    suspend fun deleteLesson(lesson: Lesson) {
-        lessonDao.deleteByLessonId(lesson.lId)
+    suspend fun deleteLesson(lessonId:Long) {
+        lessonDao.deleteByLessonId(lessonId)
     }
 
     suspend fun deleteSubscription(subscription: Subscription) {
@@ -80,7 +80,7 @@ class SubscriptionRepository(
         if ((currentWorkshop.subscriptions?.size ?: 0) > 1) {
             subscriptionDao.deleteById(subscription.id)
         } else {
-            deleteWorkshop(subscription)
+            deleteWorkshop(subscription.id)
         }
     }
 

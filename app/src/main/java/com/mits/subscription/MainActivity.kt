@@ -1,7 +1,6 @@
 package com.mits.subscription
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
@@ -21,7 +20,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.e("TEST", "on create")
         setContent {
             SubscriptionTheme {
                 Main()
@@ -36,7 +34,6 @@ fun Main() {
 
     NavHost(navController = navController, startDestination = Navigation.LIST.route) {
         composable(Navigation.LIST.route) {
-            Log.e("TEST", "list")
             ListScreen(navController)
         }
 

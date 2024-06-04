@@ -42,14 +42,13 @@ class DetailViewModel
             .launchIn(viewModelScope)
     }
 
-    fun deleteLesson(lesson: Lesson) {
+    fun deleteLesson(lessonId:Long) {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.deleteLesson(lesson)
+            repository.deleteLesson(lessonId)
         }
     }
 
     fun acceptNameWorkshop(name: String) {
-        Log.e("TEST", "name =  $name")
         viewModelScope.launch(Dispatchers.IO) {
             val currentState = uiState.value
             if (currentState is DetailState.Success)
@@ -87,7 +86,6 @@ class DetailViewModel
         val old =
             if (_uiState.value is DetailState.Success) (_uiState.value as DetailState.Success).subscription else null
         return if (subscription != null) {
-            Log.e("TEST", "!!!!!!!" + ((old?.lessons != subscription.lessons)))
             val new = Subscription(
                 id = if (old?.id != subscription.id) subscription.id else old.id,
                 detail = if (old?.detail != subscription.detail) subscription.detail else old?.detail,
@@ -99,12 +97,6 @@ class DetailViewModel
                 workshopId = if (old?.workshopId != subscription.workshopId) subscription.workshopId else old.workshopId,
                 message = if (old?.message != subscription.message) subscription.message else old?.message
             )
-            Log.e(
-                "TEST",
-                "compare " + (compareLists(old?.lessons ?: emptyList(), new.lessons ?: emptyList()))
-            )
-            Log.e("TEST", "" + old)
-            Log.e("TEST", "" + new)
             DetailState.Success(
                 new
             )
@@ -112,7 +104,6 @@ class DetailViewModel
     }
 
     fun compareLists(list1: List<Lesson>, list2: List<Lesson>): Boolean {
-        Log.e("TEST", " size " + list1.size + "   " + list2.size)
         if (list1.size != list2.size) return false
         for (i in list1.indices) {
             if (list1[i] != list2[i]) return false

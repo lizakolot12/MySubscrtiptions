@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import com.mits.subscription.data.repo.SubscriptionRepository
 import com.mits.subscription.model.Lesson
@@ -38,6 +39,7 @@ class ListViewModel @Inject constructor(
     ViewModel() {
     private val _workshops: MutableLiveData<List<WorkshopViewItem>> = MutableLiveData()
     val workshop: LiveData<List<WorkshopViewItem>> = _workshops
+    val emptyList:LiveData<Boolean> = _workshops.map { it.isEmpty() }
 
     init {
         Log.e("TEST", "init ")
@@ -91,27 +93,27 @@ class ListViewModel @Inject constructor(
         _workshops.value = newList
     }
 
-    fun addVisitedLesson(subscription: Subscription) {
+    fun addVisitedLesson(subscriptionId: Long) {
         viewModelScope.launch {
-            repository.addLesson(subscription.id, Lesson(-1, "", Date()))
+            repository.addLesson(subscriptionId, Lesson(-1, "", Date()))
         }
     }
 
-    fun addMessage(message: String?, subscription: Subscription) {
+    fun addMessage(message: String?, subscriptionId: Long) {
         viewModelScope.launch {
-            repository.addMessage(subscription.id, message)
+            repository.addMessage(subscriptionId, message)
         }
     }
 
-    fun removeMessage(subscription: Subscription) {
+    fun removeMessage(subscriptionId: Long) {
         viewModelScope.launch {
-            repository.addMessage(subscription.id, null)
+            repository.addMessage(subscriptionId, null)
         }
     }
 
-    fun deleteWorkshop(subscription: Subscription) {
+    fun deleteWorkshop(workshopId:Long) {
         viewModelScope.launch {
-            repository.deleteWorkshop(subscription)
+            repository.deleteWorkshop(workshopId)
         }
     }
 

@@ -58,8 +58,6 @@ fun CreatingScreen(
     navController: NavController,
     createViewModel: CreatingViewModel = hiltViewModel()
 ) {
-    val uiState by createViewModel.uiState.collectAsStateWithLifecycle()
-
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -94,18 +92,18 @@ fun CreatingScreen(
             modifier = Modifier
                 .padding(padding)
         ) {
-            CreatingScreenState(navController, uiState, createViewModel)
+            CreatingScreenState({ navController.navigateUp() }, createViewModel)
         }
     }
 }
 
 @Composable
 fun CreatingScreenState(
-    navController: NavController,
-    state: CreatingViewModel.CreatingState,
+    onFinish:()-> Unit,
     createViewModel: CreatingViewModel
 ) {
-    LoadingIndicator(state)
+    val state by createViewModel.uiState.collectAsStateWithLifecycle()
+    LoadingIndicator(state.isLoading)
     Column(modifier = Modifier.fillMaxWidth()) {
         Name(state.name, state.nameError) { newValue -> createViewModel.checkName(newValue) }
 
@@ -145,7 +143,7 @@ fun CreatingScreenState(
         }
 
         if (state.finished) {
-            navController.navigateUp()
+            onFinish()
         }
     }
 }
@@ -222,8 +220,8 @@ private fun Detail(
 }
 
 @Composable
-private fun LoadingIndicator(state: CreatingViewModel.CreatingState) {
-    if (state.isLoading) {
+private fun LoadingIndicator(isLoading:Boolean) {
+    if (isLoading) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.fillMaxSize()

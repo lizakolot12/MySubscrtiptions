@@ -38,7 +38,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedButton
@@ -200,7 +199,7 @@ fun List(
                         }
 
                         val scrollStateHorizontal = rememberScrollState()
-                        AnimatedVisibility(((item.workshop.subscriptions?.size ?: 0) > 1)) {
+                        AnimatedVisibility((item.workshop.subscriptions.size > 1)) {
                             Row(
                                 Modifier
                                     .horizontalScroll(scrollStateHorizontal)

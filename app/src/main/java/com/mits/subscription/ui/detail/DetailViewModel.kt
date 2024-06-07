@@ -103,7 +103,7 @@ class DetailViewModel
         } else DetailState.Loading
     }
 
-    fun compareLists(list1: List<Lesson>, list2: List<Lesson>): Boolean {
+    private fun compareLists(list1: List<Lesson>, list2: List<Lesson>): Boolean {
         if (list1.size != list2.size) return false
         for (i in list1.indices) {
             if (list1[i] != list2[i]) return false
@@ -157,6 +157,6 @@ class DetailViewModel
             val messageId: Int? = null,
         ) : DetailState()
 
-        object Loading : DetailState()
+        data object Loading : DetailState()
     }
 }

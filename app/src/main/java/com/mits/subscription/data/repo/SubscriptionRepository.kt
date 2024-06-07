@@ -77,7 +77,7 @@ class SubscriptionRepository(
 
     suspend fun deleteSubscription(subscription: Subscription) {
         val currentWorkshop = workshopDao.getById(subscription.workshopId)
-        if ((currentWorkshop.subscriptions?.size ?: 0) > 1) {
+        if (currentWorkshop.subscriptions.size > 1) {
             subscriptionDao.deleteById(subscription.id)
         } else {
             deleteWorkshop(subscription.id)

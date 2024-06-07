@@ -20,10 +20,6 @@ interface SubscriptionDao {
     @Transaction
     suspend fun deleteById(id: Long)
 
-    @Transaction
-    @Query("SELECT * FROM subscription")
-    fun getAll(): LiveData<List<Subscription>>
-
     @Query("SELECT * FROM subscription where sub_id = :id")
     @Transaction
     fun getById(id: Long): Flow<Subscription?>

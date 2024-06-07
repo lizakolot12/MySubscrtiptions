@@ -7,6 +7,7 @@ import com.mits.subscription.data.repo.SubscriptionRepository
 import com.mits.subscription.getDefaultDetail
 import com.mits.subscription.model.Subscription
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -22,13 +23,15 @@ class CreatingViewModel
     private val viewModelState = MutableStateFlow(CreatingState())
     val uiState: StateFlow<CreatingState> = viewModelState
 
+    private val ioDispatcher = Dispatchers.IO
+
     init {
         viewModelState.value = CreatingState()
     }
 
     fun create() {
         viewModelState.value = viewModelState.value.copy(isLoading = true)
-        viewModelScope.launch {
+        viewModelScope.launch(ioDispatcher) {
             val workshopId = repository.createWorkshop(uiState.value.name)
             val newSubscription = Subscription(
                 -1,

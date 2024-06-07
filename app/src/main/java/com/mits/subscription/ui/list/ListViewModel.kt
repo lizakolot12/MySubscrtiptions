@@ -12,6 +12,7 @@ import com.mits.subscription.model.Subscription
 import com.mits.subscription.model.Workshop
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Calendar
@@ -39,12 +40,13 @@ class ListViewModel @Inject constructor(
     ViewModel() {
     private val _workshops: MutableLiveData<List<WorkshopViewItem>> = MutableLiveData()
     val workshop: LiveData<List<WorkshopViewItem>> = _workshops
-    val emptyList:LiveData<Boolean> = _workshops.map { it.isEmpty() }
+    val emptyList: LiveData<Boolean> = _workshops.map { it.isEmpty() }
+    private val ioDispatcher = Dispatchers.IO
 
     init {
         Log.e("TEST", "init ")
         viewModelScope.launch {
-            repository.workshops.collect { newList ->
+            repository.workshops.flowOn(ioDispatcher).collect { newList ->
                 updateWorkshops(transform(newList))
             }
         }
@@ -94,37 +96,37 @@ class ListViewModel @Inject constructor(
     }
 
     fun addVisitedLesson(subscriptionId: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(ioDispatcher) {
             repository.addLesson(subscriptionId, Lesson(-1, "", Date()))
         }
     }
 
     fun addMessage(message: String?, subscriptionId: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(ioDispatcher) {
             repository.addMessage(subscriptionId, message)
         }
     }
 
     fun removeMessage(subscriptionId: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(ioDispatcher) {
             repository.addMessage(subscriptionId, null)
         }
     }
 
-    fun deleteWorkshop(workshopId:Long) {
-        viewModelScope.launch {
+    fun deleteWorkshop(workshopId: Long) {
+        viewModelScope.launch(ioDispatcher) {
             repository.deleteWorkshop(workshopId)
         }
     }
 
     fun deleteSubscription(subscription: Subscription) {
-        viewModelScope.launch {
+        viewModelScope.launch(ioDispatcher) {
             repository.deleteSubscription(subscription)
         }
     }
 
     fun copy(subscription: Subscription) {
-        viewModelScope.launch {
+        viewModelScope.launch(ioDispatcher) {
             val newSubscription = Subscription(
                 0,
                 subscription.detail + "_copy",
@@ -140,10 +142,8 @@ class ListViewModel @Inject constructor(
     }
 
     fun changeLessonDate(item: Lesson, newCalendar: Calendar, subscriptionId: Long) {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                repository.updateLesson(item, newCalendar, subscriptionId)
-            }
+        viewModelScope.launch(ioDispatcher) {
+            repository.updateLesson(item, newCalendar, subscriptionId)
         }
     }
 }

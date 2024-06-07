@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -30,10 +31,11 @@ class DetailViewModel
 
     private val _uiState = MutableStateFlow<DetailState>(DetailState.Loading)
     val uiState = _uiState.asStateFlow()
+    private val ioDispatcher = Dispatchers.IO
 
 
     init {
-        repository.getSubscription(subscriptionId)
+        repository.getSubscription(subscriptionId).flowOn(Dispatchers.IO)
             .filterNotNull()
             .onEach {
                 Log.e("TEST", "lesson " + it.lessons?.size)
@@ -43,13 +45,13 @@ class DetailViewModel
     }
 
     fun deleteLesson(lessonId:Long) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(ioDispatcher) {
             repository.deleteLesson(lessonId)
         }
     }
 
     fun acceptNameWorkshop(name: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(ioDispatcher) {
             val currentState = uiState.value
             if (currentState is DetailState.Success)
                 repository.updateWorkshop(
@@ -60,7 +62,7 @@ class DetailViewModel
     }
 
     fun acceptDetail(detail: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(ioDispatcher) {
             val currentState = uiState.value
             if (currentState is DetailState.Success) {
                 repository.updateDetail(currentState.subscription.id, detail)
@@ -69,7 +71,7 @@ class DetailViewModel
     }
 
     fun acceptNumber(numStr: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(ioDispatcher) {
             try {
                 val currentState = uiState.value
                 if (currentState is DetailState.Success) {
@@ -116,7 +118,7 @@ class DetailViewModel
             val currentState = uiState.value
             if (currentState is DetailState.Success) {
                 val newStartDate = calendar.time ?: Date()
-                viewModelScope.launch(Dispatchers.IO) {
+                viewModelScope.launch(ioDispatcher) {
                     repository.updateStartDate(currentState.subscription.id, newStartDate)
                 }
             }
@@ -129,7 +131,7 @@ class DetailViewModel
             val currentState = uiState.value
             if (currentState is DetailState.Success) {
                 val newEndDate = calendar.time ?: Date()
-                viewModelScope.launch(Dispatchers.IO) {
+                viewModelScope.launch(ioDispatcher) {
                     repository.updateEndDate(currentState.subscription.id, newEndDate)
                 }
             }
@@ -138,13 +140,13 @@ class DetailViewModel
     }
 
     fun addVisitedLesson() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(ioDispatcher) {
             repository.addLesson(subscriptionId, Lesson(-1, "", Date()))
         }
     }
 
     fun changeLessonDate(item: Lesson, newCalendar: Calendar) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(ioDispatcher) {
             item.date = newCalendar.time
             repository.updateLesson(item, newCalendar, subscriptionId)
         }

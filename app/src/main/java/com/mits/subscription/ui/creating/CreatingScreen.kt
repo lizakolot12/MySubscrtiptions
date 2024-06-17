@@ -55,7 +55,7 @@ import java.util.Calendar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreatingScreen(
-    navController: NavController,
+    onBack:() -> Unit,
     createViewModel: CreatingViewModel = hiltViewModel()
 ) {
     Scaffold(
@@ -75,9 +75,7 @@ fun CreatingScreen(
                 modifier = Modifier.fillMaxWidth(),
                 navigationIcon = {
                     IconButton(
-                        onClick = {
-                            navController.navigateUp()
-                        }) {
+                        onClick = onBack) {
                         Icon(
                             Icons.AutoMirrored.Rounded.ArrowBack,
                             "",
@@ -92,7 +90,7 @@ fun CreatingScreen(
             modifier = Modifier
                 .padding(padding)
         ) {
-            CreatingScreenState({ navController.navigateUp() }, createViewModel)
+            CreatingScreenState(onBack, createViewModel)
         }
     }
 }

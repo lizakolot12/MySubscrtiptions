@@ -53,9 +53,6 @@ android {
         }
     }
 
-    lintOptions {
-        warningsAsErrors true
-    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -67,6 +64,13 @@ android {
         freeCompilerArgs += [
                 "-Xjvm-default=all",
         ]
+        freeCompilerArgs += [
+                "-P",
+                "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=${project.buildDir.absolutePath}/compose_compiler"
+        ]
+        freeCompilerArgs += [
+                "-P",
+                "plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=${project.buildDir.absolutePath}/compose_compiler"]
 
     }
     buildFeatures {
@@ -79,6 +83,9 @@ android {
         }
     }
     namespace 'com.mits.subscription'
+    lint {
+        warningsAsErrors true
+    }
 }
 
 dependencies {

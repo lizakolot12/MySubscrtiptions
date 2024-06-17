@@ -59,13 +59,13 @@ import java.util.Date
 
 @Composable
 fun DetailScreen(
-    navController: NavController,
+    onBack: () -> Unit,
     detailViewModel: DetailViewModel = hiltViewModel()
 ) {
     val uiState = detailViewModel.uiState.collectAsState().value
     Detail(
         uiState,
-        onBack =  {navController.navigateUp()},
+        onBack =  onBack,
         onNameChange = remember { detailViewModel::acceptNameWorkshop },
         onDetailChange = remember { detailViewModel::acceptDetail },
         onNumberChange = remember { detailViewModel::acceptNumber },

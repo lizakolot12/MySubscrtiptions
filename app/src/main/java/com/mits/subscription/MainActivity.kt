@@ -34,18 +34,22 @@ fun Main() {
 
     NavHost(navController = navController, startDestination = Navigation.LIST.route) {
         composable(Navigation.LIST.route) {
-            ListScreen(navController)
+            ListScreen({
+                navController.navigate(Navigation.NEW.route)
+            }, { item ->
+                navController.navigate("detail/${item}")
+            })
         }
 
         composable(Navigation.NEW.route) {
-            CreatingScreen(navController)
+            CreatingScreen({ navController.navigateUp() })
         }
 
         composable(
             Navigation.DETAIL.route + "/{subscriptionId}",
             arguments = listOf(navArgument("subscriptionId") { type = NavType.LongType })
         ) {
-            DetailScreen(navController)
+            DetailScreen({ navController.navigateUp() })
         }
     }
 }

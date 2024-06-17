@@ -76,8 +76,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
-import com.mits.subscription.Navigation
 import com.mits.subscription.R
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.model.Subscription
@@ -98,7 +96,8 @@ val DATE_FORMATTER = SimpleDateFormat("dd.MM.yyyy", Locale.US)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ListScreen(navController: NavController) {
+fun ListScreen(onNew:() -> Unit,
+               onDetail:(item:Long) -> Unit) {
     val listViewModel: ListViewModel = hiltViewModel()
 
     Scaffold(
@@ -122,9 +121,7 @@ fun ListScreen(navController: NavController) {
             ExtendedFloatingActionButton(
                 icon = { Icon(Icons.Filled.Add, "") },
                 text = { Text(text = stringResource(R.string.btn_new)) },
-                onClick = {
-                    navController.navigate(Navigation.NEW.route)
-                },
+                onClick = onNew
             )
         }
     ) { padding ->
@@ -139,7 +136,7 @@ fun ListScreen(navController: NavController) {
                     Modifier.fillMaxSize()
                 )
             } else {
-                List(navController, listViewModel)
+                List(onDetail, listViewModel)
             }
         }
     }
@@ -147,7 +144,7 @@ fun ListScreen(navController: NavController) {
 
 @Composable
 fun List(
-    navController: NavController,
+    onDetail:(item:Long) -> Unit,
     listViewModel: ListViewModel
 ) {
     val workshops by listViewModel.workshop.observeAsState()
@@ -193,10 +190,9 @@ fun List(
                                 listener.invoke()
                             },
                             item,
-                            listViewModel
-                        ) {
-                            navController.navigate("detail/${item.activeElementId}")
-                        }
+                            listViewModel,
+                            {onDetail(item.activeElementId)}
+                        )
 
                         val scrollStateHorizontal = rememberScrollState()
                         AnimatedVisibility((item.workshop.subscriptions.size > 1)) {
@@ -206,7 +202,7 @@ fun List(
                                     .padding(vertical = 8.dp)
                             ) {
                                 item.workshop.subscriptions.forEach {
-                                    SubscriptionSmall(item, it, navController, listViewModel)
+                                    SubscriptionSmall(item, it, onDetail, listViewModel)
                                 }
                             }
                         }
@@ -501,7 +497,7 @@ fun AddNewLesson(listViewModel: ListViewModel, subscription: Subscription) {
 fun SubscriptionSmall(
     workshopViewItem: WorkshopViewItem,
     subscription: Subscription,
-    navController: NavController,
+    onDetail:(item:Long) -> Unit,
     listViewModel: ListViewModel
 ) {
     val expanded = remember { mutableStateOf(false) }
@@ -511,7 +507,7 @@ fun SubscriptionSmall(
             .offset { IntOffset(0, offsetY.roundToInt()) }
             .pointerInput(Unit) {
                 detectTapGestures(
-                    onDoubleTap = { navController.navigate("detail/${subscription.id}") },
+                    onDoubleTap = { onDetail(subscription.id)},
                     onLongPress = { expanded.value = true },
                     onTap = {
                         listViewModel.changeActiveElement(

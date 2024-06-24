@@ -12,8 +12,11 @@ import com.mits.subscription.model.Workshop
 import kotlinx.coroutines.flow.Flow
 import java.util.Calendar
 import java.util.Date
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class SubscriptionRepository(
+@Singleton
+class SubscriptionRepository @Inject constructor(
     private val lessonDao: LessonDao,
     private val subscriptionDao: SubscriptionDao,
     private val workshopDao: WorkshopDao

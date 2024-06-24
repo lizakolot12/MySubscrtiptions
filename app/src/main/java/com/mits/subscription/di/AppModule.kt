@@ -2,7 +2,9 @@ package com.mits.subscription.di
 
 import android.content.Context
 import com.mits.subscription.data.db.SubscriptionDb
-import com.mits.subscription.data.repo.SubscriptionRepository
+import com.mits.subscription.data.db.dao.LessonDao
+import com.mits.subscription.data.db.dao.SubscriptionDao
+import com.mits.subscription.data.db.dao.WorkshopDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,13 +27,23 @@ object AppModule {
 @InstallIn(SingletonComponent::class)
 object SubscriptionRepositoryModule {
 
-    @Singleton
     @Provides
-    fun provideSubscriptionRepository(
+    fun provideLessonDao(
         database: SubscriptionDb
-    ): SubscriptionRepository {
-        return SubscriptionRepository(
-            database.lessonDao(), database.subscriptionDao(), database.folderDao()
-        )
+    ): LessonDao {
+        return database.lessonDao()
+    }
+
+    @Provides
+    fun provideSubscriptionDao(
+        database: SubscriptionDb
+    ): SubscriptionDao {
+        return database.subscriptionDao()
+    }
+    @Provides
+    fun provideWorkshopDao(
+        database: SubscriptionDb
+    ): WorkshopDao {
+        return database.folderDao()
     }
 }

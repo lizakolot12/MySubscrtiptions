@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -28,6 +30,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -48,12 +51,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.mits.subscription.CalendarView
 import com.mits.subscription.R
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.parseCalendar
 import com.mits.subscription.parseDate
 import com.mits.subscription.ui.creating.ShowDatePicker
 import com.mits.subscription.ui.theme.md_theme_light_primary
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.Year
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
 
@@ -65,7 +73,7 @@ fun DetailScreen(
     val uiState = detailViewModel.uiState.collectAsState().value
     Detail(
         uiState,
-        onBack =  onBack,
+        onBack = onBack,
         onNameChange = remember { detailViewModel::acceptNameWorkshop },
         onDetailChange = remember { detailViewModel::acceptDetail },
         onNumberChange = remember { detailViewModel::acceptNumber },
@@ -81,7 +89,7 @@ fun DetailScreen(
 @Composable
 fun Detail(
     uiState: DetailViewModel.DetailState,
-    onBack:() -> Unit,
+    onBack: () -> Unit,
     onNameChange: (newName: String) -> Unit,
     onDetailChange: (newName: String) -> Unit,
     onNumberChange: (newNumber: String) -> Unit,
@@ -142,10 +150,16 @@ fun Detail(
                         onChangeLessonDate,
                         addVisitedLesson
                     )
+                    CalendarView(getVisited(uiState.subscription.lessons))
                 }
             }
         }
     }
+}
+
+fun getVisited(lessons: List<Lesson>?): List<LocalDate>? {
+    if (lessons.isNullOrEmpty()) return null
+    return lessons.map { it.date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate() }
 }
 
 @Composable
@@ -354,8 +368,8 @@ private fun EndDate(
 @Composable
 private fun Lessons(
     lessons: List<Lesson>,
-    onDeleteLesson: (lessonId:Long) -> Unit,
-    onChangeLessonDate: (lesson:Lesson, calendar: Calendar) -> Unit,
+    onDeleteLesson: (lessonId: Long) -> Unit,
+    onChangeLessonDate: (lesson: Lesson, calendar: Calendar) -> Unit,
     addVisitedLesson: () -> Unit,
 ) {
     Card(

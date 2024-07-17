@@ -1,7 +1,5 @@
 package com.mits.subscription.ui.detail
 
-import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,7 +9,6 @@ import com.mits.subscription.model.Subscription
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOn
@@ -40,7 +37,6 @@ class DetailViewModel
         repository.getSubscription(subscriptionId).flowOn(Dispatchers.IO)
             .filterNotNull()
             .onEach {
-                Log.e("TEST", "lesson " + it.lessons?.size)
                 _uiState.value = createNewFromCurrent(it)
             }
             .launchIn(viewModelScope)
@@ -106,7 +102,6 @@ class DetailViewModel
             )
         } else DetailState.Loading
     }
-
     private fun compareLists(list1: List<Lesson>, list2: List<Lesson>): Boolean {
         if (list1.size != list2.size) return false
         for (i in list1.indices) {
@@ -149,10 +144,9 @@ class DetailViewModel
 
     fun changeLessonDate(item: Lesson, newCalendar: Calendar) {
         viewModelScope.launch(ioDispatcher) {
-            item.date = newCalendar.time
-            repository.updateLesson(item, newCalendar, subscriptionId)
+            val newItem = item.copy(date = newCalendar.time)
+            repository.updateLesson(newItem, newCalendar, subscriptionId)
         }
-
     }
 
     sealed class DetailState {

@@ -2,6 +2,7 @@ package com.mits.subscription
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,7 +26,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.mits.subscription.ui.theme.md_theme_light_inversePrimary
 import java.time.LocalDate
-
 
 @Composable
 fun CalendarView(checked: List<LocalDate>?) {
@@ -125,9 +125,9 @@ fun MonthView(now: LocalDate, checked:List<LocalDate>?) {
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier
                                     .weight(1f)
+                                    .padding(2.dp)
                                     .background(md_theme_light_inversePrimary, shape = RoundedCornerShape(10.dp))
                                     .padding(8.dp)
-
                             )
                         } else {
                             Text(
@@ -139,9 +139,7 @@ fun MonthView(now: LocalDate, checked:List<LocalDate>?) {
                         day++
                         currentDay = currentDay.plusDays(1)
                     } else {
-                        Text(
-                            "**",
-                            textAlign = TextAlign.Center,
+                        Box(
                             modifier = Modifier.padding(8.dp).weight(1f)
                         )
                     }

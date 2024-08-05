@@ -7,7 +7,7 @@ import com.mits.subscription.data.repo.SubscriptionRepository
 import com.mits.subscription.getDefaultDetail
 import com.mits.subscription.model.Subscription
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -17,13 +17,12 @@ import javax.inject.Inject
 @HiltViewModel
 class CreatingViewModel
 @Inject constructor(
-    private val repository: SubscriptionRepository
+    private val repository: SubscriptionRepository,
+    private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
     private val viewModelState = MutableStateFlow(CreatingState())
     val uiState: StateFlow<CreatingState> = viewModelState
-
-    private val ioDispatcher = Dispatchers.IO
 
     init {
         viewModelState.value = CreatingState()

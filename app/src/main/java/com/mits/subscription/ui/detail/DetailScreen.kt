@@ -1,6 +1,5 @@
 package com.mits.subscription.ui.detail
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -70,9 +69,9 @@ fun DetailScreen(
         onBack = onBack,
         onNameChange = detailViewModel::acceptNameWorkshop,
         onDetailChange = detailViewModel::acceptDetail,
-        onNumberChange = detailViewModel::acceptNumber,
-        onStartCalendarChange = detailViewModel::acceptStartCalendar,
-        onEndCalendarChange = detailViewModel::acceptEndCalendar,
+        onNumberChange = detailViewModel::updateNumber,
+        onStartCalendarChange = detailViewModel::updateStartCalendar,
+        onEndCalendarChange = detailViewModel::updateEndCalendar,
         onDeleteLesson = detailViewModel::deleteLesson,
         onChangeLessonDate = detailViewModel::changeLessonDate,
         addVisitedLesson = detailViewModel::addVisitedLesson
@@ -258,7 +257,6 @@ private fun LessonNumber(
     lessonsNumber: Int,
     onNumberChange: (newNumber: String) -> Unit
 ) {
-    Log.e("TEST", "Lesson number ")
     val lessonsNumberStr = lessonsNumber.toString()
     var text by remember { mutableStateOf(TextFieldValue(lessonsNumberStr)) }
 
@@ -286,7 +284,6 @@ private fun StartDate(
     startDate: Long,
     onCalendarChange: (newValue: Calendar) -> Unit
 ) {
-    Log.e("TEST", "Start Date ")
     val choseStartDate = remember { mutableStateOf(false) }
     val startCalendar = Calendar.getInstance()
     startCalendar.time = Date(startDate)
@@ -324,7 +321,6 @@ private fun EndDate(
     endDate: Long,
     onCalendarChange: (newValue: Calendar) -> Unit?
 ) {
-    Log.e("TEST", "EndDate ")
     val choseEndDate = remember { mutableStateOf(false) }
     val endCalendar = Calendar.getInstance()
     endCalendar.time = Date(endDate)

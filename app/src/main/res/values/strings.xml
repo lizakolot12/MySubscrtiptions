@@ -33,4 +33,14 @@
     <string name="november">Листопад</string>
     <string name="december">Грудень</string>
 
+    <string-array name="days_of_week">
+        <item>П</item>
+        <item>В</item>
+        <item>С</item>
+        <item>Ч</item>
+        <item>П</item>
+        <item>С</item>
+        <item>Н</item>
+    </string-array>
+
 </resources>

@@ -7,6 +7,7 @@ import com.mits.subscription.data.repo.SubscriptionRepository
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.model.Subscription
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,15 +24,14 @@ import javax.inject.Inject
 class DetailViewModel
 @Inject constructor(
     private val repository: SubscriptionRepository,
+    private val ioDispatcher: CoroutineDispatcher,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val subscriptionId = savedStateHandle.get<Long>("subscriptionId") ?: 0L
+    private val subscriptionId = savedStateHandle["subscriptionId"] ?: 0L
 
     private val _uiState = MutableStateFlow<DetailState>(DetailState.Loading)
     val uiState = _uiState.asStateFlow()
-    private val ioDispatcher = Dispatchers.IO
-
 
     init {
         repository.getSubscription(subscriptionId).flowOn(Dispatchers.IO)
@@ -68,23 +68,19 @@ class DetailViewModel
         }
     }
 
-    fun acceptNumber(numStr: String) {
+    fun updateNumber(numStr: String) {
         viewModelScope.launch(ioDispatcher) {
-            try {
                 val currentState = uiState.value
                 if (currentState is DetailState.Success) {
                     repository.updateLessonsNumber(currentState.subscription.id, numStr.toInt())
                 }
-            } catch (_: Exception) {
-            }
         }
     }
 
     private fun createNewFromCurrent(
         subscription: Subscription? = null,
     ): DetailState {
-        val old =
-            if (_uiState.value is DetailState.Success) (_uiState.value as DetailState.Success).subscription else null
+        val old = (_uiState.value as? DetailState.Success)?.subscription
         return if (subscription != null) {
             val new = Subscription(
                 id = if (old?.id != subscription.id) subscription.id else old.id,
@@ -110,8 +106,7 @@ class DetailViewModel
         return true
     }
 
-    fun acceptStartCalendar(calendar: Calendar) {
-        try {
+    fun updateStartCalendar(calendar: Calendar) {
             val currentState = uiState.value
             if (currentState is DetailState.Success) {
                 val newStartDate = calendar.time ?: Date()
@@ -119,12 +114,9 @@ class DetailViewModel
                     repository.updateStartDate(currentState.subscription.id, newStartDate)
                 }
             }
-        } catch (_: Exception) {
-        }
     }
 
-    fun acceptEndCalendar(calendar: Calendar) {
-        try {
+    fun updateEndCalendar(calendar: Calendar) {
             val currentState = uiState.value
             if (currentState is DetailState.Success) {
                 val newEndDate = calendar.time ?: Date()
@@ -132,8 +124,6 @@ class DetailViewModel
                     repository.updateEndDate(currentState.subscription.id, newEndDate)
                 }
             }
-        } catch (_: Exception) {
-        }
     }
 
     fun addVisitedLesson() {

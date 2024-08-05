@@ -46,7 +46,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import com.mits.subscription.R
 import com.mits.subscription.parseCalendar
 import com.mits.subscription.ui.theme.md_theme_light_primary
@@ -356,9 +355,9 @@ fun ShowDatePicker(
     titleId: Int? = null
 ) {
     val context = LocalContext.current
-    val yearInit = initial.get(Calendar.YEAR)
-    val monthInit = initial.get(Calendar.MONTH)
-    val dayInit = initial.get(Calendar.DAY_OF_MONTH)
+    val yearInit = initial[Calendar.YEAR]
+    val monthInit = initial[Calendar.MONTH]
+    val dayInit = initial[Calendar.DAY_OF_MONTH]
 
     val datePickerDialog = DatePickerDialog(
         context, R.style.DatePickerDialogTheme,

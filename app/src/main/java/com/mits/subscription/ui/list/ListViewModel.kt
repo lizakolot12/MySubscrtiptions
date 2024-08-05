@@ -1,6 +1,5 @@
 package com.mits.subscription.ui.list
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -11,10 +10,9 @@ import com.mits.subscription.model.Lesson
 import com.mits.subscription.model.Subscription
 import com.mits.subscription.model.Workshop
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
@@ -35,16 +33,15 @@ class WorkshopViewItem(
 
 @HiltViewModel
 class ListViewModel @Inject constructor(
-    private val repository: SubscriptionRepository
+    private val repository: SubscriptionRepository,
+    private val ioDispatcher: CoroutineDispatcher
 ) :
     ViewModel() {
     private val _workshops: MutableLiveData<List<WorkshopViewItem>> = MutableLiveData()
     val workshop: LiveData<List<WorkshopViewItem>> = _workshops
     val emptyList: LiveData<Boolean> = _workshops.map { it.isEmpty() }
-    private val ioDispatcher = Dispatchers.IO
 
     init {
-        Log.e("TEST", "init ")
         viewModelScope.launch {
             repository.workshops.flowOn(ioDispatcher).collect { newList ->
                 updateWorkshops(transform(newList))
@@ -91,7 +88,6 @@ class ListViewModel @Inject constructor(
 
     @Synchronized
     private fun updateWorkshops(newList: List<WorkshopViewItem>) {
-        Log.e("TEST", "updateWorkshops " + newList.size)
         _workshops.value = newList
     }
 

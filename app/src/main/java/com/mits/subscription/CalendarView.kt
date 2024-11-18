@@ -24,9 +24,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mits.subscription.ui.theme.md_theme_light_inversePrimary
 import java.time.LocalDate
+
+@Preview
+@Composable
+fun PreviewCalendar(){
+    CalendarView(checked = listOf(LocalDate.now(),
+        LocalDate.of(2024,8,3),
+        LocalDate.of(2024,8,4)))
+}
 
 @Composable
 fun CalendarView(checked: List<LocalDate>?) {

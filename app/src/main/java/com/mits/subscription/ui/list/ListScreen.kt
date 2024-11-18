@@ -96,8 +96,10 @@ val DATE_FORMATTER = SimpleDateFormat("dd.MM.yyyy", Locale.US)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ListScreen(onNew:() -> Unit,
-               onDetail:(item:Long) -> Unit) {
+fun ListScreen(
+    onNew: () -> Unit,
+    onDetail: (item: Long) -> Unit
+) {
     val listViewModel: ListViewModel = hiltViewModel()
 
     Scaffold(
@@ -144,7 +146,7 @@ fun ListScreen(onNew:() -> Unit,
 
 @Composable
 fun List(
-    onDetail:(item:Long) -> Unit,
+    onDetail: (item: Long) -> Unit,
     listViewModel: ListViewModel
 ) {
     val workshops by listViewModel.workshop.observeAsState()
@@ -155,7 +157,7 @@ fun List(
     ) {
 
         itemsIndexed(
-            items = workshops?: emptyList(),
+            items = workshops ?: emptyList(),
             itemContent = { _, item ->
 
                 Column(
@@ -178,20 +180,22 @@ fun List(
                         }
                         Workshop(
                             {
-                                item.getActiveElement()?.let { listViewModel.addVisitedLesson(it.id) }
+                                item.getActiveElement()
+                                    ?.let { listViewModel.addVisitedLesson(it.id) }
                             },
                             {
                                 item.getActiveElement()?.let { listViewModel.copy(it) }
                             },
                             {
-                                item.getActiveElement()?.let { listViewModel.deleteWorkshop(it.workshopId) }
+                                item.getActiveElement()
+                                    ?.let { listViewModel.deleteWorkshop(it.workshopId) }
                             },
                             {
                                 listener.invoke()
                             },
                             item,
                             listViewModel,
-                            {onDetail(item.activeElementId)}
+                            { onDetail(item.activeElementId) }
                         )
 
                         val scrollStateHorizontal = rememberScrollState()
@@ -497,7 +501,7 @@ fun AddNewLesson(listViewModel: ListViewModel, subscription: Subscription) {
 fun SubscriptionSmall(
     workshopViewItem: WorkshopViewItem,
     subscription: Subscription,
-    onDetail:(item:Long) -> Unit,
+    onDetail: (item: Long) -> Unit,
     listViewModel: ListViewModel
 ) {
     val expanded = remember { mutableStateOf(false) }
@@ -507,7 +511,7 @@ fun SubscriptionSmall(
             .offset { IntOffset(0, offsetY.roundToInt()) }
             .pointerInput(Unit) {
                 detectTapGestures(
-                    onDoubleTap = { onDetail(subscription.id)},
+                    onDoubleTap = { onDetail(subscription.id) },
                     onLongPress = { expanded.value = true },
                     onTap = {
                         listViewModel.changeActiveElement(
@@ -524,16 +528,16 @@ fun SubscriptionSmall(
                 } else {
                     0.dp
                 }, color = if (workshopViewItem.activeElementId == subscription.id) {
-                    md_theme_light_primaryContainer
+                    md_theme_light_primary
                 } else {
                     Color.Transparent
                 }, shape = RoundedCornerShape(8.dp)
             )
             .shadow(
                 elevation = if (workshopViewItem.activeElementId == subscription.id) {
-                    20.dp
+                    4.dp
                 } else {
-                    1.dp
+                    0.dp
                 },
                 shape = RoundedCornerShape(8.dp)
             )

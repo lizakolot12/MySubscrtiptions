@@ -129,12 +129,12 @@ fun CreatingScreenState(
             )
         }
 
-
         EndDate(choseEndDate, state.endDate, choseStartDate) { newValue ->
             createViewModel.acceptEndDate(
                 newValue
             )
         }
+
         SaveButton(state.savingAvailable) {
             createViewModel.create()
         }

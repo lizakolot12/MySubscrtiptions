@@ -116,8 +116,6 @@ dependencies {
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:1.8.3"
     debugImplementation "androidx.compose.ui:ui-tooling:1.8.3"
     debugImplementation "androidx.compose.ui:ui-test-manifest:1.8.3"
-    androidTestImplementation "com.kaspersky.android-components:kaspresso-compose-support:1.5.3"
-    androidTestImplementation 'com.kaspersky.android-components:kaspresso:1.5.3'
 
     def room_version = "2.7.2"
 

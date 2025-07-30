@@ -30,5 +30,7 @@ data class SubscriptionEntity(
     @ColumnInfo(name = "workshop_id", index = true)
     val workshopId: Long,
 
-    val message:String?
+    val message:String?,
+
+    val filePath: String? = null
 )

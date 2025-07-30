@@ -1,0 +1,171 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 4,
+    "identityHash": "8cd644047970121693ae53e345ca2bff",
+    "entities": [
+      {
+        "tableName": "workshop",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`workshop_id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "workshop_id",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "workshop_id"
+          ]
+        }
+      },
+      {
+        "tableName": "subscription",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sub_id` INTEGER PRIMARY KEY AUTOINCREMENT, `detail` TEXT, `startDate` INTEGER, `endDate` INTEGER, `lessonNumbers` INTEGER NOT NULL, `workshop_id` INTEGER NOT NULL, `message` TEXT, `filePath` TEXT, FOREIGN KEY(`workshop_id`) REFERENCES `workshop`(`workshop_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "sub_id",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "detail",
+            "columnName": "detail",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "startDate",
+            "columnName": "startDate",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "endDate",
+            "columnName": "endDate",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lessonNumbers",
+            "columnName": "lessonNumbers",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "workshopId",
+            "columnName": "workshop_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "message",
+            "columnName": "message",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "filePath",
+            "columnName": "filePath",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "sub_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_subscription_workshop_id",
+            "unique": false,
+            "columnNames": [
+              "workshop_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_subscription_workshop_id` ON `${TABLE_NAME}` (`workshop_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "workshop",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "workshop_id"
+            ],
+            "referencedColumns": [
+              "workshop_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "lesson",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`lId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `description` TEXT, `date` INTEGER, `subscription_id` INTEGER NOT NULL, FOREIGN KEY(`subscription_id`) REFERENCES `subscription`(`sub_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "lId",
+            "columnName": "lId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "date",
+            "columnName": "date",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "subscriptionId",
+            "columnName": "subscription_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "lId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_lesson_subscription_id",
+            "unique": false,
+            "columnNames": [
+              "subscription_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_lesson_subscription_id` ON `${TABLE_NAME}` (`subscription_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "subscription",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "subscription_id"
+            ],
+            "referencedColumns": [
+              "sub_id"
+            ]
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8cd644047970121693ae53e345ca2bff')"
+    ]
+  }
+}

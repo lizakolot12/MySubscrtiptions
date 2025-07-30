@@ -31,7 +31,8 @@ class SubscriptionRepository @Inject constructor(
             subscription.endDate,
             subscription.lessonNumbers,
             subscription.workshopId,
-            subscription.message
+            subscription.message,
+            subscription.filePath
         )
         return subscriptionDao.insert(subscriptionEntity)
     }
@@ -57,6 +58,10 @@ class SubscriptionRepository @Inject constructor(
 
     suspend fun updateDetail(subscriptionId: Long, detail: String?) {
         subscriptionDao.updateDetail(subscriptionId, detail)
+    }
+
+    suspend fun updateFilePath(subscriptionId: Long, uri: String?) {
+        subscriptionDao.updatePhotoUri(subscriptionId, uri)
     }
 
     suspend fun updateLessonsNumber(subscriptionId: Long, number:Int) {

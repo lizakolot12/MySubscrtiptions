@@ -1,5 +1,6 @@
 package com.mits.subscription.ui.detail
 
+import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -91,7 +92,8 @@ class DetailViewModel
                 lessons = if (compareLists(old?.lessons?: emptyList(),subscription.lessons?: emptyList())) old?.lessons else subscription.lessons ,
                 workshop = if (old?.workshop != subscription.workshop) subscription.workshop else old?.workshop,
                 workshopId = if (old?.workshopId != subscription.workshopId) subscription.workshopId else old.workshopId,
-                message = if (old?.message != subscription.message) subscription.message else old?.message
+                message = if (old?.message != subscription.message) subscription.message else old?.message,
+                filePath = subscription.filePath
             )
             DetailState.Success(
                 new
@@ -129,6 +131,15 @@ class DetailViewModel
     fun addVisitedLesson() {
         viewModelScope.launch(ioDispatcher) {
             repository.addLesson(subscriptionId, Lesson(-1, "", Date()))
+        }
+    }
+
+    fun acceptPhotoUri(photoUri: Uri?) {
+        viewModelScope.launch(ioDispatcher) {
+            val currentState = uiState.value
+            if (currentState is DetailState.Success) {
+                repository.updateFilePath(currentState.subscription.id, photoUri?.toString())
+            }
         }
     }
 

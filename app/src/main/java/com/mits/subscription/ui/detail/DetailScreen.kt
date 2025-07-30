@@ -1,5 +1,7 @@
 package com.mits.subscription.ui.detail
 
+import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -51,6 +53,7 @@ import com.mits.subscription.R
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.parseCalendar
 import com.mits.subscription.parseDate
+import com.mits.subscription.ui.creating.LaunchPhotoPicker
 import com.mits.subscription.ui.creating.ShowDatePicker
 import com.mits.subscription.ui.theme.md_theme_light_primary
 import java.time.LocalDate
@@ -74,7 +77,8 @@ fun DetailScreen(
         onEndCalendarChange = detailViewModel::updateEndCalendar,
         onDeleteLesson = detailViewModel::deleteLesson,
         onChangeLessonDate = detailViewModel::changeLessonDate,
-        addVisitedLesson = detailViewModel::addVisitedLesson
+        addVisitedLesson = detailViewModel::addVisitedLesson,
+        acceptPhotoUri = detailViewModel::acceptPhotoUri
     )
 }
 
@@ -91,6 +95,7 @@ fun Detail(
     onDeleteLesson: (item: Long) -> Unit,
     onChangeLessonDate: (item: Lesson, calendar: Calendar) -> Unit,
     addVisitedLesson: () -> Unit,
+    acceptPhotoUri: (photoUri: Uri?) -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -137,6 +142,9 @@ fun Detail(
                     LessonNumber(uiState.subscription.lessonNumbers, onNumberChange)
                     StartDate(uiState.subscription.startDate?.time ?: 0, onStartCalendarChange)
                     EndDate(uiState.subscription.endDate?.time ?: 0, onEndCalendarChange)
+                    LaunchPhotoPicker(uiState.subscription.filePath) { photoUri ->
+                        acceptPhotoUri(photoUri)
+                    }
                     Lessons(
                         uiState.subscription.lessons ?: emptyList(),
                         onDeleteLesson,

@@ -32,5 +32,7 @@ data class Subscription(
     @ColumnInfo(name="workshop_id")
     val workshopId:Long,
 
-    val message:String?
+    val message:String?,
+
+    val filePath: String? = null
 )

@@ -54,6 +54,14 @@ interface SubscriptionDao {
 
     @Query(
         "UPDATE subscription " +
+                "SET filePath = :uri " +
+                "WHERE sub_id = :id "
+    )
+    @Transaction
+    suspend fun updatePhotoUri(id: Long, uri: String?): Int
+
+    @Query(
+        "UPDATE subscription " +
                 "SET startDate = :startDate " +
                 "WHERE sub_id = :id "
     )

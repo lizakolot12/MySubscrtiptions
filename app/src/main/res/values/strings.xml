@@ -32,6 +32,8 @@
     <string name="october">Жовтень</string>
     <string name="november">Листопад</string>
     <string name="december">Грудень</string>
+    <string name="btn_add_payment_photo">Додата фото оплати</string>
+    <string name="btn_edit_payment_photo">Змінити фото оплати</string>
 
     <string-array name="days_of_week">
         <item>П</item>

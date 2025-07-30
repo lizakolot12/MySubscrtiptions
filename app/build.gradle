@@ -104,6 +104,8 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.2"
     implementation "androidx.activity:activity-compose:1.10.1"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.9.0"
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
 
     def nav_version = "2.9.2"
     implementation "androidx.navigation:navigation-compose:$nav_version"

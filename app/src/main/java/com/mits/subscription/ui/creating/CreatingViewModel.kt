@@ -1,5 +1,7 @@
 package com.mits.subscription.ui.creating
 
+import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mits.subscription.R
@@ -10,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
@@ -39,7 +42,8 @@ class CreatingViewModel
                 endDate = uiState.value.endDate.time,
                 lessonNumbers = uiState.value.number,
                 workshopId = workshopId,
-                message = null
+                message = null,
+                filePath = uiState.value.photoUri?.toString()
             )
             repository.createSubscription(newSubscription)
             viewModelState.value = viewModelState.value.copy(isLoading = false, finished = true)
@@ -47,36 +51,43 @@ class CreatingViewModel
     }
 
     fun checkName(name: String) {
-        viewModelState.value = viewModelState.value.copy(
-            nameError = if (name.isBlank()) R.string.name_error else null,
-            name = name,
-            savingAvailable = name.isNotBlank()
-        )
+        viewModelState.update {
+            it.copy(
+                nameError = if (name.isBlank()) R.string.name_error else null,
+                name = name,
+                savingAvailable = name.isNotBlank()
+            )
+        }
     }
 
 
     fun checkDetail(text: String) {
-        viewModelState.value = viewModelState.value.copy(
-            detail = text
-        )
+        viewModelState.update {
+            it.copy(detail = text)
+        }
     }
 
     fun acceptStartDate(date: Calendar) {
-        viewModelState.value = viewModelState.value.copy(
-            startDate = date
-        )
+        viewModelState.update {
+            it.copy(startDate = date)
+        }
     }
 
     fun acceptEndDate(date: Calendar) {
-        viewModelState.value = viewModelState.value.copy(
-            endDate = date
-        )
+        viewModelState.update {
+            it.copy(endDate = date)
+        }
     }
 
     fun acceptNumber(number: Int) {
-        viewModelState.value = viewModelState.value.copy(
-            number = number
-        )
+        viewModelState.update {
+            it.copy(number = number)
+        }
+    }
+
+    fun acceptPhotoUri(photoUri: String?) {
+        Log.e("TEST", "Photo URI accepted: $photoUri")
+        viewModelState.update { it.copy(photoUri = photoUri) }
     }
 
     data class CreatingState(
@@ -84,12 +95,13 @@ class CreatingViewModel
         var name: String = "",
         var detail: String = "",
         var number: Int = 0,
-        var startDate: Calendar = Calendar.getInstance(),
-        var endDate: Calendar = Calendar.getInstance(),
-        var nameError: Int? = null,
-        var savingAvailable: Boolean = false,
-        var finished: Boolean = false,
-        var generalError: Int? = null,
+        val startDate: Calendar = Calendar.getInstance(),
+        val endDate: Calendar = Calendar.getInstance(),
+        val nameError: Int? = null,
+        val savingAvailable: Boolean = false,
+        val finished: Boolean = false,
+        val generalError: Int? = null,
+        val photoUri: String? = null,
         var isLoading: Boolean = false
     )
 

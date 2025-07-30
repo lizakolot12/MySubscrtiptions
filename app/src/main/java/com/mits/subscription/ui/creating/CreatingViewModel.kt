@@ -1,7 +1,5 @@
 package com.mits.subscription.ui.creating
 
-import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mits.subscription.R
@@ -24,11 +22,13 @@ class CreatingViewModel
     private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
-    private val viewModelState = MutableStateFlow(CreatingState())
+    private val viewModelState = MutableStateFlow(CreatingState(startDate = Calendar.getInstance().timeInMillis,
+        endDate = Calendar.getInstance().timeInMillis))
     val uiState: StateFlow<CreatingState> = viewModelState
 
     init {
-        viewModelState.value = CreatingState()
+        viewModelState.value = CreatingState(startDate = Calendar.getInstance().timeInMillis,
+            endDate = Calendar.getInstance().timeInMillis)
     }
 
     fun create() {
@@ -38,8 +38,8 @@ class CreatingViewModel
             val newSubscription = Subscription(
                 -1,
                 detail = uiState.value.detail,
-                startDate = uiState.value.startDate.time,
-                endDate = uiState.value.endDate.time,
+                startDate = uiState.value.startDate,
+                endDate = uiState.value.endDate,
                 lessonNumbers = uiState.value.number,
                 workshopId = workshopId,
                 message = null,
@@ -67,13 +67,13 @@ class CreatingViewModel
         }
     }
 
-    fun acceptStartDate(date: Calendar) {
+    fun acceptStartDate(date: Long) {
         viewModelState.update {
             it.copy(startDate = date)
         }
     }
 
-    fun acceptEndDate(date: Calendar) {
+    fun acceptEndDate(date: Long) {
         viewModelState.update {
             it.copy(endDate = date)
         }
@@ -86,7 +86,6 @@ class CreatingViewModel
     }
 
     fun acceptPhotoUri(photoUri: String?) {
-        Log.e("TEST", "Photo URI accepted: $photoUri")
         viewModelState.update { it.copy(photoUri = photoUri) }
     }
 
@@ -95,8 +94,8 @@ class CreatingViewModel
         var name: String = "",
         var detail: String = "",
         var number: Int = 0,
-        val startDate: Calendar = Calendar.getInstance(),
-        val endDate: Calendar = Calendar.getInstance(),
+        val startDate: Long,
+        val endDate: Long,
         val nameError: Int? = null,
         val savingAvailable: Boolean = false,
         val finished: Boolean = false,

@@ -66,7 +66,7 @@ interface SubscriptionDao {
                 "WHERE sub_id = :id "
     )
     @Transaction
-    suspend fun updateStartDate(id: Long, startDate: Date): Int
+    suspend fun updateStartDate(id: Long, startDate: Long): Int
 
     @Query(
         "UPDATE subscription " +
@@ -74,7 +74,7 @@ interface SubscriptionDao {
                 "WHERE sub_id = :id "
     )
     @Transaction
-    suspend fun updateEndDate(id: Long, endDate: Date): Int
+    suspend fun updateEndDate(id: Long, endDate: Long): Int
 
     @Update
     suspend fun updateSubscription(subscriptionEntity: SubscriptionEntity)

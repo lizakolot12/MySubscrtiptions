@@ -2,10 +2,8 @@
 
 package com.mits.subscription.ui.creating
 
-import android.app.DatePickerDialog
 import android.net.Uri
 import android.util.Log
-import android.widget.DatePicker
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.gestures.detectTransformGestures
@@ -24,15 +22,18 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -41,8 +42,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.graphics.graphicsLayer
@@ -51,6 +50,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -63,10 +63,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.mits.subscription.R
-import com.mits.subscription.parseCalendar
+import com.mits.subscription.parseMillis
 import com.mits.subscription.ui.theme.md_theme_light_primary
 import java.io.File
-import java.util.Calendar
 import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -400,9 +399,9 @@ private fun Name(
 @Composable
 private fun StartDate(
     choseStartDate: MutableState<Boolean>,
-    startDate: Calendar,
+    startDate: Long,
     choseEndDate: MutableState<Boolean>,
-    onChange: (newValue: Calendar) -> Unit?
+    onChange: (newValue: Long) -> Unit?
 ) {
     FilledTonalButton(
         onClick = { choseStartDate.value = true },
@@ -413,7 +412,7 @@ private fun StartDate(
         Row {
             Text(stringResource(id = R.string.label_start_date))
             Text(
-                text = parseCalendar(startDate),
+                text = parseMillis(startDate),
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
         }
@@ -439,9 +438,9 @@ private fun StartDate(
 @Composable
 private fun EndDate(
     choseEndDate: MutableState<Boolean>,
-    endDate: Calendar,
+    endDate: Long,
     choseStartDate: MutableState<Boolean>,
-    onChange: (newValue: Calendar) -> Unit?
+    onChange: (newValue: Long) -> Unit?
 ) {
     FilledTonalButton(
         onClick = { choseEndDate.value = true },
@@ -453,7 +452,7 @@ private fun EndDate(
         Row {
             Text(stringResource(id = R.string.label_end_date))
             Text(
-                text = parseCalendar(endDate),
+                text = parseMillis(endDate),
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
         }
@@ -478,32 +477,46 @@ private fun EndDate(
 
 private fun String.digits() = filter { it.isDigit() }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShowDatePicker(
-    initial: Calendar,
-    onChange: (m: Calendar) -> Unit,
+    initialMillis: Long,
+    onChange: (m: Long) -> Unit,
     onDismiss: (() -> Unit)? = null,
     titleId: Int? = null
 ) {
-    val context = LocalContext.current
-    val yearInit = initial[Calendar.YEAR]
-    val monthInit = initial[Calendar.MONTH]
-    val dayInit = initial[Calendar.DAY_OF_MONTH]
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialMillis)
 
-    val datePickerDialog = DatePickerDialog(
-        context, R.style.DatePickerDialogTheme,
-        { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
-            val calendar = Calendar.getInstance()
-            calendar.set(year, month, dayOfMonth)
-            onChange.invoke(calendar)
-        }, yearInit, monthInit, dayInit
-    )
-    datePickerDialog.setOnDismissListener { onDismiss?.invoke() }
-    titleId?.let {
-        datePickerDialog.setMessage(stringResource(id = titleId))
+    DatePickerDialog(
+        onDismissRequest = {onDismiss?.invoke()},
+        confirmButton = {
+            TextButton(onClick = {
+                datePickerState.selectedDateMillis?.let { onChange(it) }
+                onDismiss?.invoke()
+            }) {
+                Text(stringResource(id = R.string.btn_save))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = {onDismiss?.invoke()}) {
+                Text(stringResource(id = R.string.btn_cancel))
+            }
+        }
+    ) {
+        Column {
+            if (titleId != null) {
+                Text(
+                    text = titleId.let { stringResource(id = it) },
+                    fontWeight = FontWeight.W600,
+                    color = md_theme_light_primary,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 20.dp, top = 20.dp),
+                )
+            }
+            DatePicker(state = datePickerState)
+        }
     }
-
-    datePickerDialog.show()
 }
 
 

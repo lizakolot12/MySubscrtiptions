@@ -53,6 +53,7 @@ import com.mits.subscription.R
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.parseCalendar
 import com.mits.subscription.parseDate
+import com.mits.subscription.parseMillis
 import com.mits.subscription.ui.creating.LaunchPhotoPicker
 import com.mits.subscription.ui.creating.ShowDatePicker
 import com.mits.subscription.ui.theme.md_theme_light_primary
@@ -90,10 +91,10 @@ fun Detail(
     onNameChange: (newName: String) -> Unit,
     onDetailChange: (newName: String) -> Unit,
     onNumberChange: (newNumber: String) -> Unit,
-    onStartCalendarChange: (newValue: Calendar) -> Unit,
-    onEndCalendarChange: (newValue: Calendar) -> Unit,
+    onStartCalendarChange: (newValue: Long) -> Unit,
+    onEndCalendarChange: (newValue: Long) -> Unit,
     onDeleteLesson: (item: Long) -> Unit,
-    onChangeLessonDate: (item: Lesson, calendar: Calendar) -> Unit,
+    onChangeLessonDate: (item: Lesson, date: Long) -> Unit,
     addVisitedLesson: () -> Unit,
     acceptPhotoUri: (photoUri: Uri?) -> Unit
 ) {
@@ -140,8 +141,8 @@ fun Detail(
                     Name(uiState.subscription.workshop?.name ?: "", onNameChange)
                     Detail(uiState.subscription.detail ?: "", onDetailChange)
                     LessonNumber(uiState.subscription.lessonNumbers, onNumberChange)
-                    StartDate(uiState.subscription.startDate?.time ?: 0, onStartCalendarChange)
-                    EndDate(uiState.subscription.endDate?.time ?: 0, onEndCalendarChange)
+                    StartDate(uiState.subscription.startDate?: 0, onStartCalendarChange)
+                    EndDate(uiState.subscription.endDate ?: 0, onEndCalendarChange)
                     LaunchPhotoPicker(uiState.subscription.filePath) { photoUri ->
                         acceptPhotoUri(photoUri)
                     }
@@ -166,7 +167,7 @@ fun getVisited(lessons: List<Lesson>?): List<LocalDate>? {
 @Composable
 fun LessonRow(
     item: Lesson, onDeleteLesson: () -> Unit,
-    onChangeLessonDate: (calendar: Calendar) -> Unit
+    onChangeLessonDate: (date: Long) -> Unit
 ) {
     val expanded = remember { mutableStateOf(false) }
     Row(
@@ -196,10 +197,10 @@ fun LessonRow(
         })
 
     if (expanded.value) {
-        val start = Calendar.getInstance()
-        start.time = item.date
+        val start = Calendar.getInstance().time.time
+
         ShowDatePicker(start, onChange = { newCalendar ->
-            onChangeLessonDate(newCalendar)
+            onChangeLessonDate(start)
             expanded.value = false
         },
             onDismiss = {
@@ -290,11 +291,9 @@ private fun LessonNumber(
 @Composable
 private fun StartDate(
     startDate: Long,
-    onCalendarChange: (newValue: Calendar) -> Unit
+    onCalendarChange: (newValue: Long) -> Unit
 ) {
     val choseStartDate = remember { mutableStateOf(false) }
-    val startCalendar = Calendar.getInstance()
-    startCalendar.time = Date(startDate)
 
     FilledTonalButton(
         onClick = { choseStartDate.value = true },
@@ -305,14 +304,14 @@ private fun StartDate(
         Row {
             Text(stringResource(id = R.string.label_start_date))
             Text(
-                text = parseCalendar(startCalendar),
+                text = parseMillis(startDate),
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
         }
     }
     if (choseStartDate.value) {
         ShowDatePicker(
-            startCalendar, onChange = { newCalendar ->
+            startDate, onChange = { newCalendar ->
                 onCalendarChange(newCalendar)
                 choseStartDate.value = false
             },
@@ -327,11 +326,9 @@ private fun StartDate(
 @Composable
 private fun EndDate(
     endDate: Long,
-    onCalendarChange: (newValue: Calendar) -> Unit?
+    onCalendarChange: (newValue: Long) -> Unit?
 ) {
     val choseEndDate = remember { mutableStateOf(false) }
-    val endCalendar = Calendar.getInstance()
-    endCalendar.time = Date(endDate)
 
     FilledTonalButton(
         onClick = { choseEndDate.value = true },
@@ -343,13 +340,13 @@ private fun EndDate(
         Row {
             Text(stringResource(id = R.string.label_end_date))
             Text(
-                text = parseCalendar(endCalendar),
+                text = parseMillis(endDate),
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
         }
     }
     if (choseEndDate.value) {
-        ShowDatePicker(endCalendar, onChange = { newCalendar ->
+        ShowDatePicker(endDate, onChange = { newCalendar ->
             run {
                 choseEndDate.value = false
                 onCalendarChange(newCalendar)
@@ -367,7 +364,7 @@ private fun EndDate(
 private fun Lessons(
     lessons: List<Lesson>,
     onDeleteLesson: (lessonId: Long) -> Unit,
-    onChangeLessonDate: (lesson: Lesson, calendar: Calendar) -> Unit,
+    onChangeLessonDate: (lesson: Lesson, calendar: Long) -> Unit,
     addVisitedLesson: () -> Unit,
 ) {
     Card(

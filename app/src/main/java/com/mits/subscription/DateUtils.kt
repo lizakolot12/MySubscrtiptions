@@ -10,6 +10,11 @@ fun parseCalendar(calendar: Calendar): String {
     return formatter.format(calendar.time)
 }
 
+fun parseMillis(millis: Long): String {
+    val formatter = SimpleDateFormat(GENERAL_DATE_FORMAT, Locale.US)
+    return formatter.format(Date(millis))
+}
+
 fun parseDate(date: Date): String {
     val formatter = SimpleDateFormat(GENERAL_DATE_FORMAT, Locale.US)
     return formatter.format(date)

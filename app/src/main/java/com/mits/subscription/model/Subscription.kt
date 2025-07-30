@@ -11,8 +11,8 @@ data class Subscription(
     @ColumnInfo(name="sub_id")
     val id: Long,
     val detail: String? = null,
-    val startDate: Date?,
-    val endDate: Date?,
+    val startDate: Long?,
+    val endDate: Long?,
     val lessonNumbers: Int = 0,
 
     @Relation(

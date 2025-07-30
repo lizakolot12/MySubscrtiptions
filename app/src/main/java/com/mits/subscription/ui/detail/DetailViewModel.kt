@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
 
@@ -86,8 +85,8 @@ class DetailViewModel
             val new = Subscription(
                 id = if (old?.id != subscription.id) subscription.id else old.id,
                 detail = if (old?.detail != subscription.detail) subscription.detail else old?.detail,
-                startDate = if (old?.startDate?.time != subscription.startDate?.time) subscription.startDate else old?.startDate,
-                endDate = if (old?.endDate?.time != subscription.endDate?.time) subscription.endDate else old?.endDate,
+                startDate = if (old?.startDate != subscription.startDate) subscription.startDate else old?.startDate,
+                endDate = if (old?.endDate != subscription.endDate) subscription.endDate else old?.endDate,
                 lessonNumbers = if (old?.lessonNumbers != subscription.lessonNumbers) subscription.lessonNumbers else old.lessonNumbers,
                 lessons = if (compareLists(old?.lessons?: emptyList(),subscription.lessons?: emptyList())) old?.lessons else subscription.lessons ,
                 workshop = if (old?.workshop != subscription.workshop) subscription.workshop else old?.workshop,
@@ -108,22 +107,20 @@ class DetailViewModel
         return true
     }
 
-    fun updateStartCalendar(calendar: Calendar) {
+    fun updateStartCalendar(date: Long) {
             val currentState = uiState.value
             if (currentState is DetailState.Success) {
-                val newStartDate = calendar.time ?: Date()
                 viewModelScope.launch(ioDispatcher) {
-                    repository.updateStartDate(currentState.subscription.id, newStartDate)
+                    repository.updateStartDate(currentState.subscription.id, date)
                 }
             }
     }
 
-    fun updateEndCalendar(calendar: Calendar) {
+    fun updateEndCalendar(date: Long) {
             val currentState = uiState.value
             if (currentState is DetailState.Success) {
-                val newEndDate = calendar.time ?: Date()
                 viewModelScope.launch(ioDispatcher) {
-                    repository.updateEndDate(currentState.subscription.id, newEndDate)
+                    repository.updateEndDate(currentState.subscription.id, date)
                 }
             }
     }
@@ -143,10 +140,10 @@ class DetailViewModel
         }
     }
 
-    fun changeLessonDate(item: Lesson, newCalendar: Calendar) {
+    fun changeLessonDate(item: Lesson, newCalendar: Long) {
         viewModelScope.launch(ioDispatcher) {
-            val newItem = item.copy(date = newCalendar.time)
-            repository.updateLesson(newItem, newCalendar, subscriptionId)
+            val newItem = item.copy(date = Date(newCalendar))
+            repository.updateLesson(newItem, Date(newCalendar), subscriptionId)
         }
     }
 

@@ -10,7 +10,6 @@ import com.mits.subscription.model.Lesson
 import com.mits.subscription.model.Subscription
 import com.mits.subscription.model.Workshop
 import kotlinx.coroutines.flow.Flow
-import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -42,9 +41,9 @@ class SubscriptionRepository @Inject constructor(
         return lessonDao.insert(lessonEntity)
     }
 
-    suspend fun updateLesson(lesson: Lesson, newCalendar: Calendar, subscriptionId: Long) {
+    suspend fun updateLesson(lesson: Lesson, newCalendar: Date, subscriptionId: Long) {
         val lessonEntity =
-            LessonEntity(lesson.lId, lesson.description, newCalendar.time, subscriptionId)
+            LessonEntity(lesson.lId, lesson.description, newCalendar, subscriptionId)
         lessonDao.updateLesson(lessonEntity)
     }
 
@@ -68,11 +67,11 @@ class SubscriptionRepository @Inject constructor(
         subscriptionDao.updateLessonsNumber(subscriptionId, number)
     }
 
-    suspend fun updateStartDate(subscriptionId: Long, startDate:Date) {
+    suspend fun updateStartDate(subscriptionId: Long, startDate:Long) {
         subscriptionDao.updateStartDate(subscriptionId, startDate)
     }
 
-    suspend fun updateEndDate(subscriptionId: Long, endDate:Date) {
+    suspend fun updateEndDate(subscriptionId: Long, endDate:Long) {
         subscriptionDao.updateEndDate(subscriptionId, endDate)
     }
     suspend fun deleteWorkshop(workshopId: Long) {

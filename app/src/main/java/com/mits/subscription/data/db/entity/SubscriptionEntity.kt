@@ -21,9 +21,9 @@ data class SubscriptionEntity(
 
     val detail: String?,
 
-    val startDate: Date?,
+    val startDate: Long?,
 
-    val endDate: Date?,
+    val endDate: Long?,
 
     val lessonNumbers: Int,
 

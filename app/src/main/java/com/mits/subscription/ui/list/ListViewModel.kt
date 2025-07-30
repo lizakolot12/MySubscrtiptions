@@ -126,8 +126,8 @@ class ListViewModel @Inject constructor(
             val newSubscription = Subscription(
                 0,
                 subscription.detail + "_copy",
-                Date(),
-                Date(),
+                Date().time,
+                Date().time,
                 subscription.lessonNumbers,
                 emptyList(),
                 workshopId = subscription.workshopId,
@@ -137,9 +137,9 @@ class ListViewModel @Inject constructor(
         }
     }
 
-    fun changeLessonDate(item: Lesson, newCalendar: Calendar, subscriptionId: Long) {
+    fun changeLessonDate(item: Lesson, newCalendar: Long, subscriptionId: Long) {
         viewModelScope.launch(ioDispatcher) {
-            repository.updateLesson(item, newCalendar, subscriptionId)
+            repository.updateLesson(item, Date(newCalendar), subscriptionId)
         }
     }
 }

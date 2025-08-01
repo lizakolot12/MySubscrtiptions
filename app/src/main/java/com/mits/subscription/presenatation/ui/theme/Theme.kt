@@ -1,4 +1,4 @@
-package com.mits.subscription.ui.theme
+package com.mits.subscription.presenatation.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

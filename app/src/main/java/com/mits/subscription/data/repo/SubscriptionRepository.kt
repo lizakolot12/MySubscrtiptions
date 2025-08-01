@@ -51,6 +51,10 @@ class SubscriptionRepository @Inject constructor(
         return subscriptionDao.getById(subscriptionId)
     }
 
+    suspend fun getAllFilePath(): List<String> {
+        return subscriptionDao.getAllFilePath()
+    }
+
     suspend fun updateWorkshop(workshopId: Long, workshopName: String?) {
         workshopDao.updateWorkshop(WorkshopEntity(workshopId, workshopName))
     }

@@ -1,4 +1,4 @@
-package com.mits.subscription.ui.detail
+package com.mits.subscription.presenatation.ui.detail
 
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
@@ -149,11 +149,9 @@ class DetailViewModel
             val currentState = uiState.value
             if (currentState is DetailState.Success) {
 
-                Log.e("TEST", "Uri: $uri")
                 val paymentFile =
                     uri?.let { fileHandler.handleFile(it) }
 
-                Log.e("TEST", "File: $paymentFile")
                 repository.updatePaymentFileInfo(
                     currentState.subscription.id,
                     uri = paymentFile?.uri.toString(),

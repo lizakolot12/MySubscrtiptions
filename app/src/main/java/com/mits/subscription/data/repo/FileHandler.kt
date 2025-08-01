@@ -17,6 +17,12 @@ class FileHandler @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
 
+    companion object {
+        const val FILE_NAME_PDF = "pdfs"
+        const val FILE_NAME_IMAGE = "images"
+        const val FILE_NAME_OTHER = "others"
+    }
+
     fun convert(uriStr: String?, fileName: String? = null): PaymentFile? {
         uriStr?.let { uri ->
             return PaymentFile(
@@ -37,7 +43,6 @@ class FileHandler @Inject constructor(
             val inputStream = context.contentResolver.openInputStream(initialUri) ?: return null
 
             val outputFile = getFileForSaving(mime)
-            Log.e("TEST", "outputFile = ${outputFile.absolutePath}")
             val outputStream = FileOutputStream(outputFile)
 
             inputStream.copyTo(outputStream)
@@ -52,18 +57,17 @@ class FileHandler @Inject constructor(
             )
             PaymentFile(name = name, mimeType = mime, uri = newUri)
         } catch (e: Exception) {
-            Log.e("TEST", "Error handling file: ${e.message}", e)
             null
         }
     }
 
     private fun getFileForSaving(mime: String): File {
         val (filesDir, fileName) = if (mime == "application/pdf") {
-            File(context.filesDir, "pdfs") to "${Date().time}.pdf"
+            File(context.filesDir, FILE_NAME_PDF) to "${Date().time}.pdf"
         } else if (mime.startsWith("image/")) {
-            File(context.filesDir, "photos") to "${Date().time}.jpg"
+            File(context.filesDir, FILE_NAME_IMAGE) to "${Date().time}.jpg"
         } else {
-            File(context.filesDir, "others") to "${Date().time}"
+            File(context.filesDir, FILE_NAME_OTHER) to "${Date().time}"
         }
         if (!filesDir.exists()) {
             filesDir.mkdirs()
@@ -86,4 +90,34 @@ class FileHandler @Inject constructor(
         return null
     }
 
+    fun clean(list: List<String>) {
+        removeFilesFromDirectory(
+            File(context.filesDir, FILE_NAME_PDF),
+            list
+        )
+        removeFilesFromDirectory(
+            File(context.filesDir, FILE_NAME_IMAGE),
+            list
+        )
+        removeFilesFromDirectory(
+            File(context.filesDir, FILE_NAME_OTHER),
+            list
+        )
+    }
+
+    private fun removeFilesFromDirectory(dir: File, listForExclude: List<String>) {
+        if (!dir.exists() || !dir.isDirectory) return
+        dir.listFiles()?.forEach { file ->
+            val newUri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.provider",
+                file
+            )
+
+            if (!listForExclude.contains(newUri.toString())) {
+                Log.e("TEST", "Deleting file: ${file.name}")
+                file.delete()
+            }
+        }
+    }
 }

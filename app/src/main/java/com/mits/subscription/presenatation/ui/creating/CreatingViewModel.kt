@@ -1,4 +1,4 @@
-package com.mits.subscription.ui.creating
+package com.mits.subscription.presenatation.ui.creating
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -6,7 +6,7 @@ import com.mits.subscription.R
 import com.mits.subscription.data.repo.FileHandler
 import com.mits.subscription.data.repo.SubscriptionRepository
 import com.mits.subscription.model.Subscription
-import com.mits.subscription.ui.creating.data.CreatingState
+import com.mits.subscription.presenatation.ui.creating.data.CreatingState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,8 +25,10 @@ class CreatingViewModel
     private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
-    private val creatingState = MutableStateFlow(CreatingState(startDate = Calendar.getInstance().timeInMillis,
-        endDate = Calendar.getInstance().timeInMillis))
+    private val creatingState = MutableStateFlow(
+        CreatingState(startDate = Calendar.getInstance().timeInMillis,
+        endDate = Calendar.getInstance().timeInMillis)
+    )
     val uiState: StateFlow<CreatingState> = creatingState
 
     init {

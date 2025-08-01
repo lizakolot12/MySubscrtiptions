@@ -79,4 +79,7 @@ interface SubscriptionDao {
     @Update
     suspend fun updateSubscription(subscriptionEntity: SubscriptionEntity)
 
+    @Query("SELECT filePath FROM subscription WHERE filePath IS NOT NULL")
+    suspend fun getAllFilePath(): List<String>
+
 }

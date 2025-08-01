@@ -1,4 +1,4 @@
-package com.mits.subscription.ui.components
+package com.mits.subscription.presenatation.ui.components
 
 import android.content.Context
 import android.content.Intent
@@ -45,7 +45,6 @@ import java.util.Date
 @Composable
 fun PaymentFileView(paymentFile: PaymentFile?, onFileHandler: (String?) -> Unit) {
     val context = LocalContext.current
-    Log.e("TEST", "Compose : $paymentFile")
 
     val photoUri =
         FileProvider.getUriForFile(
@@ -59,17 +58,14 @@ fun PaymentFileView(paymentFile: PaymentFile?, onFileHandler: (String?) -> Unit)
     ) { success ->
         if (success) {
             onFileHandler(photoUri.toString())
-            Log.e("TEST", "result = $photoUri")
         }
     }
 
     val filePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { fileUri ->
-        Log.e("TEST", "fileUri = $fileUri")
         if (fileUri != null) {
             onFileHandler(fileUri.toString())
-            Log.e("TEST", "result = $fileUri  path = ${fileUri.path}")
         }
     }
 

@@ -1,4 +1,4 @@
-package com.mits.subscription.ui.detail
+package com.mits.subscription.presenatation.ui.detail
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -46,14 +46,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.mits.subscription.CalendarView
+import com.mits.subscription.presenatation.ui.components.CalendarView
 import com.mits.subscription.R
 import com.mits.subscription.model.Lesson
-import com.mits.subscription.parseDate
-import com.mits.subscription.parseMillis
-import com.mits.subscription.ui.components.PaymentFileView
-import com.mits.subscription.ui.creating.ShowDatePicker
-import com.mits.subscription.ui.theme.md_theme_light_primary
+import com.mits.subscription.presenatation.ui.components.parseDate
+import com.mits.subscription.presenatation.ui.components.parseMillis
+import com.mits.subscription.presenatation.ui.components.PaymentFileView
+import com.mits.subscription.presenatation.ui.creating.ShowDatePicker
+import com.mits.subscription.presenatation.ui.theme.md_theme_light_primary
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Calendar

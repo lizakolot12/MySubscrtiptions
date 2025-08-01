@@ -9,10 +9,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.mits.subscription.ui.creating.CreatingScreen
-import com.mits.subscription.ui.detail.DetailScreen
-import com.mits.subscription.ui.list.ListScreen
-import com.mits.subscription.ui.theme.SubscriptionTheme
+import com.mits.subscription.presenatation.ui.creating.CreatingScreen
+import com.mits.subscription.presenatation.ui.detail.DetailScreen
+import com.mits.subscription.presenatation.ui.list.ListScreen
+import com.mits.subscription.presenatation.ui.theme.SubscriptionTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

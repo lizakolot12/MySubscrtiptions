@@ -1,4 +1,4 @@
-package com.mits.subscription.ui.theme
+package com.mits.subscription.presenatation.ui.theme
 
 
 // Set of Material typography styles to start with

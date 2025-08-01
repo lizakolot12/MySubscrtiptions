@@ -1,5 +1,6 @@
-package com.mits.subscription
+package com.mits.subscription.presenatation.ui.components
 
+import com.mits.subscription.R
 import java.text.SimpleDateFormat
 import java.util.*
 

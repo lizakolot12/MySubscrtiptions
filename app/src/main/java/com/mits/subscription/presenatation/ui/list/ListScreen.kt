@@ -1,4 +1,4 @@
-package com.mits.subscription.ui.list
+package com.mits.subscription.presenatation.ui.list
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -79,12 +79,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.mits.subscription.R
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.model.Subscription
-import com.mits.subscription.ui.creating.ShowDatePicker
-import com.mits.subscription.ui.theme.md_theme_dark_onError
-import com.mits.subscription.ui.theme.md_theme_light_background
-import com.mits.subscription.ui.theme.md_theme_light_error
-import com.mits.subscription.ui.theme.md_theme_light_primary
-import com.mits.subscription.ui.theme.md_theme_light_surfaceVariant
+import com.mits.subscription.presenatation.ui.creating.ShowDatePicker
+import com.mits.subscription.presenatation.ui.theme.md_theme_dark_onError
+import com.mits.subscription.presenatation.ui.theme.md_theme_light_background
+import com.mits.subscription.presenatation.ui.theme.md_theme_light_error
+import com.mits.subscription.presenatation.ui.theme.md_theme_light_primary
+import com.mits.subscription.presenatation.ui.theme.md_theme_light_surfaceVariant
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date

@@ -1,4 +1,4 @@
-package com.mits.subscription.ui.list
+package com.mits.subscription.presenatation.ui.list
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

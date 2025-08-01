@@ -163,8 +163,9 @@ class DetailViewModel
 
     fun changeLessonDate(item: Lesson, newCalendar: Long) {
         viewModelScope.launch(ioDispatcher) {
-            val newItem = item.copy(date = Date(newCalendar))
-            repository.updateLesson(newItem, Date(newCalendar), subscriptionId)
+            val newDate = Date(newCalendar)
+            Log.e("DetailViewModel", "changeLessonDate: $item   $newDate")
+            repository.updateLesson(lesson = item, newDate, subscriptionId)
         }
     }
 

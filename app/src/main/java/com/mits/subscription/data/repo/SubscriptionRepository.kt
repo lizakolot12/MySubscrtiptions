@@ -1,5 +1,6 @@
 package com.mits.subscription.data.repo
 
+import android.util.Log
 import com.mits.subscription.data.db.dao.LessonDao
 import com.mits.subscription.data.db.dao.SubscriptionDao
 import com.mits.subscription.data.db.dao.WorkshopDao
@@ -44,6 +45,7 @@ class SubscriptionRepository @Inject constructor(
     suspend fun updateLesson(lesson: Lesson, newCalendar: Date, subscriptionId: Long) {
         val lessonEntity =
             LessonEntity(lesson.lId, lesson.description, newCalendar, subscriptionId)
+        Log.e("TEST", "updateLesson: $lessonEntity")
         lessonDao.updateLesson(lessonEntity)
     }
 

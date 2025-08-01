@@ -3,7 +3,6 @@ package com.mits.subscription.presenatation.ui.components
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -80,7 +79,7 @@ fun PaymentFileView(paymentFile: PaymentFile?, onFileHandler: (String?) -> Unit)
             PhotoView(paymentFile.uri)
         }
         if (paymentFile?.isForExternalUse() == true) {
-            Row(modifier = Modifier.clickable { openPdfFile(context, paymentFile.uri) }) {
+            Row(modifier = Modifier.clickable { openFile(context, paymentFile.uri) }) {
                 Image(
                     painter = painterResource(id = R.drawable.outline_attach_file_24),
                     contentDescription = paymentFile.name,
@@ -133,10 +132,10 @@ fun PaymentFileView(paymentFile: PaymentFile?, onFileHandler: (String?) -> Unit)
     }
 }
 
-fun openPdfFile(context: Context, uri: Uri) {
+fun openFile(context: Context, uri: Uri) {
 
     val intent = Intent(Intent.ACTION_VIEW).apply {
-        setDataAndType(uri, "application/pdf")
+        setDataAndType(uri, "*/*")
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
 

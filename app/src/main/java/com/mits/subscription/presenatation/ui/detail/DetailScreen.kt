@@ -176,7 +176,7 @@ fun LessonRow(
             .padding(12.dp)
             .pointerInput(Unit) {
                 detectTapGestures(
-                    onLongPress = { expanded.value = true },
+                    onDoubleTap = { expanded.value = true },
                 )
             },
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -193,10 +193,10 @@ fun LessonRow(
         })
 
     if (expanded.value) {
-        val start = Calendar.getInstance().time.time
+        val start = item.date.time
 
         ShowDatePicker(start, onChange = { newCalendar ->
-            onChangeLessonDate(start)
+            onChangeLessonDate(newCalendar)
             expanded.value = false
         },
             onDismiss = {

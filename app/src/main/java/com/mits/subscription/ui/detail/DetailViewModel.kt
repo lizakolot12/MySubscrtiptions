@@ -1,9 +1,11 @@
 package com.mits.subscription.ui.detail
 
-import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mits.subscription.data.repo.FileHandler
+import com.mits.subscription.data.repo.PaymentFile
 import com.mits.subscription.data.repo.SubscriptionRepository
 import com.mits.subscription.model.Lesson
 import com.mits.subscription.model.Subscription
@@ -25,6 +27,7 @@ class DetailViewModel
 @Inject constructor(
     private val repository: SubscriptionRepository,
     private val ioDispatcher: CoroutineDispatcher,
+    private val fileHandler: FileHandler,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -42,7 +45,7 @@ class DetailViewModel
             .launchIn(viewModelScope)
     }
 
-    fun deleteLesson(lessonId:Long) {
+    fun deleteLesson(lessonId: Long) {
         viewModelScope.launch(ioDispatcher) {
             repository.deleteLesson(lessonId)
         }
@@ -70,10 +73,10 @@ class DetailViewModel
 
     fun updateNumber(numStr: String) {
         viewModelScope.launch(ioDispatcher) {
-                val currentState = uiState.value
-                if (currentState is DetailState.Success) {
-                    repository.updateLessonsNumber(currentState.subscription.id, numStr.toInt())
-                }
+            val currentState = uiState.value
+            if (currentState is DetailState.Success) {
+                repository.updateLessonsNumber(currentState.subscription.id, numStr.toInt())
+            }
         }
     }
 
@@ -88,17 +91,27 @@ class DetailViewModel
                 startDate = if (old?.startDate != subscription.startDate) subscription.startDate else old?.startDate,
                 endDate = if (old?.endDate != subscription.endDate) subscription.endDate else old?.endDate,
                 lessonNumbers = if (old?.lessonNumbers != subscription.lessonNumbers) subscription.lessonNumbers else old.lessonNumbers,
-                lessons = if (compareLists(old?.lessons?: emptyList(),subscription.lessons?: emptyList())) old?.lessons else subscription.lessons ,
+                lessons = if (compareLists(
+                        old?.lessons ?: emptyList(),
+                        subscription.lessons ?: emptyList()
+                    )
+                ) old?.lessons else subscription.lessons,
                 workshop = if (old?.workshop != subscription.workshop) subscription.workshop else old?.workshop,
                 workshopId = if (old?.workshopId != subscription.workshopId) subscription.workshopId else old.workshopId,
                 message = if (old?.message != subscription.message) subscription.message else old?.message,
-                filePath = subscription.filePath
+                filePath = if (old?.filePath != subscription.filePath) subscription.filePath else old?.filePath,
+                originFileName = if (old?.originFileName != subscription.originFileName) subscription.originFileName else old?.originFileName,
             )
             DetailState.Success(
-                new
+                new,
+                paymentFile = fileHandler.convert(
+                    subscription.filePath,
+                    subscription.originFileName
+                ),
             )
         } else DetailState.Loading
     }
+
     private fun compareLists(list1: List<Lesson>, list2: List<Lesson>): Boolean {
         if (list1.size != list2.size) return false
         for (i in list1.indices) {
@@ -108,21 +121,21 @@ class DetailViewModel
     }
 
     fun updateStartCalendar(date: Long) {
-            val currentState = uiState.value
-            if (currentState is DetailState.Success) {
-                viewModelScope.launch(ioDispatcher) {
-                    repository.updateStartDate(currentState.subscription.id, date)
-                }
+        val currentState = uiState.value
+        if (currentState is DetailState.Success) {
+            viewModelScope.launch(ioDispatcher) {
+                repository.updateStartDate(currentState.subscription.id, date)
             }
+        }
     }
 
     fun updateEndCalendar(date: Long) {
-            val currentState = uiState.value
-            if (currentState is DetailState.Success) {
-                viewModelScope.launch(ioDispatcher) {
-                    repository.updateEndDate(currentState.subscription.id, date)
-                }
+        val currentState = uiState.value
+        if (currentState is DetailState.Success) {
+            viewModelScope.launch(ioDispatcher) {
+                repository.updateEndDate(currentState.subscription.id, date)
             }
+        }
     }
 
     fun addVisitedLesson() {
@@ -131,11 +144,21 @@ class DetailViewModel
         }
     }
 
-    fun acceptPhotoUri(photoUri: Uri?) {
+    fun acceptPhotoUri(uri: String?) {
         viewModelScope.launch(ioDispatcher) {
             val currentState = uiState.value
             if (currentState is DetailState.Success) {
-                repository.updateFilePath(currentState.subscription.id, photoUri?.toString())
+
+                Log.e("TEST", "Uri: $uri")
+                val paymentFile =
+                    uri?.let { fileHandler.handleFile(it) }
+
+                Log.e("TEST", "File: $paymentFile")
+                repository.updatePaymentFileInfo(
+                    currentState.subscription.id,
+                    uri = paymentFile?.uri.toString(),
+                    fileName = paymentFile?.name
+                )
             }
         }
     }
@@ -150,6 +173,7 @@ class DetailViewModel
     sealed class DetailState {
         data class Success(
             val subscription: Subscription,
+            val paymentFile: PaymentFile?,
             val messageId: Int? = null,
         ) : DetailState()
 

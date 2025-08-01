@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <cache-path name="camera_images" path="." />
+<paths>
+    <cache-path name="cache_files" path="/" />
+    <files-path name="my_app_files" path="photos/" />
+    <files-path name="files" path="." />
 </paths>

@@ -59,8 +59,8 @@ class SubscriptionRepository @Inject constructor(
         subscriptionDao.updateDetail(subscriptionId, detail)
     }
 
-    suspend fun updateFilePath(subscriptionId: Long, uri: String?) {
-        subscriptionDao.updatePhotoUri(subscriptionId, uri)
+    suspend fun updatePaymentFileInfo(subscriptionId: Long, uri: String?, fileName: String?) {
+        subscriptionDao.updatePhotoUri(subscriptionId, uri, fileName)
     }
 
     suspend fun updateLessonsNumber(subscriptionId: Long, number:Int) {
@@ -74,6 +74,7 @@ class SubscriptionRepository @Inject constructor(
     suspend fun updateEndDate(subscriptionId: Long, endDate:Long) {
         subscriptionDao.updateEndDate(subscriptionId, endDate)
     }
+
     suspend fun deleteWorkshop(workshopId: Long) {
         workshopDao.deleteById(workshopId)
     }

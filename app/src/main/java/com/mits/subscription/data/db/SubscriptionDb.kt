@@ -1,23 +1,27 @@
 package com.mits.subscription.data.db
 
 import android.content.Context
-import androidx.room.*
-import androidx.room.migration.AutoMigrationSpec
-import com.mits.subscription.data.db.dao.WorkshopDao
+import androidx.room.AutoMigration
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.mits.subscription.data.db.dao.LessonDao
 import com.mits.subscription.data.db.dao.SubscriptionDao
-import com.mits.subscription.data.db.entity.WorkshopEntity
+import com.mits.subscription.data.db.dao.WorkshopDao
 import com.mits.subscription.data.db.entity.LessonEntity
 import com.mits.subscription.data.db.entity.SubscriptionEntity
+import com.mits.subscription.data.db.entity.WorkshopEntity
 
 @Database(
     entities = [WorkshopEntity::class, SubscriptionEntity::class, LessonEntity::class],
-    version = 4,
+    version = 5,
     exportSchema = true,
     autoMigrations = [
         AutoMigration (from = 1, to = 2),
         AutoMigration (from = 2, to = 3),
-        AutoMigration (from = 3, to = 4)
+        AutoMigration (from = 3, to = 4),
+        AutoMigration (from = 4, to = 5)
     ]
 )
 

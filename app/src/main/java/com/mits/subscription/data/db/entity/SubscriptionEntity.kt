@@ -32,5 +32,7 @@ data class SubscriptionEntity(
 
     val message:String?,
 
-    val filePath: String? = null
+    val filePath: String? = null,
+
+    val originFileName: String? = null
 )

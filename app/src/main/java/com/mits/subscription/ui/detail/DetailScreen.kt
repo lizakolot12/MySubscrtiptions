@@ -1,7 +1,5 @@
 package com.mits.subscription.ui.detail
 
-import android.net.Uri
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -51,16 +49,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.mits.subscription.CalendarView
 import com.mits.subscription.R
 import com.mits.subscription.model.Lesson
-import com.mits.subscription.parseCalendar
 import com.mits.subscription.parseDate
 import com.mits.subscription.parseMillis
-import com.mits.subscription.ui.creating.LaunchPhotoPicker
+import com.mits.subscription.ui.components.PaymentFileView
 import com.mits.subscription.ui.creating.ShowDatePicker
 import com.mits.subscription.ui.theme.md_theme_light_primary
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Calendar
-import java.util.Date
 
 @Composable
 fun DetailScreen(
@@ -96,7 +92,7 @@ fun Detail(
     onDeleteLesson: (item: Long) -> Unit,
     onChangeLessonDate: (item: Lesson, date: Long) -> Unit,
     addVisitedLesson: () -> Unit,
-    acceptPhotoUri: (photoUri: Uri?) -> Unit
+    acceptPhotoUri: (photoUri: String?) -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -143,9 +139,6 @@ fun Detail(
                     LessonNumber(uiState.subscription.lessonNumbers, onNumberChange)
                     StartDate(uiState.subscription.startDate?: 0, onStartCalendarChange)
                     EndDate(uiState.subscription.endDate ?: 0, onEndCalendarChange)
-                    LaunchPhotoPicker(uiState.subscription.filePath) { photoUri ->
-                        acceptPhotoUri(photoUri)
-                    }
                     Lessons(
                         uiState.subscription.lessons ?: emptyList(),
                         onDeleteLesson,
@@ -153,6 +146,9 @@ fun Detail(
                         addVisitedLesson
                     )
                     CalendarView(getVisited(uiState.subscription.lessons))
+                    PaymentFileView(uiState.paymentFile) { photoUri ->
+                        acceptPhotoUri(photoUri)
+                    }
                 }
             }
         }

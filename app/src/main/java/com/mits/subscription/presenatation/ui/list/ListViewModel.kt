@@ -2,6 +2,7 @@ package com.mits.subscription.presenatation.ui.list
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
@@ -34,7 +35,7 @@ class WorkshopViewItem(
 @HiltViewModel
 class ListViewModel @Inject constructor(
     private val repository: SubscriptionRepository,
-    private val ioDispatcher: CoroutineDispatcher
+    private val ioDispatcher: CoroutineDispatcher,
 ) :
     ViewModel() {
     private val _workshops: MutableLiveData<List<WorkshopViewItem>> = MutableLiveData()

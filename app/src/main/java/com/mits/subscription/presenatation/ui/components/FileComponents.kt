@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
@@ -75,21 +76,7 @@ fun PaymentFileView(paymentFile: PaymentFile?, onFileHandler: (String?) -> Unit)
             .padding(horizontal = 16.dp)
             .padding(vertical = 8.dp)
     ) {
-        if (paymentFile?.isPicture() == true) {
-            PhotoView(paymentFile.uri)
-        }
-        if (paymentFile?.isForExternalUse() == true) {
-            Row(modifier = Modifier.clickable { openFile(context, paymentFile.uri) }) {
-                Image(
-                    painter = painterResource(id = R.drawable.outline_attach_file_24),
-                    contentDescription = paymentFile.name,
-                )
-                Text(
-                    text = paymentFile.name,
-                    modifier = Modifier.padding(start = 8.dp)
-                )
-            }
-        }
+        FilePreview(context, paymentFile)
 
         Row {
             FilledTonalButton(
@@ -129,6 +116,29 @@ fun PaymentFileView(paymentFile: PaymentFile?, onFileHandler: (String?) -> Unit)
             }
         }
 
+    }
+}
+
+@Composable
+fun FilePreview(context: Context, paymentFile: PaymentFile?) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        if (paymentFile?.isPicture() == true) {
+            PhotoView(paymentFile.uri)
+        }
+        if (paymentFile?.isForExternalUse() == true) {
+            Row(modifier = Modifier
+                .padding(16.dp)
+                .clickable { openFile(context, paymentFile.uri) }) {
+                Image(
+                    painter = painterResource(id = R.drawable.outline_attach_file_24),
+                    contentDescription = paymentFile.name,
+                )
+                Text(
+                    text = paymentFile.name,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+        }
     }
 }
 

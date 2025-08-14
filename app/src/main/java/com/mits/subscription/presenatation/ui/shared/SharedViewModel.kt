@@ -41,9 +41,9 @@ class SharedViewModel
             .onEach {
                 _uiState.update { currentState ->
                     when (currentState) {
-                        is SharedState.Success -> currentState.copy(workshops = it)
+                        is SharedState.Success -> currentState.copy(workshops = transformToUiState(it))
                         is SharedState.Loading -> SharedState.Success(
-                            workshops = it,
+                            workshops = transformToUiState(it),
                             paymentFile = null
                         )
 
@@ -92,9 +92,20 @@ class SharedViewModel
         }
     }
 
+    private fun transformToUiState(workshops: List<Workshop>): List<WorkShopUiState> {
+        return workshops.map { workshop ->
+            val list = workshop.subscriptions.sortedByDescending { it.startDate }
+            WorkShopUiState(
+                name = workshop.name,
+                currentSubscription = list.firstOrNull(),
+                old = list.drop(1)
+            )
+        }
+    }
+
     sealed class SharedState {
         data class Success(
-            val workshops: List<Workshop>,
+            val workshops: List<WorkShopUiState>,
             val paymentFile: PaymentFile?
         ) : SharedState()
 
@@ -103,3 +114,9 @@ class SharedViewModel
         data object Finish : SharedState()
     }
 }
+
+data class WorkShopUiState(
+    val name: String,
+    val currentSubscription: Subscription? = null,
+    val old: List<Subscription> = emptyList()
+)

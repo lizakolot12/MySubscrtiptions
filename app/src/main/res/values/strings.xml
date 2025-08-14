@@ -35,6 +35,9 @@
     <string name="btn_take_payment_photo">Зробити фото оплати</string>
     <string name="btn_chose_payment_photo">Додати файл оплати </string>
     <string name="shared_workshops">"Оберіть абонемент, до якого необхідно прикріпити файл "</string>
+    <string name="label_collapse">Згорнути</string>
+    <string name="label_expand">Ще...</string>
+    <string name="success_payment_added">Успішно додано!</string>
 
     <string-array name="days_of_week">
         <item>П</item>

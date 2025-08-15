@@ -76,7 +76,7 @@ fun PaymentFileView(paymentFile: PaymentFile?, onFileHandler: (String?) -> Unit)
             .padding(horizontal = 16.dp)
             .padding(vertical = 8.dp)
     ) {
-        FilePreview(context, paymentFile)
+        FilePreview(paymentFile)
 
         Row {
             FilledTonalButton(
@@ -120,7 +120,8 @@ fun PaymentFileView(paymentFile: PaymentFile?, onFileHandler: (String?) -> Unit)
 }
 
 @Composable
-fun FilePreview(context: Context, paymentFile: PaymentFile?) {
+fun FilePreview(paymentFile: PaymentFile?) {
+    val context = LocalContext.current
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         if (paymentFile?.isPicture() == true) {
             PhotoView(paymentFile.uri)

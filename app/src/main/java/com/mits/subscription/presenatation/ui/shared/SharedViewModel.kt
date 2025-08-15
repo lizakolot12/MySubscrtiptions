@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,6 +31,10 @@ class SharedViewModel
     private val fileHandler: FileHandler,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    companion object {
+        private val DATE_FORMATTER = SimpleDateFormat("dd.MM.yyyy", Locale.US)
+    }
 
     private val sharedUri = savedStateHandle["sharedUri"] ?: ""
 
@@ -41,7 +47,12 @@ class SharedViewModel
             .onEach {
                 _uiState.update { currentState ->
                     when (currentState) {
-                        is SharedState.Success -> currentState.copy(workshops = transformToUiState(it))
+                        is SharedState.Success -> currentState.copy(
+                            workshops = transformToUiState(
+                                it
+                            )
+                        )
+
                         is SharedState.Loading -> SharedState.Success(
                             workshops = transformToUiState(it),
                             paymentFile = null
@@ -74,7 +85,7 @@ class SharedViewModel
     }
 
 
-    fun addFileToSubscription(subscription: Subscription) {
+    fun addFileToSubscription(subscriptionId: Long) {
         viewModelScope.launch(ioDispatcher) {
             val paymentFile: PaymentFile? = if (_uiState.value is SharedState.Success) {
                 (_uiState.value as SharedState.Success).paymentFile
@@ -83,7 +94,7 @@ class SharedViewModel
             }
             paymentFile?.let {
                 repository.updatePaymentFileInfo(
-                    subscriptionId = subscription.id,
+                    subscriptionId = subscriptionId,
                     uri = it.uri.toString(),
                     fileName = it.name,
                 )
@@ -96,11 +107,31 @@ class SharedViewModel
         return workshops.map { workshop ->
             val list = workshop.subscriptions.sortedByDescending { it.startDate }
             WorkShopUiState(
+                id = workshop.id,
                 name = workshop.name,
-                currentSubscription = list.firstOrNull(),
-                old = list.drop(1)
+                currentSubscription = getDescription(list.firstOrNull()),
+                old = list.drop(1).mapNotNull { getDescription(it) }
             )
         }
+    }
+
+    private fun getDescription(subscription: Subscription?): SubscriptionState? {
+        if (subscription == null) return null
+        val description = buildString {
+            subscription.detail?.takeIf { it.isNotBlank() }?.let {
+                append(it)
+            }
+            subscription.message?.takeIf { it.isNotBlank() }?.let {
+                if (isNotEmpty()) append(" ")
+                append(it)
+            }
+            subscription.startDate?.let {
+                val formatted = DATE_FORMATTER.format(it)
+                if (isNotEmpty()) append(" ")
+                append(formatted)
+            }
+        }
+        return SubscriptionState(subscription.id, description)
     }
 
     sealed class SharedState {
@@ -116,7 +147,10 @@ class SharedViewModel
 }
 
 data class WorkShopUiState(
+    val id: Long,
     val name: String,
-    val currentSubscription: Subscription? = null,
-    val old: List<Subscription> = emptyList()
+    val currentSubscription: SubscriptionState? = null,
+    val old: List<SubscriptionState> = emptyList()
 )
+
+data class SubscriptionState(val id: Long, val description: String)

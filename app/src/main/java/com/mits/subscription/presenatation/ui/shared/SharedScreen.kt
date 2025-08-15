@@ -2,6 +2,11 @@ package com.mits.subscription.presenatation.ui.shared
 
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,7 +23,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,7 +32,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,15 +43,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mits.subscription.R
-import com.mits.subscription.model.Subscription
-import com.mits.subscription.model.Workshop
 import com.mits.subscription.presenatation.ui.components.FilePreview
-import com.mits.subscription.presenatation.ui.list.DATE_FORMATTER
 import com.mits.subscription.presenatation.ui.theme.md_theme_light_primary
 import com.mits.subscription.presenatation.ui.theme.md_theme_light_primaryContainer
-import com.mits.subscription.presenatation.ui.theme.md_theme_light_secondaryContainer
 import com.mits.subscription.presenatation.ui.theme.md_theme_light_surfaceVariant
 
 @Composable
@@ -56,55 +57,26 @@ fun SharedScreen(
     onBack: () -> Unit,
     sharedViewModel: SharedViewModel = hiltViewModel()
 ) {
-    val uiState = sharedViewModel.uiState.collectAsState().value
+    val uiState by sharedViewModel.uiState.collectAsStateWithLifecycle()
     Shared(
         uiState,
         onBack = onBack,
-        onClick = { subscription ->
+        onClick = { subscriptionId ->
             sharedViewModel.addFileToSubscription(
-                subscription
+                subscriptionId
             )
         }
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Shared(
     uiState: SharedViewModel.SharedState,
     onBack: () -> Unit,
-    onClick: (subscription: Subscription) -> Unit
-
+    onClick: (subscriptionId: Long) -> Unit
 ) {
     Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        text = stringResource(R.string.title),
-                        textAlign = TextAlign.Center,
-                        color = md_theme_light_primary,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    )
-                },
-                modifier = Modifier.fillMaxWidth(),
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            onBack.invoke()
-                        }) {
-                        Icon(
-                            Icons.AutoMirrored.Rounded.ArrowBack,
-                            "",
-                            tint = md_theme_light_primary
-                        )
-                    }
-                },
-            )
-        },
+        topBar = { TopBar(onBack) },
     ) { padding ->
         val context = LocalContext.current
         Box(
@@ -115,61 +87,27 @@ fun Shared(
             when (uiState) {
                 SharedViewModel.SharedState.Loading -> ProgressIndicator()
                 is SharedViewModel.SharedState.Success -> {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-
-                        ) {
-                        Text(
-                            text = stringResource(R.string.shared_workshops),
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        uiState.paymentFile?.let {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 8.dp)
-                                    .height(150.dp),
-                            ) {
-                                FilePreview(context, it)
-                            }
-                        }
-                        SubscriptionList(
-                            uiState.workshops,
-                            onClick = { subscription ->
-                                onClick.invoke(subscription)
-                            }
-                        )
-                    }
+                    SuccessSharedStateView(uiState, onClick)
                 }
 
                 SharedViewModel.SharedState.Finish -> {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "",
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                }
-            }
-
-            LaunchedEffect(uiState) {
-                if (uiState is SharedViewModel.SharedState.Finish) {
-                   val toast =  Toast.makeText(
-                        context,
-                        context.getString(R.string.success_payment_added),
-                        Toast.LENGTH_LONG
+                            .padding(16.dp)
                     )
-                    toast.show()
-                    onBack.invoke()
+                }
+
+                is SharedViewModel.SharedState.Finish -> {
+                    LaunchedEffect(Unit) {
+                        val toast = Toast.makeText(
+                            context,
+                            context.getString(R.string.success_payment_added),
+                            Toast.LENGTH_LONG
+                        )
+                        toast.show()
+                        onBack.invoke()
+                    }
                 }
             }
         }
@@ -177,12 +115,76 @@ fun Shared(
 }
 
 @Composable
+private fun SuccessSharedStateView(
+    uiState: SharedViewModel.SharedState.Success,
+    onClick: (subscriptionId:Long) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+
+        ) {
+        Text(
+            text = stringResource(R.string.shared_workshops),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
+        uiState.paymentFile?.let {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .height(150.dp),
+            ) {
+                FilePreview(it)
+            }
+        }
+        SubscriptionList(
+            uiState.workshops,
+            onClick = onClick
+        )
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+fun TopBar(onBack: () -> Unit) {
+    CenterAlignedTopAppBar(
+        title = {
+            Text(
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                text = stringResource(R.string.title),
+                textAlign = TextAlign.Center,
+                color = md_theme_light_primary,
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
+        },
+        modifier = Modifier.fillMaxWidth(),
+        navigationIcon = {
+            IconButton(
+                onClick = {
+                    onBack.invoke()
+                }) {
+                Icon(
+                    Icons.AutoMirrored.Rounded.ArrowBack,
+                    "",
+                    tint = md_theme_light_primary
+                )
+            }
+        },
+    )
+}
+
+@Composable
 fun SubscriptionList(
     workshops: List<WorkShopUiState>,
-    onClick: (subscription: Subscription) -> Unit
+    onClick: (subscriptionId:Long) -> Unit
 ) {
     LazyColumn {
-        items(workshops) { workshop ->
+        items(workshops, key = {it.id}) { workshop ->
             WorkshopItem(workshop = workshop, onClick = onClick)
         }
     }
@@ -191,30 +193,14 @@ fun SubscriptionList(
 @Composable
 fun WorkshopItem(
     workshop: WorkShopUiState,
-    onClick: (subscription: Subscription) -> Unit
+    onClick: (subscriptionId: Long) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            workshop.name,
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(md_theme_light_primaryContainer, RoundedCornerShape(16.dp))
-                .padding(8.dp)
-        )
+        WorkshopTitle(workshop.name)
 
-        workshop.currentSubscription?.let { current ->
-            Text(
-                text = getDescription(current),
-                modifier = Modifier
-                    .padding(vertical = 4.dp, horizontal = 8.dp)
-                    .background(md_theme_light_surfaceVariant)
-                    .fillMaxWidth()
-                    .clickable { onClick(current) }
-                    .padding(8.dp)
-            )
-        }
+        SubscriptionView(workshop.currentSubscription, onClick)
 
         if (workshop.old.isNotEmpty()) {
             AnimatedVisibility(expanded) {
@@ -229,23 +215,16 @@ fun WorkshopItem(
                         Text(
                             stringResource(R.string.label_collapse),
                             textAlign = TextAlign.End,
+                            fontSize = 14.sp,
                             modifier = Modifier
                                 .padding(horizontal = 8.dp)
                                 .clickable { expanded = false }
-                                .background(md_theme_light_surfaceVariant, RoundedCornerShape(2.dp))
-                                .padding(2.dp)
+                                .background(md_theme_light_surfaceVariant, RoundedCornerShape(8.dp))
+                                .padding(4.dp)
                         )
                     }
                     workshop.old.forEach { subscription ->
-                        Text(
-                            text = getDescription(subscription),
-                            modifier = Modifier
-                                .padding(vertical = 4.dp, horizontal = 8.dp)
-                                .background(md_theme_light_surfaceVariant)
-                                .fillMaxWidth()
-                                .clickable { onClick(subscription) }
-                                .padding(8.dp)
-                        )
+                        SubscriptionView(subscription, onClick)
                     }
                 }
             }
@@ -257,11 +236,12 @@ fun WorkshopItem(
                     Text(
                         stringResource(R.string.label_expand),
                         textAlign = TextAlign.End,
+                        fontSize = 14.sp,
                         modifier = Modifier
                             .padding(horizontal = 8.dp)
                             .clickable { expanded = true }
-                            .background(md_theme_light_surfaceVariant, RoundedCornerShape(2.dp))
-                            .padding(2.dp)
+                            .background(md_theme_light_surfaceVariant, RoundedCornerShape(8.dp))
+                            .padding(4.dp)
                     )
                 }
             }
@@ -271,24 +251,34 @@ fun WorkshopItem(
     }
 }
 
-
-private fun getDescription(subscription: Subscription): String {
-    return buildString {
-        subscription.detail?.takeIf { it.isNotBlank() }?.let {
-            append(it)
-        }
-        subscription.message?.takeIf { it.isNotBlank() }?.let {
-            if (isNotEmpty()) append(" ")
-            append(it)
-        }
-        subscription.startDate?.let {
-            val formatted = DATE_FORMATTER.format(it)
-            if (isNotEmpty()) append(" ")
-            append(formatted)
-        }
+@Composable
+private fun SubscriptionView(
+    subscription: SubscriptionState?,
+    onClick: (subscriptionId: Long) -> Unit
+) {
+    subscription?.let {
+        Text(
+            text = it.description,
+            modifier = Modifier
+                .padding(vertical = 4.dp, horizontal = 8.dp)
+                .background(md_theme_light_surfaceVariant, RoundedCornerShape(8.dp))
+                .fillMaxWidth()
+                .clickable { onClick(it.id) }
+                .padding(8.dp)
+        )
     }
 }
 
+@Composable
+private fun WorkshopTitle(workshopTitle:String) {
+    Text(
+        workshopTitle,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(md_theme_light_primaryContainer, RoundedCornerShape(16.dp))
+            .padding(8.dp)
+    )
+}
 
 @Composable
 private fun ProgressIndicator() {

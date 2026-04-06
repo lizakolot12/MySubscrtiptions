@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.mits.subscription.domain.clean.FileCleaner
+import com.mits.subscription.domain.usecase.CleanUnreferencedFilesUseCase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -12,11 +12,11 @@ import dagger.assisted.AssistedInject
 class CleanupWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
-    private val fileCleaner: FileCleaner
+    private val cleanUnreferencedFilesUseCase: CleanUnreferencedFilesUseCase,
 ) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
-        fileCleaner.cleanUpUnreferencedFiles()
+        cleanUnreferencedFilesUseCase()
         return Result.success()
     }
 }

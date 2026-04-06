@@ -7,7 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import com.mits.subscription.data.db.entity.WorkshopEntity
-import com.mits.subscription.model.Workshop
+import com.mits.subscription.data.db.model.WorkshopWithSubscriptions
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -24,11 +24,11 @@ interface WorkshopDao {
 
     @Transaction
     @Query("SELECT * FROM workshop")
-    fun getAll(): Flow<List<Workshop>>
+    fun getAll(): Flow<List<WorkshopWithSubscriptions>>
 
     @Query("SELECT * FROM workshop where workshop_id = :id")
     @Transaction
-    suspend fun getById(id: Long): Workshop
+    suspend fun getById(id: Long): WorkshopWithSubscriptions
 
     @Update
     suspend fun updateWorkshop(workshopEntity: WorkshopEntity)

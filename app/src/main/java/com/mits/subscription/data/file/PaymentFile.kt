@@ -1,8 +1,8 @@
-package com.mits.subscription.data.repo
+package com.mits.subscription.data.file
 
 import android.net.Uri
 
-data class PaymentFile(val name:String,  val uri: Uri, private val mimeType:String){
+data class PaymentFile(val name: String, val uri: Uri, private val mimeType: String) {
     fun isPicture() = mimeType.startsWith("image/")
     fun isForExternalUse() = mimeType == "application/pdf" || isPicture()
 }

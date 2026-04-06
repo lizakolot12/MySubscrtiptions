@@ -47,7 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.mits.subscription.R
-import com.mits.subscription.model.Lesson
+import com.mits.subscription.domain.model.Lesson
 import com.mits.subscription.presenatation.ui.components.CalendarView
 import com.mits.subscription.presenatation.ui.components.PaymentFileView
 import com.mits.subscription.presenatation.ui.components.parseDate

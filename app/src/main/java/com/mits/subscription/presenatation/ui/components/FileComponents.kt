@@ -38,7 +38,7 @@ import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.mits.subscription.R
-import com.mits.subscription.data.repo.PaymentFile
+import com.mits.subscription.data.file.PaymentFile
 import java.io.File
 import java.util.Date
 

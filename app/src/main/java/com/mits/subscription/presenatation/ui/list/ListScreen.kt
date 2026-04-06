@@ -77,8 +77,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.mits.subscription.R
-import com.mits.subscription.model.Lesson
-import com.mits.subscription.model.Subscription
+import com.mits.subscription.domain.model.Lesson
+import com.mits.subscription.domain.model.Subscription
 import com.mits.subscription.presenatation.ui.creating.ShowDatePicker
 import com.mits.subscription.presenatation.ui.theme.md_theme_dark_onError
 import com.mits.subscription.presenatation.ui.theme.md_theme_light_background

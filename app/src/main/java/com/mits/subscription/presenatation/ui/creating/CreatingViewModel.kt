@@ -3,9 +3,10 @@ package com.mits.subscription.presenatation.ui.creating
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mits.subscription.R
-import com.mits.subscription.data.repo.FileHandler
-import com.mits.subscription.data.repo.SubscriptionRepository
-import com.mits.subscription.model.Subscription
+import com.mits.subscription.data.file.FileHandler
+import com.mits.subscription.domain.model.Subscription
+import com.mits.subscription.domain.usecase.CreateSubscriptionUseCase
+import com.mits.subscription.domain.usecase.CreateWorkshopUseCase
 import com.mits.subscription.presenatation.ui.creating.data.CreatingState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -20,28 +21,33 @@ import javax.inject.Inject
 @HiltViewModel
 class CreatingViewModel
 @Inject constructor(
-    private val repository: SubscriptionRepository,
+    private val createWorkshopUseCase: CreateWorkshopUseCase,
+    private val createSubscriptionUseCase: CreateSubscriptionUseCase,
     private val fileHandler: FileHandler,
     private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
     private val creatingState = MutableStateFlow(
-        CreatingState(startDate = Calendar.getInstance().timeInMillis,
-        endDate = Calendar.getInstance().timeInMillis)
+        CreatingState(
+            startDate = Calendar.getInstance().timeInMillis,
+            endDate = Calendar.getInstance().timeInMillis,
+        )
     )
     val uiState: StateFlow<CreatingState> = creatingState
 
     init {
-        creatingState.value = CreatingState(startDate = Calendar.getInstance().timeInMillis,
-            endDate = Calendar.getInstance().timeInMillis)
+        creatingState.value = CreatingState(
+            startDate = Calendar.getInstance().timeInMillis,
+            endDate = Calendar.getInstance().timeInMillis,
+        )
     }
 
     fun create() {
         creatingState.value = creatingState.value.copy(isLoading = true)
         viewModelScope.launch(ioDispatcher) {
-            val workshopId = repository.createWorkshop(uiState.value.name)
+            val workshopId = createWorkshopUseCase(uiState.value.name)
             val newSubscription = Subscription(
-                -1,
+                id = -1,
                 detail = uiState.value.detail,
                 startDate = uiState.value.startDate,
                 endDate = uiState.value.endDate,
@@ -51,7 +57,7 @@ class CreatingViewModel
                 filePath = uiState.value.fileUri?.uri?.toString(),
                 originFileName = uiState.value.fileUri?.name,
             )
-            repository.createSubscription(newSubscription)
+            createSubscriptionUseCase(newSubscription)
             creatingState.value = creatingState.value.copy(isLoading = false, finished = true)
         }
     }
@@ -61,11 +67,10 @@ class CreatingViewModel
             it.copy(
                 nameError = if (name.isBlank()) R.string.name_error else null,
                 name = name,
-                savingAvailable = name.isNotBlank()
+                savingAvailable = name.isNotBlank(),
             )
         }
     }
-
 
     fun checkDetail(text: String) {
         creatingState.update {
@@ -94,12 +99,11 @@ class CreatingViewModel
     fun acceptUri(uri: String?) {
         viewModelScope.launch {
             creatingState.update {
-                val fileUri =  withContext(ioDispatcher) {
+                val fileUri = withContext(ioDispatcher) {
                     uri?.let { fileHandler.handleFile(it) }
                 }
                 it.copy(fileUri = fileUri)
             }
         }
     }
-
 }

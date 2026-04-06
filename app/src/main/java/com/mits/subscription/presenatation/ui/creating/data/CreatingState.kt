@@ -1,6 +1,6 @@
 package com.mits.subscription.presenatation.ui.creating.data
 
-import com.mits.subscription.data.repo.PaymentFile
+import com.mits.subscription.data.file.PaymentFile
 import com.mits.subscription.presenatation.ui.components.getDefaultDetail
 
 data class CreatingState(

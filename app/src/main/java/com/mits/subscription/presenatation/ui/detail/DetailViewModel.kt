@@ -4,11 +4,19 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mits.subscription.data.repo.FileHandler
-import com.mits.subscription.data.repo.PaymentFile
-import com.mits.subscription.data.repo.SubscriptionRepository
-import com.mits.subscription.model.Lesson
-import com.mits.subscription.model.Subscription
+import com.mits.subscription.data.file.FileHandler
+import com.mits.subscription.data.file.PaymentFile
+import com.mits.subscription.domain.model.Lesson
+import com.mits.subscription.domain.model.Subscription
+import com.mits.subscription.domain.usecase.AddLessonUseCase
+import com.mits.subscription.domain.usecase.DeleteLessonUseCase
+import com.mits.subscription.domain.usecase.GetSubscriptionUseCase
+import com.mits.subscription.domain.usecase.UpdateLessonUseCase
+import com.mits.subscription.domain.usecase.UpdateSubscriptionDatesUseCase
+import com.mits.subscription.domain.usecase.UpdateSubscriptionDetailUseCase
+import com.mits.subscription.domain.usecase.UpdateSubscriptionFileUseCase
+import com.mits.subscription.domain.usecase.UpdateSubscriptionLessonsNumberUseCase
+import com.mits.subscription.domain.usecase.UpdateWorkshopNameUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -25,10 +33,18 @@ import javax.inject.Inject
 @HiltViewModel
 class DetailViewModel
 @Inject constructor(
-    private val repository: SubscriptionRepository,
+    private val getSubscriptionUseCase: GetSubscriptionUseCase,
+    private val deleteLessonUseCase: DeleteLessonUseCase,
+    private val updateWorkshopNameUseCase: UpdateWorkshopNameUseCase,
+    private val updateSubscriptionDetailUseCase: UpdateSubscriptionDetailUseCase,
+    private val updateSubscriptionLessonsNumberUseCase: UpdateSubscriptionLessonsNumberUseCase,
+    private val updateSubscriptionDatesUseCase: UpdateSubscriptionDatesUseCase,
+    private val addLessonUseCase: AddLessonUseCase,
+    private val updateLessonUseCase: UpdateLessonUseCase,
+    private val updateSubscriptionFileUseCase: UpdateSubscriptionFileUseCase,
     private val ioDispatcher: CoroutineDispatcher,
     private val fileHandler: FileHandler,
-    savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     private val subscriptionId = savedStateHandle["subscriptionId"] ?: 0L
@@ -37,7 +53,7 @@ class DetailViewModel
     val uiState = _uiState.asStateFlow()
 
     init {
-        repository.getSubscription(subscriptionId).flowOn(Dispatchers.IO)
+        getSubscriptionUseCase(subscriptionId).flowOn(Dispatchers.IO)
             .filterNotNull()
             .onEach {
                 _uiState.value = createNewFromCurrent(it)
@@ -47,7 +63,7 @@ class DetailViewModel
 
     fun deleteLesson(lessonId: Long) {
         viewModelScope.launch(ioDispatcher) {
-            repository.deleteLesson(lessonId)
+            deleteLessonUseCase(lessonId)
         }
     }
 
@@ -55,10 +71,7 @@ class DetailViewModel
         viewModelScope.launch(ioDispatcher) {
             val currentState = uiState.value
             if (currentState is DetailState.Success)
-                repository.updateWorkshop(
-                    currentState.subscription.workshop?.id ?: -1,
-                    name
-                )
+                updateWorkshopNameUseCase(currentState.subscription.workshop?.id ?: -1, name)
         }
     }
 
@@ -66,7 +79,7 @@ class DetailViewModel
         viewModelScope.launch(ioDispatcher) {
             val currentState = uiState.value
             if (currentState is DetailState.Success) {
-                repository.updateDetail(currentState.subscription.id, detail)
+                updateSubscriptionDetailUseCase(currentState.subscription.id, detail)
             }
         }
     }
@@ -75,7 +88,7 @@ class DetailViewModel
         viewModelScope.launch(ioDispatcher) {
             val currentState = uiState.value
             if (currentState is DetailState.Success) {
-                repository.updateLessonsNumber(currentState.subscription.id, numStr.toInt())
+                updateSubscriptionLessonsNumberUseCase(currentState.subscription.id, numStr.toInt())
             }
         }
     }
@@ -106,7 +119,7 @@ class DetailViewModel
                 new,
                 paymentFile = fileHandler.convert(
                     subscription.filePath,
-                    subscription.originFileName
+                    subscription.originFileName,
                 ),
             )
         } else DetailState.Loading
@@ -124,7 +137,7 @@ class DetailViewModel
         val currentState = uiState.value
         if (currentState is DetailState.Success) {
             viewModelScope.launch(ioDispatcher) {
-                repository.updateStartDate(currentState.subscription.id, date)
+                updateSubscriptionDatesUseCase.updateStart(currentState.subscription.id, date)
             }
         }
     }
@@ -133,14 +146,14 @@ class DetailViewModel
         val currentState = uiState.value
         if (currentState is DetailState.Success) {
             viewModelScope.launch(ioDispatcher) {
-                repository.updateEndDate(currentState.subscription.id, date)
+                updateSubscriptionDatesUseCase.updateEnd(currentState.subscription.id, date)
             }
         }
     }
 
     fun addVisitedLesson() {
         viewModelScope.launch(ioDispatcher) {
-            repository.addLesson(subscriptionId, Lesson(-1, "", Date()))
+            addLessonUseCase(subscriptionId, Lesson(-1, "", Date()))
         }
     }
 
@@ -148,14 +161,11 @@ class DetailViewModel
         viewModelScope.launch(ioDispatcher) {
             val currentState = uiState.value
             if (currentState is DetailState.Success) {
-
-                val paymentFile =
-                    uri?.let { fileHandler.handleFile(it) }
-
-                repository.updatePaymentFileInfo(
+                val paymentFile = uri?.let { fileHandler.handleFile(it) }
+                updateSubscriptionFileUseCase(
                     currentState.subscription.id,
                     uri = paymentFile?.uri.toString(),
-                    fileName = paymentFile?.name
+                    fileName = paymentFile?.name,
                 )
             }
         }
@@ -165,7 +175,7 @@ class DetailViewModel
         viewModelScope.launch(ioDispatcher) {
             val newDate = Date(newCalendar)
             Log.e("DetailViewModel", "changeLessonDate: $item   $newDate")
-            repository.updateLesson(lesson = item, newDate, subscriptionId)
+            updateLessonUseCase(lesson = item, newDate, subscriptionId)
         }
     }
 

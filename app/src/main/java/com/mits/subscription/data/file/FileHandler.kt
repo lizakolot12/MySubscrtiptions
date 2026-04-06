@@ -1,4 +1,4 @@
-package com.mits.subscription.data.repo
+package com.mits.subscription.data.file
 
 import android.content.Context
 import android.net.Uri
@@ -6,15 +6,13 @@ import android.provider.OpenableColumns
 import android.util.Log
 import androidx.core.content.FileProvider
 import dagger.hilt.android.qualifiers.ApplicationContext
-
-
 import java.io.File
 import java.io.FileOutputStream
 import java.util.Date
 import javax.inject.Inject
 
 class FileHandler @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
 ) {
 
     companion object {
@@ -28,7 +26,7 @@ class FileHandler @Inject constructor(
             return PaymentFile(
                 name = fileName ?: "",
                 uri = Uri.parse(uri),
-                mimeType = getMimeType(Uri.parse(uri))
+                mimeType = getMimeType(Uri.parse(uri)),
             )
         } ?: return null
     }
@@ -53,7 +51,7 @@ class FileHandler @Inject constructor(
             val newUri = FileProvider.getUriForFile(
                 context,
                 "${context.packageName}.provider",
-                outputFile
+                outputFile,
             )
             PaymentFile(name = name, mimeType = mime, uri = newUri)
         } catch (e: Exception) {
@@ -93,15 +91,15 @@ class FileHandler @Inject constructor(
     fun clean(list: List<String>) {
         removeFilesFromDirectory(
             File(context.filesDir, FILE_NAME_PDF),
-            list
+            list,
         )
         removeFilesFromDirectory(
             File(context.filesDir, FILE_NAME_IMAGE),
-            list
+            list,
         )
         removeFilesFromDirectory(
             File(context.filesDir, FILE_NAME_OTHER),
-            list
+            list,
         )
     }
 
@@ -111,7 +109,7 @@ class FileHandler @Inject constructor(
             val newUri = FileProvider.getUriForFile(
                 context,
                 "${context.packageName}.provider",
-                file
+                file,
             )
 
             if (!listForExclude.contains(newUri.toString())) {

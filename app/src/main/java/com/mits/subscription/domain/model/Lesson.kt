@@ -1,12 +1,12 @@
-package com.mits.subscription.model
+package com.mits.subscription.domain.model
 
-import java.util.*
+import java.util.Date
 
 data class Lesson(
-    var lId: Long,
-    var description: String,
-    var date:Date,
-){
+    val lId: Long,
+    val description: String,
+    val date: Date,
+) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Lesson) return false

@@ -2,7 +2,6 @@ package com.mits.subscription.data.db.dao
 
 import androidx.room.*
 import com.mits.subscription.data.db.entity.LessonEntity
-import com.mits.subscription.model.Lesson
 
 @Dao
 interface LessonDao {
@@ -22,7 +21,7 @@ interface LessonDao {
 
     @Query("SELECT * FROM lesson where lId = :id")
     @RewriteQueriesToDropUnusedColumns
-    suspend fun getId(id: Long): Lesson
+    suspend fun getId(id: Long): LessonEntity
 
     @Update
     suspend fun updateLesson(lessonEntity: LessonEntity)

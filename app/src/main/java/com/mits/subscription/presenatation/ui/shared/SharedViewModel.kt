@@ -3,11 +3,12 @@ package com.mits.subscription.presenatation.ui.shared
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mits.subscription.data.repo.FileHandler
-import com.mits.subscription.data.repo.PaymentFile
-import com.mits.subscription.data.repo.SubscriptionRepository
-import com.mits.subscription.model.Subscription
-import com.mits.subscription.model.Workshop
+import com.mits.subscription.data.file.FileHandler
+import com.mits.subscription.data.file.PaymentFile
+import com.mits.subscription.domain.model.Subscription
+import com.mits.subscription.domain.model.Workshop
+import com.mits.subscription.domain.usecase.GetWorkshopsUseCase
+import com.mits.subscription.domain.usecase.UpdateSubscriptionFileUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -26,10 +27,11 @@ import javax.inject.Inject
 @HiltViewModel
 class SharedViewModel
 @Inject constructor(
-    private val repository: SubscriptionRepository,
+    private val getWorkshopsUseCase: GetWorkshopsUseCase,
+    private val updateSubscriptionFileUseCase: UpdateSubscriptionFileUseCase,
     private val ioDispatcher: CoroutineDispatcher,
     private val fileHandler: FileHandler,
-    savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     companion object {
@@ -42,22 +44,18 @@ class SharedViewModel
     val uiState = _uiState.asStateFlow()
 
     init {
-        repository.workshops.flowOn(Dispatchers.IO)
+        getWorkshopsUseCase().flowOn(Dispatchers.IO)
             .filterNotNull()
             .onEach {
                 _uiState.update { currentState ->
                     when (currentState) {
                         is SharedState.Success -> currentState.copy(
-                            workshops = transformToUiState(
-                                it
-                            )
+                            workshops = transformToUiState(it)
                         )
-
                         is SharedState.Loading -> SharedState.Success(
                             workshops = transformToUiState(it),
-                            paymentFile = null
+                            paymentFile = null,
                         )
-
                         SharedState.Finish -> currentState
                     }
                 }
@@ -72,18 +70,14 @@ class SharedViewModel
                         is SharedState.Success -> currentState.copy(paymentFile = uri)
                         is SharedState.Loading -> SharedState.Success(
                             workshops = emptyList(),
-                            paymentFile = uri
+                            paymentFile = uri,
                         )
-
-                        SharedState.Finish -> {
-                            SharedState.Finish
-                        }
+                        SharedState.Finish -> SharedState.Finish
                     }
                 }
             }
         }
     }
-
 
     fun addFileToSubscription(subscriptionId: Long) {
         viewModelScope.launch(ioDispatcher) {
@@ -93,7 +87,7 @@ class SharedViewModel
                 null
             }
             paymentFile?.let {
-                repository.updatePaymentFileInfo(
+                updateSubscriptionFileUseCase(
                     subscriptionId = subscriptionId,
                     uri = it.uri.toString(),
                     fileName = it.name,
@@ -110,7 +104,7 @@ class SharedViewModel
                 id = workshop.id,
                 name = workshop.name,
                 currentSubscription = getDescription(list.firstOrNull()),
-                old = list.drop(1).mapNotNull { getDescription(it) }
+                old = list.drop(1).mapNotNull { getDescription(it) },
             )
         }
     }
@@ -137,7 +131,7 @@ class SharedViewModel
     sealed class SharedState {
         data class Success(
             val workshops: List<WorkShopUiState>,
-            val paymentFile: PaymentFile?
+            val paymentFile: PaymentFile?,
         ) : SharedState()
 
         data object Loading : SharedState()
@@ -150,7 +144,7 @@ data class WorkShopUiState(
     val id: Long,
     val name: String,
     val currentSubscription: SubscriptionState? = null,
-    val old: List<SubscriptionState> = emptyList()
+    val old: List<SubscriptionState> = emptyList(),
 )
 
 data class SubscriptionState(val id: Long, val description: String)

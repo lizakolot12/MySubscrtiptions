@@ -5,6 +5,9 @@ import com.mits.subscription.data.db.SubscriptionDb
 import com.mits.subscription.data.db.dao.LessonDao
 import com.mits.subscription.data.db.dao.SubscriptionDao
 import com.mits.subscription.data.db.dao.WorkshopDao
+import com.mits.subscription.data.repository.SubscriptionRepositoryImpl
+import com.mits.subscription.domain.repository.SubscriptionRepository
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -47,10 +50,21 @@ object SubscriptionRepositoryModule {
     ): SubscriptionDao {
         return database.subscriptionDao()
     }
+
     @Provides
     fun provideWorkshopDao(
         database: SubscriptionDb
     ): WorkshopDao {
         return database.folderDao()
     }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class RepositoryBindingsModule {
+    @Binds
+    @Singleton
+    abstract fun bindSubscriptionRepository(
+        impl: SubscriptionRepositoryImpl
+    ): SubscriptionRepository
 }

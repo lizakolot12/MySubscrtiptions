@@ -15,5 +15,6 @@
 local.properties
 .idea/
 keystore.properties
+secrets.properties
 /keys
 .kotlin

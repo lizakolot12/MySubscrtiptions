@@ -12,6 +12,14 @@ def keystorePropertiesFile = rootProject.file("keystore.properties")
 def keystoreProperties = new Properties()
 keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 
+// Local secrets (OAuth client IDs, etc.) — not checked into VCS.
+// Copy secrets.properties.example to secrets.properties and fill in real values.
+def secretsPropertiesFile = rootProject.file("secrets.properties")
+def secretsProperties = new Properties()
+if (secretsPropertiesFile.exists()) {
+    secretsPropertiesFile.withInputStream { secretsProperties.load(it) }
+}
+
 android {
     compileSdk 35
 
@@ -42,8 +50,9 @@ android {
         // Override per build type (see buildTypes.release below) once a real backend is deployed.
         buildConfigField "String", "BACKEND_BASE_URL", "\"http://10.0.2.2:8080/\""
         // Web OAuth client ID from Google Cloud Console — required by Credential Manager even on Android.
-        // Fill in before Google sign-in will work; see mysubscriptionsback README for how to create it.
-        buildConfigField "String", "GOOGLE_SERVER_CLIENT_ID", "\"\""
+        // Value comes from secrets.properties (see secrets.properties.example); fill it in before
+        // Google sign-in will work, see mysubscriptionsback README for how to create it.
+        buildConfigField "String", "GOOGLE_SERVER_CLIENT_ID", "\"${secretsProperties.getProperty('GOOGLE_SERVER_CLIENT_ID', '')}\""
     }
     signingConfigs {
         release {

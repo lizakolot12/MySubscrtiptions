@@ -7,7 +7,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
 
-/** Mirrors mysubscriptionsback's AuthController (api/v1/auth/*). */
+/** Mirrors mysubscriptionsback's AuthController (api/v1/auth/…). */
 interface AuthApi {
 
     @POST("api/v1/auth/google")

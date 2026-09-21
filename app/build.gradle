@@ -43,7 +43,7 @@ android {
 
         // Android emulator's alias for the host machine's localhost, matching backend/docker-compose.yml.
         // Override per build type (see buildTypes.release below) once a real backend is deployed.
-        buildConfigField "String", "BACKEND_BASE_URL", "\"http://192.168.0.3:8080/\""
+        buildConfigField "String", "BACKEND_BASE_URL", "\"http://192.168.100.3:8080/\""
         // Web OAuth client ID from Google Cloud Console — required by Credential Manager even on Android.
         // Value comes from secrets.properties (see secrets.properties.example); fill it in before
         // Google sign-in will work, see mysubscriptionsback README for how to create it.

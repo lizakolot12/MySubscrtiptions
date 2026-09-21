@@ -29,51 +29,51 @@ interface SubscriptionDao {
 
     @Query(
         "UPDATE subscription " +
-                "SET message = :mes " +
+                "SET message = :mes, updatedAt = :updatedAt " +
                 "WHERE sub_id = :id "
     )
     @Transaction
-    suspend fun updateMessage(id: Long, mes: String?): Int
+    suspend fun updateMessage(id: Long, mes: String?, updatedAt: Long): Int
 
     @Query(
         "UPDATE subscription " +
-                "SET lessonNumbers = :number " +
+                "SET lessonNumbers = :number, updatedAt = :updatedAt " +
                 "WHERE sub_id = :id "
     )
     @Transaction
-    suspend fun updateLessonsNumber(id: Long, number: Int): Int
+    suspend fun updateLessonsNumber(id: Long, number: Int, updatedAt: Long): Int
 
     @Query(
         "UPDATE subscription " +
-                "SET detail = :detail " +
+                "SET detail = :detail, updatedAt = :updatedAt " +
                 "WHERE sub_id = :id "
     )
     @Transaction
-    suspend fun updateDetail(id: Long, detail: String?): Int
+    suspend fun updateDetail(id: Long, detail: String?, updatedAt: Long): Int
 
     @Query(
         "UPDATE subscription " +
-                "SET filePath = :uri, originFileName = :fileName " +
+                "SET filePath = :uri, originFileName = :fileName, updatedAt = :updatedAt " +
                 "WHERE sub_id = :id "
     )
     @Transaction
-    suspend fun updatePhotoUri(id: Long, uri: String?, fileName:String?): Int
+    suspend fun updatePhotoUri(id: Long, uri: String?, fileName:String?, updatedAt: Long): Int
 
     @Query(
         "UPDATE subscription " +
-                "SET startDate = :startDate " +
+                "SET startDate = :startDate, updatedAt = :updatedAt " +
                 "WHERE sub_id = :id "
     )
     @Transaction
-    suspend fun updateStartDate(id: Long, startDate: Long): Int
+    suspend fun updateStartDate(id: Long, startDate: Long, updatedAt: Long): Int
 
     @Query(
         "UPDATE subscription " +
-                "SET endDate = :endDate " +
+                "SET endDate = :endDate, updatedAt = :updatedAt " +
                 "WHERE sub_id = :id "
     )
     @Transaction
-    suspend fun updateEndDate(id: Long, endDate: Long): Int
+    suspend fun updateEndDate(id: Long, endDate: Long, updatedAt: Long): Int
 
     @Update
     suspend fun updateSubscription(subscriptionEntity: SubscriptionEntity)

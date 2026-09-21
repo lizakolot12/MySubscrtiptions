@@ -12,10 +12,11 @@ import com.mits.subscription.data.db.dao.WorkshopDao
 import com.mits.subscription.data.db.entity.LessonEntity
 import com.mits.subscription.data.db.entity.SubscriptionEntity
 import com.mits.subscription.data.db.entity.WorkshopEntity
+import com.mits.subscription.data.db.migration.MIGRATION_5_6
 
 @Database(
     entities = [WorkshopEntity::class, SubscriptionEntity::class, LessonEntity::class],
-    version = 5,
+    version = 6,
     exportSchema = true,
     autoMigrations = [
         AutoMigration (from = 1, to = 2),
@@ -47,6 +48,7 @@ abstract class SubscriptionDb : RoomDatabase() {
                 context,
                 SubscriptionDb::class.java, "subscription.db"
             )
+                .addMigrations(MIGRATION_5_6)
                 .build()
     }
 }

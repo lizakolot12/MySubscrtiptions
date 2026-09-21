@@ -39,6 +39,12 @@
     <string name="label_expand">Ще...</string>
     <string name="success_payment_added">Успішно додано!</string>
 
+    <string name="title_account">Обліковий запис</string>
+    <string name="btn_sign_in_google">Увійти через Google</string>
+    <string name="btn_sign_out">Вийти</string>
+    <string name="label_signed_in_as">Ви увійшли як %1$s</string>
+    <string name="sign_in_error">Не вдалося увійти: %1$s</string>
+
     <string-array name="days_of_week">
         <item>П</item>
         <item>В</item>

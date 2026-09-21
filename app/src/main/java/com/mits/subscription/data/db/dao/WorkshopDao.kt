@@ -5,7 +5,6 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
-import androidx.room.Update
 import com.mits.subscription.data.db.entity.WorkshopEntity
 import com.mits.subscription.data.db.model.WorkshopWithSubscriptions
 import kotlinx.coroutines.flow.Flow
@@ -30,7 +29,10 @@ interface WorkshopDao {
     @Transaction
     suspend fun getById(id: Long): WorkshopWithSubscriptions
 
-    @Update
-    suspend fun updateWorkshop(workshopEntity: WorkshopEntity)
+    // Deliberately a targeted query, not @Update on the whole entity: callers build a fresh
+    // WorkshopEntity with only id+name set, which would silently regenerate remoteId (breaking
+    // its "stable sync identity" contract) if the whole row were replaced.
+    @Query("UPDATE workshop SET name = :name, updatedAt = :updatedAt WHERE workshop_id = :id")
+    suspend fun updateWorkshop(id: Long, name: String?, updatedAt: Long)
 
 }

@@ -2,6 +2,7 @@ package com.mits.subscription.data.db.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import java.util.*
 
@@ -13,7 +14,9 @@ import java.util.*
             childColumns = arrayOf("workshop_id"),
             onDelete = androidx.room.ForeignKey.CASCADE
         )
-],)
+],
+        indices = [Index(value = ["remoteId"], unique = true)],
+)
 data class SubscriptionEntity(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name="sub_id")
@@ -34,5 +37,12 @@ data class SubscriptionEntity(
 
     val filePath: String? = null,
 
-    val originFileName: String? = null
+    val originFileName: String? = null,
+
+    /** Stable client-generated identity used to sync this row across devices; never regenerated once set. */
+    val remoteId: String = UUID.randomUUID().toString(),
+
+    val updatedAt: Long = System.currentTimeMillis(),
+
+    val deletedAt: Long? = null,
 )

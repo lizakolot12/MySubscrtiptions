@@ -14,6 +14,7 @@ import java.util.*
             onDelete = CASCADE
         )
     ],
+    indices = [Index(value = ["remoteId"], unique = true)],
 )
 data class LessonEntity(
     @PrimaryKey(autoGenerate = true)
@@ -24,5 +25,12 @@ data class LessonEntity(
     val date: Date?,
 
     @ColumnInfo(name = "subscription_id", index = true)
-    val subscriptionId: Long
+    val subscriptionId: Long,
+
+    /** Stable client-generated identity used to sync this row across devices; never regenerated once set. */
+    val remoteId: String = UUID.randomUUID().toString(),
+
+    val updatedAt: Long = System.currentTimeMillis(),
+
+    val deletedAt: Long? = null,
 )

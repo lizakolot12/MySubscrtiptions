@@ -15,6 +15,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.mits.subscription.presenatation.ui.auth.LoginScreen
 import com.mits.subscription.presenatation.ui.creating.CreatingScreen
 import com.mits.subscription.presenatation.ui.detail.DetailScreen
 import com.mits.subscription.presenatation.ui.list.ListScreen
@@ -41,15 +42,19 @@ fun Main() {
 
     NavHost(navController = navController, startDestination = Navigation.LIST.route) {
         composable(Navigation.LIST.route) {
-            ListScreen({
-                navController.navigate(Navigation.NEW.route)
-            }, { item ->
-                navController.navigate("detail/${item}")
-            })
+            ListScreen(
+                onNew = { navController.navigate(Navigation.NEW.route) },
+                onDetail = { item -> navController.navigate("detail/${item}") },
+                onAccount = { navController.navigate(Navigation.LOGIN.route) },
+            )
         }
 
         composable(Navigation.NEW.route) {
             CreatingScreen({ navController.navigateUp() })
+        }
+
+        composable(Navigation.LOGIN.route) {
+            LoginScreen(onBack = { navController.navigateUp() })
         }
 
         composable(

@@ -27,6 +27,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
@@ -97,7 +98,8 @@ val DATE_FORMATTER = SimpleDateFormat("dd.MM.yyyy", Locale.US)
 @Composable
 fun ListScreen(
     onNew: () -> Unit,
-    onDetail: (item: Long) -> Unit
+    onDetail: (item: Long) -> Unit,
+    onAccount: () -> Unit,
 ) {
     val listViewModel: ListViewModel = hiltViewModel()
 
@@ -115,7 +117,16 @@ fun ListScreen(
                             .fillMaxWidth()
                     )
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                actions = {
+                    IconButton(onClick = onAccount) {
+                        Icon(
+                            Icons.Filled.AccountCircle,
+                            contentDescription = stringResource(R.string.title_account),
+                            tint = md_theme_light_primary,
+                        )
+                    }
+                },
             )
         },
         floatingActionButton = {

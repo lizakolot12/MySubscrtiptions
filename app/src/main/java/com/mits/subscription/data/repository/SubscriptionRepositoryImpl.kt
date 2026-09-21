@@ -62,11 +62,11 @@ class SubscriptionRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateWorkshop(workshopId: Long, workshopName: String?) {
-        workshopDao.updateWorkshop(WorkshopEntity(workshopId, workshopName))
+        workshopDao.updateWorkshop(workshopId, workshopName, System.currentTimeMillis())
     }
 
     override suspend fun updateDetail(subscriptionId: Long, detail: String?) {
-        subscriptionDao.updateDetail(subscriptionId, detail)
+        subscriptionDao.updateDetail(subscriptionId, detail, System.currentTimeMillis())
     }
 
     override suspend fun updatePaymentFileInfo(
@@ -74,23 +74,23 @@ class SubscriptionRepositoryImpl @Inject constructor(
         uri: String?,
         fileName: String?,
     ) {
-        subscriptionDao.updatePhotoUri(subscriptionId, uri, fileName)
+        subscriptionDao.updatePhotoUri(subscriptionId, uri, fileName, System.currentTimeMillis())
     }
 
     override suspend fun updateLessonsNumber(subscriptionId: Long, number: Int) {
-        subscriptionDao.updateLessonsNumber(subscriptionId, number)
+        subscriptionDao.updateLessonsNumber(subscriptionId, number, System.currentTimeMillis())
     }
 
     override suspend fun updateStartDate(subscriptionId: Long, startDate: Long) {
-        subscriptionDao.updateStartDate(subscriptionId, startDate)
+        subscriptionDao.updateStartDate(subscriptionId, startDate, System.currentTimeMillis())
     }
 
     override suspend fun updateEndDate(subscriptionId: Long, endDate: Long) {
-        subscriptionDao.updateEndDate(subscriptionId, endDate)
+        subscriptionDao.updateEndDate(subscriptionId, endDate, System.currentTimeMillis())
     }
 
     override suspend fun updateMessage(subscriptionId: Long, message: String?) {
-        subscriptionDao.updateMessage(subscriptionId, message)
+        subscriptionDao.updateMessage(subscriptionId, message, System.currentTimeMillis())
     }
 
     override suspend fun addLesson(subscriptionId: Long, lesson: Lesson): Long {
@@ -99,9 +99,8 @@ class SubscriptionRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateLesson(lesson: Lesson, newDate: Date, subscriptionId: Long) {
-        val entity = LessonEntity(lesson.lId, lesson.description, newDate, subscriptionId)
-        Log.e("TEST", "updateLesson: $entity")
-        lessonDao.updateLesson(entity)
+        Log.e("TEST", "updateLesson: id=${lesson.lId} date=$newDate")
+        lessonDao.updateLesson(lesson.lId, lesson.description, newDate, System.currentTimeMillis())
     }
 
     override suspend fun deleteLesson(lessonId: Long) {

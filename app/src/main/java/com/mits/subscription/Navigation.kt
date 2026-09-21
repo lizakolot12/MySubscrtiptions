@@ -5,4 +5,5 @@ enum class Navigation(val route:String) {
     NEW("new"),
     DETAIL("detail"),
     SEND("send"),
+    LOGIN("login"),
 }

@@ -39,4 +39,21 @@ interface LessonDao {
     // this is safe as a whole-entity @Update while updateLesson (above) deliberately isn't.
     @Update
     suspend fun applyRemote(lessonEntity: LessonEntity)
+
+    // Soft delete, not DELETE FROM: see WorkshopDao.softDeleteById for why.
+    @Query("UPDATE lesson SET deletedAt = :deletedAt, updatedAt = :deletedAt WHERE lId = :id")
+    suspend fun softDeleteById(id: Long, deletedAt: Long)
+
+    @Query(
+        "UPDATE lesson SET deletedAt = :deletedAt, updatedAt = :deletedAt " +
+                "WHERE subscription_id = :subscriptionId AND deletedAt IS NULL"
+    )
+    suspend fun softDeleteBySubscriptionId(subscriptionId: Long, deletedAt: Long)
+
+    @Query(
+        "UPDATE lesson SET deletedAt = :deletedAt, updatedAt = :deletedAt " +
+                "WHERE subscription_id IN (SELECT sub_id FROM subscription WHERE workshop_id = :workshopId) " +
+                "AND deletedAt IS NULL"
+    )
+    suspend fun softDeleteByWorkshopId(workshopId: Long, deletedAt: Long)
 }

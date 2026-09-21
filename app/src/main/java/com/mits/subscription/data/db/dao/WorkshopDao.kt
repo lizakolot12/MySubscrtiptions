@@ -45,6 +45,11 @@ interface WorkshopDao {
     @Query("SELECT * FROM workshop WHERE updatedAt > :since")
     suspend fun getUpdatedSince(since: Long): List<WorkshopEntity>
 
+    // Soft delete, not DELETE FROM: a hard delete never sets updatedAt, so it would never be picked
+    // up by getUpdatedSince and the deletion would never reach the server or other devices.
+    @Query("UPDATE workshop SET deletedAt = :deletedAt, updatedAt = :deletedAt WHERE workshop_id = :id")
+    suspend fun softDeleteById(id: Long, deletedAt: Long)
+
     // Safe here, unlike updateWorkshop: callers always pass a full entity obtained via findByRemoteId
     // and .copy(), so id/remoteId are preserved by construction — this applies server-authoritative
     // data pulled from sync, not a locally-built partial entity.

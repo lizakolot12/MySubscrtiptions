@@ -6,5 +6,5 @@ import com.mits.subscription.domain.model.Workshop
 fun WorkshopWithSubscriptions.toDomain() = Workshop(
     id = workshop.id ?: 0L,
     name = workshop.name ?: "",
-    subscriptions = subscriptions.map { it.toDomain() },
+    subscriptions = subscriptions.filter { it.subscription.deletedAt == null }.map { it.toDomain() },
 )

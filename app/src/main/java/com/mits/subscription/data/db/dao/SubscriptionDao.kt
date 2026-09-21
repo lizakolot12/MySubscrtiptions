@@ -93,4 +93,17 @@ interface SubscriptionDao {
     @Query("SELECT * FROM subscription WHERE updatedAt > :since")
     suspend fun getUpdatedSince(since: Long): List<SubscriptionEntity>
 
+    // Soft delete, not DELETE FROM: see WorkshopDao.softDeleteById for why.
+    @Query("UPDATE subscription SET deletedAt = :deletedAt, updatedAt = :deletedAt WHERE sub_id = :id")
+    suspend fun softDeleteById(id: Long, deletedAt: Long)
+
+    @Query(
+        "UPDATE subscription SET deletedAt = :deletedAt, updatedAt = :deletedAt " +
+                "WHERE workshop_id = :workshopId AND deletedAt IS NULL"
+    )
+    suspend fun softDeleteByWorkshopId(workshopId: Long, deletedAt: Long)
+
+    @Query("SELECT COUNT(*) FROM subscription WHERE workshop_id = :workshopId AND deletedAt IS NULL")
+    suspend fun countActiveByWorkshopId(workshopId: Long): Int
+
 }

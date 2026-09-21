@@ -10,7 +10,7 @@ fun SubscriptionWithDetails.toDomain() = Subscription(
     startDate = subscription.startDate,
     endDate = subscription.endDate,
     lessonNumbers = subscription.lessonNumbers,
-    lessons = lessons.map { it.toDomain() },
+    lessons = lessons.filter { it.deletedAt == null }.map { it.toDomain() },
     workshop = workshop?.let { WorkshopInfo(it.id ?: 0L, it.name ?: "") },
     workshopId = subscription.workshopId,
     message = subscription.message,

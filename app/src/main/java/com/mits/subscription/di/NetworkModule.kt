@@ -4,8 +4,11 @@ import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFact
 import com.mits.subscription.BuildConfig
 import com.mits.subscription.data.remote.AuthApi
 import com.mits.subscription.data.remote.AuthInterceptor
+import com.mits.subscription.data.remote.SyncApi
 import com.mits.subscription.data.repository.AuthRepositoryImpl
+import com.mits.subscription.data.repository.SyncRepositoryImpl
 import com.mits.subscription.domain.repository.AuthRepository
+import com.mits.subscription.domain.repository.SyncRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -52,6 +55,10 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideAuthApi(retrofit: Retrofit): AuthApi = retrofit.create(AuthApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideSyncApi(retrofit: Retrofit): SyncApi = retrofit.create(SyncApi::class.java)
 }
 
 @Module
@@ -60,4 +67,12 @@ abstract class AuthBindingsModule {
     @Binds
     @Singleton
     abstract fun bindAuthRepository(impl: AuthRepositoryImpl): AuthRepository
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class SyncBindingsModule {
+    @Binds
+    @Singleton
+    abstract fun bindSyncRepository(impl: SyncRepositoryImpl): SyncRepository
 }

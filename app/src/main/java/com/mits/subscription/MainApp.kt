@@ -6,6 +6,7 @@ import androidx.work.Configuration
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.mits.subscription.presenatation.worker.CleanupWorker
+import com.mits.subscription.presenatation.worker.SyncWorker
 import dagger.hilt.android.HiltAndroidApp
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -29,5 +30,6 @@ class MainApp : Application(), Configuration.Provider {
 
         WorkManager.getInstance(this).enqueue(request)
 
+        SyncWorker.schedulePeriodic(WorkManager.getInstance(this))
     }
 }

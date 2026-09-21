@@ -28,4 +28,15 @@ interface LessonDao {
     // for why (would silently regenerate remoteId).
     @Query("UPDATE lesson SET description = :description, date = :date, updatedAt = :updatedAt WHERE lId = :id")
     suspend fun updateLesson(id: Long, description: String?, date: Date?, updatedAt: Long)
+
+    @Query("SELECT * FROM lesson WHERE remoteId = :remoteId LIMIT 1")
+    suspend fun findByRemoteId(remoteId: String): LessonEntity?
+
+    @Query("SELECT * FROM lesson WHERE updatedAt > :since")
+    suspend fun getUpdatedSince(since: Long): List<LessonEntity>
+
+    // Used by sync to apply server-authoritative rows: see SubscriptionDao.updateSubscription for why
+    // this is safe as a whole-entity @Update while updateLesson (above) deliberately isn't.
+    @Update
+    suspend fun applyRemote(lessonEntity: LessonEntity)
 }

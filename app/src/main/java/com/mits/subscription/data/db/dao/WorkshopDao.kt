@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
 import com.mits.subscription.data.db.entity.WorkshopEntity
 import com.mits.subscription.data.db.model.WorkshopWithSubscriptions
 import kotlinx.coroutines.flow.Flow
@@ -34,5 +35,25 @@ interface WorkshopDao {
     // its "stable sync identity" contract) if the whole row were replaced.
     @Query("UPDATE workshop SET name = :name, updatedAt = :updatedAt WHERE workshop_id = :id")
     suspend fun updateWorkshop(id: Long, name: String?, updatedAt: Long)
+
+    @Query("SELECT * FROM workshop WHERE remoteId = :remoteId LIMIT 1")
+    suspend fun findByRemoteId(remoteId: String): WorkshopEntity?
+
+    @Query("SELECT remoteId FROM workshop WHERE workshop_id = :id")
+    suspend fun getRemoteId(id: Long): String?
+
+    @Query("SELECT * FROM workshop WHERE updatedAt > :since")
+    suspend fun getUpdatedSince(since: Long): List<WorkshopEntity>
+
+    // Soft delete, not DELETE FROM: a hard delete never sets updatedAt, so it would never be picked
+    // up by getUpdatedSince and the deletion would never reach the server or other devices.
+    @Query("UPDATE workshop SET deletedAt = :deletedAt, updatedAt = :deletedAt WHERE workshop_id = :id")
+    suspend fun softDeleteById(id: Long, deletedAt: Long)
+
+    // Safe here, unlike updateWorkshop: callers always pass a full entity obtained via findByRemoteId
+    // and .copy(), so id/remoteId are preserved by construction — this applies server-authoritative
+    // data pulled from sync, not a locally-built partial entity.
+    @Update
+    suspend fun applyRemote(workshopEntity: WorkshopEntity)
 
 }

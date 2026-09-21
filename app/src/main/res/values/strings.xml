@@ -44,6 +44,9 @@
     <string name="btn_sign_out">Вийти</string>
     <string name="label_signed_in_as">Ви увійшли як %1$s</string>
     <string name="sign_in_error">Не вдалося увійти: %1$s</string>
+    <string name="btn_sync_now">Синхронізувати зараз</string>
+    <string name="label_last_sync">Останній синк: %1$s</string>
+    <string name="label_never_synced">Ще не синхронізовано</string>
 
     <string-array name="days_of_week">
         <item>П</item>

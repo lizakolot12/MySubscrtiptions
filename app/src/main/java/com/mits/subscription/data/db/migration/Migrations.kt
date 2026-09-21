@@ -10,7 +10,8 @@ import java.util.UUID
  * Adds sync bookkeeping columns to every table: a stable client-generated [remoteId] (the identity
  * used once a backend exists to sync across devices — the existing Long primary keys stay purely
  * local and keep working for navigation/FKs unchanged), [updatedAt] for delta sync, and [deletedAt]
- * reserved for a future soft-delete (not wired into any query yet, deliberately — see PR description).
+ * for soft deletes (see SubscriptionRepositoryImpl.deleteWorkshop/deleteSubscription/deleteLesson,
+ * which cascade it explicitly since a real DELETE's FK CASCADE never fires for an UPDATE).
  *
  * remoteId can't use a SQL column DEFAULT (each existing row needs its own random UUID), so existing
  * rows are backfilled one by one after the column is added.

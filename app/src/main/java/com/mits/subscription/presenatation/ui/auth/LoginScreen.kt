@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mits.subscription.R
+import com.mits.subscription.presenatation.ui.components.parseMillis
 import com.mits.subscription.presenatation.ui.theme.md_theme_light_error
 import com.mits.subscription.presenatation.ui.theme.md_theme_light_primary
 
@@ -41,6 +42,7 @@ fun LoginScreen(
     val state by loginViewModel.state.collectAsStateWithLifecycle()
     val isLoggedIn by loginViewModel.isLoggedIn.collectAsStateWithLifecycle()
     val userEmail by loginViewModel.userEmail.collectAsStateWithLifecycle()
+    val lastSyncCompletedAt by loginViewModel.lastSyncCompletedAt.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -85,6 +87,18 @@ fun LoginScreen(
                 )
                 OutlinedButton(onClick = { loginViewModel.signOut() }) {
                     Text(text = stringResource(R.string.btn_sign_out))
+                }
+
+                Text(
+                    text = stringResource(
+                        R.string.label_last_sync,
+                        lastSyncCompletedAt?.let { parseMillis(it) } ?: stringResource(R.string.label_never_synced),
+                    ),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 24.dp, bottom = 8.dp),
+                )
+                OutlinedButton(onClick = { loginViewModel.syncNow() }) {
+                    Text(text = stringResource(R.string.btn_sync_now))
                 }
             } else {
                 Button(onClick = { loginViewModel.signIn(context) }) {

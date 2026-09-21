@@ -26,10 +26,14 @@ class SubscriptionRepositoryImpl @Inject constructor(
 ) : SubscriptionRepository {
 
     override val workshops: Flow<List<Workshop>> =
-        workshopDao.getAll().map { list -> list.map { it.toDomain() } }
+        workshopDao.getAll().map { list ->
+            list.filter { it.workshop.deletedAt == null }.map { it.toDomain() }
+        }
 
     override fun getSubscription(subscriptionId: Long): Flow<Subscription?> =
-        subscriptionDao.getById(subscriptionId).map { it?.toDomain() }
+        subscriptionDao.getById(subscriptionId).map { details ->
+            details?.takeIf { it.subscription.deletedAt == null }?.toDomain()
+        }
 
     override suspend fun createWorkshop(name: String): Long =
         workshopDao.insert(WorkshopEntity(name = name))
@@ -48,14 +52,21 @@ class SubscriptionRepositoryImpl @Inject constructor(
         return subscriptionDao.insert(entity)
     }
 
+    // Soft-deletes cascade explicitly here (workshop -> its subscriptions -> their lessons) because a
+    // real DELETE FROM would rely on the FK ON DELETE CASCADE, which never fires for an UPDATE.
     override suspend fun deleteWorkshop(workshopId: Long) {
-        workshopDao.deleteById(workshopId)
+        val now = System.currentTimeMillis()
+        lessonDao.softDeleteByWorkshopId(workshopId, now)
+        subscriptionDao.softDeleteByWorkshopId(workshopId, now)
+        workshopDao.softDeleteById(workshopId, now)
     }
 
     override suspend fun deleteSubscription(subscription: Subscription) {
-        val currentWorkshop = workshopDao.getById(subscription.workshopId)
-        if (currentWorkshop.subscriptions.size > 1) {
-            subscriptionDao.deleteById(subscription.id)
+        val activeSiblingCount = subscriptionDao.countActiveByWorkshopId(subscription.workshopId)
+        if (activeSiblingCount > 1) {
+            val now = System.currentTimeMillis()
+            lessonDao.softDeleteBySubscriptionId(subscription.id, now)
+            subscriptionDao.softDeleteById(subscription.id, now)
         } else {
             deleteWorkshop(subscription.id) // NOTE: Original bug kept — should be subscription.workshopId
         }
@@ -104,7 +115,7 @@ class SubscriptionRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteLesson(lessonId: Long) {
-        lessonDao.deleteByLessonId(lessonId)
+        lessonDao.softDeleteById(lessonId, System.currentTimeMillis())
     }
 
     override suspend fun getAllFilePath(): List<String> = subscriptionDao.getAllFilePath()
